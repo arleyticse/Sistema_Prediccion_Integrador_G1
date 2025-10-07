@@ -1,0 +1,17 @@
+codigo_producto,mes,factor_estacional,demanda_promedio,demanda_maxima,demanda_minima,descripcion_temporada
+PROD001,1,0.85,170,200,150,Inicio de año - Baja
+PROD001,2,0.90,180,210,160,
+PROD001,3,1.10,220,250,200,Inicio escolar
+PROD001,4,0.95,190,220,170,
+PROD001,5,1.00,200,230,180,Normal
+PROD001,6,1.05,210,240,190,Medio año
+PROD001,7,1.20,240,280,220,Vacaciones escolares
+PROD001,8,1.15,230,270,210,Fiestas patrias
+PROD001,9,0.90,180,210,160,Baja
+PROD001,10,1.00,200,230,180,Normal
+PROD001,11,1.30,260,300,240,Preparación navideña
+PROD001,12,1.50,300,350,280,Temporada navideña
+PROD002,1,1.40,280,320,250,Verano - Alta demanda
+PROD002,2,1.35,270,310,240,Verano - Alta demanda
+PROD002,3,1.00,200,230,180,Normal
+PROD002,12,1.45,290,330,260,Fiestas de fin de año

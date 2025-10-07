@@ -1,0 +1,6 @@
+razon_social,nombre_comercial,ruc_nit,telefono,email,direccion,ciudad,tiempo_entrega_dias,dias_credito,calificacion
+Distribuidora ABC S.A.,Distrib ABC,1234567890,591-2-2345678,ventas@abc.com,Av. Principal 123,La Paz,3,30,4.5
+Proveedor DEF Ltda.,DEF Supply,0987654321,591-3-3456789,contacto@def.com,Calle Comercio 456,Santa Cruz,5,15,4.0
+Importadora GHI,GHI Import,1122334455,591-4-4567890,info@ghi.com,Zona Industrial 789,Cochabamba,7,45,4.8
+Mayorista JKL,JKL Mayoreo,5566778899,591-2-5678901,ventas@jkl.com,Mercado Central,La Paz,2,0,3.5
+Distribuidora MNO,MNO Dist,9988776655,591-3-6789012,pedidos@mno.com,Parque Industrial,Santa Cruz,4,30,4.2

@@ -1,4 +1,4 @@
-package com.prediccion.apppredicciongm.models;
+package com.prediccion.apppredicciongm.models.Inventario;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,24 +8,19 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "usuarios")
-@NoArgsConstructor
+@Table(name = "categorias")
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
-public class Usuario  implements Serializable {
+public class Categoria implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario")
-    private Integer usuarioId;
+    @Column(name = "id_categoria")
+    private Integer categoriaId;
 
     private String nombre;
 
-    @Column(name = "clave_hash")
-    private String claveHash;
-
-    private String rol;
-
-    private String email;
+    private String descripcion;
 }
