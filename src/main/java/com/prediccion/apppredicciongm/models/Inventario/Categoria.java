@@ -1,6 +1,7 @@
 package com.prediccion.apppredicciongm.models.Inventario;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,11 @@ public class Categoria implements Serializable {
     @Column(name = "id_categoria")
     private Integer categoriaId;
 
+    @NotNull(message = "El nombre de la categoría no puede ser nulo")
+    @Column(name = "nombre", unique = true)
     private String nombre;
 
+    @NotNull(message = "La descripción de la categoría no puede ser nula")
+    @Column(name = "descripcion")
     private String descripcion;
 }

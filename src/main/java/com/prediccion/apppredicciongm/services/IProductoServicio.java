@@ -1,12 +1,16 @@
 package com.prediccion.apppredicciongm.services;
 
-import java.util.List;
+
+import org.springframework.data.domain.Page;
 
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
 
 public interface IProductoServicio {
-    void registrarProducto(Producto producto);
-    Producto obtenerProductoPorId(Integer id);
-    List<Producto> listarProductos();
-    void actualizarProducto(Producto producto);
+    Producto crearProducto(Producto producto);
+    Producto actualizarProducto(Integer productoId, Producto producto);
+    void eliminarProducto(Integer productoId);
+    Page<Producto> listarProductos(int pagina, int tamanioPagina);
+    Producto obtenerProductoPorId(Integer productoId);
+    Page<Producto> buscarPorCategoria(Integer categoriaId, int pagina, int tamanioPagina);
+    Page<Producto> buscarPorNombre(String nombre, int pagina, int tamanioPagina);
 }

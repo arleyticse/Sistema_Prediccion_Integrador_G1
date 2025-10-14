@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 import com.prediccion.apppredicciongm.enums.EstadoInventario;
 
-
 @Entity
 @Table(name = "inventario")
 @AllArgsConstructor
@@ -50,23 +49,14 @@ public class Inventario implements Serializable {
     @Column(name = "ubicacion_almacen")
     private String ubicacionAlmacen;
 
-    @Column(name = "lote_actual")
-    private String loteActual;
-
     @Column(name = "fecha_ultimo_movimiento")
     private LocalDateTime fechaUltimoMovimiento;
 
     @Column(name = "fecha_ultima_actualizacion")
     private LocalDateTime fechaUltimaActualizacion;
 
-    @Column(name = "valor_total_stock", precision = 12, scale = 2)
-    private BigDecimal valorTotalStock;
-
     @Column(name = "dias_sin_venta")
     private Integer diasSinVenta;
-
-    @Column(name = "rotacion_inventario", precision = 8, scale = 2)
-    private BigDecimal rotacionInventario;
 
     @Column(name = "estado")
     @Enumerated(EnumType.STRING)
@@ -75,19 +65,21 @@ public class Inventario implements Serializable {
     @Column(name = "observaciones", length = 500)
     private String observaciones;
 
-    // Método auxiliar para calcular stock total
     public Integer getStockTotal() {
         return stockDisponible + stockReservado + stockEnTransito;
     }
 
-    // Método para verificar si necesita reorden
     public boolean necesitaReorden() {
         return stockDisponible <= puntoReorden;
     }
 
-    // Método para verificar si está por debajo del mínimo
     public boolean bajoPuntoMinimo() {
         return stockDisponible < stockMinimo;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        fechaUltimaActualizacion = LocalDateTime.now();
     }
 
     @PreUpdate

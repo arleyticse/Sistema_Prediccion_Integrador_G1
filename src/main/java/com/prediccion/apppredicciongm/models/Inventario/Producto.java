@@ -23,9 +23,6 @@ public class Producto implements Serializable {
 
     private String nombre;
 
-    @Column(name = "stock_actual")
-    private Integer stockActual;
-
     @Column(name="costo_adquisicion", precision=10, scale=2)
     private BigDecimal costoAdquisicion;
 
@@ -51,4 +48,9 @@ public class Producto implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_um", referencedColumnName = "id_um")
     private UnidadMedida unidadMedida;
+
+    @PrePersist
+    protected void onCreate() {
+        this.fechaRegistro = LocalDateTime.now();
+    }
 }

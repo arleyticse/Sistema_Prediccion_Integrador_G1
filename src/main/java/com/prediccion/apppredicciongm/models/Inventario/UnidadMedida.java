@@ -27,5 +27,4 @@ public class UnidadMedida implements Serializable {
 
     private String abreviatura;
 
-    private String descripcion;
 }

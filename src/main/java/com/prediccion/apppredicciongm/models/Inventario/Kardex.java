@@ -10,16 +10,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.prediccion.apppredicciongm.enums.TipoMovimiento;
+import com.prediccion.apppredicciongm.models.Proveedor;
 import com.prediccion.apppredicciongm.models.Usuario;
 
-/**
- * Entidad Kardex (Cardex) para registro de movimientos de inventario
- * Mantiene trazabilidad completa de entradas y salidas
- */
 @Entity
 @Table(name = "kardex", indexes = {
-    @Index(name = "idx_kardex_producto", columnList = "id_producto"),
-    @Index(name = "idx_kardex_fecha", columnList = "fecha_movimiento")
+        @Index(name = "idx_kardex_producto", columnList = "id_producto"),
+        @Index(name = "idx_kardex_fecha", columnList = "fecha_movimiento")
 })
 @AllArgsConstructor
 @NoArgsConstructor
@@ -49,11 +46,8 @@ public class Kardex implements Serializable {
     @Column(name = "numero_documento")
     private String numeroDocumento;
 
-    @Column(name = "cantidad_entrada")
-    private Integer cantidadEntrada;
-
-    @Column(name = "cantidad_salida")
-    private Integer cantidadSalida;
+    @Column(name = "cantidad", nullable = false)
+    private Integer cantidad;
 
     @Column(name = "saldo_cantidad", nullable = false)
     private Integer saldoCantidad;
@@ -61,29 +55,18 @@ public class Kardex implements Serializable {
     @Column(name = "costo_unitario", precision = 10, scale = 2)
     private BigDecimal costoUnitario;
 
-    @Column(name = "costo_total_entrada", precision = 12, scale = 2)
-    private BigDecimal costoTotalEntrada;
-
-    @Column(name = "costo_total_salida", precision = 12, scale = 2)
-    private BigDecimal costoTotalSalida;
-
-    @Column(name = "saldo_valorizado", precision = 12, scale = 2)
-    private BigDecimal saldoValorizado;
-
     @Column(name = "lote")
     private String lote;
 
     @Column(name = "fecha_vencimiento")
     private LocalDateTime fechaVencimiento;
 
-    @Column(name = "proveedor")
-    private String proveedor;
-
-    @Column(name = "cliente")
-    private String cliente;
+    @ManyToOne
+    @JoinColumn(name = "id_proveedor", referencedColumnName = "id_proveedor")
+    private Proveedor proveedor;
 
     @Column(name = "motivo")
-    private String motivo; 
+    private String motivo;
 
     @Column(name = "referencia")
     private String referencia;
@@ -110,8 +93,11 @@ public class Kardex implements Serializable {
     }
 
     public Integer getMovimientoNeto() {
-        int entrada = cantidadEntrada != null ? cantidadEntrada : 0;
-        int salida = cantidadSalida != null ? cantidadSalida : 0;
-        return entrada - salida;
+        if (tipoMovimiento.esEntrada()) {
+            return cantidad != null ? cantidad : 0;
+        } else if (tipoMovimiento.esSalida()) {
+            return cantidad != null ? -cantidad : 0;
+        }
+        return 0;
     }
 }
