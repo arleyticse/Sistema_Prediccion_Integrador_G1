@@ -1,4 +1,4 @@
-package com.prediccion.apppredicciongm.services;
+package com.prediccion.apppredicciongm.gestion_inventario.movimiento.services;
 
 import java.time.LocalDateTime;
 
@@ -7,7 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.prediccion.apppredicciongm.models.Inventario.Kardex;
-import com.prediccion.apppredicciongm.repository.KardexRepositorio;
+import com.prediccion.apppredicciongm.gestion_inventario.movimiento.repository.IKardexRepositorio;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class KardexServicio implements IKardexService {
 
-    private final KardexRepositorio kardexRepositorio;
+    private final IKardexRepositorio kardexRepositorio;
     @Override
     public Kardex buscarPorProducto(Integer productoId) {
         return kardexRepositorio.findByProducto(productoId)

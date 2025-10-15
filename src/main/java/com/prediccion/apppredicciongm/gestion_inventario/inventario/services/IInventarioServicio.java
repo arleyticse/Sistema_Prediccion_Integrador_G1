@@ -1,4 +1,4 @@
-package com.prediccion.apppredicciongm.services;
+package com.prediccion.apppredicciongm.gestion_inventario.inventario.services;
 
 
 import java.math.BigDecimal;

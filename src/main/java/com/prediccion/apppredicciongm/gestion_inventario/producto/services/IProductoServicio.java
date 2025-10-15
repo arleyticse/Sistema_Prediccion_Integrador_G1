@@ -1,4 +1,4 @@
-package com.prediccion.apppredicciongm.services;
+package com.prediccion.apppredicciongm.gestion_inventario.producto.services;
 
 
 import org.springframework.data.domain.Page;

@@ -1,4 +1,4 @@
-package com.prediccion.apppredicciongm.services;
+package com.prediccion.apppredicciongm.gestion_inventario.inventario.services;
 
 import java.math.BigDecimal;
 
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.prediccion.apppredicciongm.models.Inventario.Inventario;
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
-import com.prediccion.apppredicciongm.repository.InventarioRepositorio;
+import com.prediccion.apppredicciongm.gestion_inventario.inventario.repository.IInventarioRepositorio;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InventarioServicio implements IInventarioServicio {
 
-    private final InventarioRepositorio inventarioRepositorio;
+    private final IInventarioRepositorio inventarioRepositorio;
 
     @Override
     public Inventario actualizarInventario(Integer inventarioId, Inventario inventario) {

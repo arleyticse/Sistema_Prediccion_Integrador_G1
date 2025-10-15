@@ -1,4 +1,4 @@
-package com.prediccion.apppredicciongm.repository;
+package com.prediccion.apppredicciongm.gestion_inventario.movimiento.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
-public interface KardexRepositorio extends JpaRepository<Kardex, Integer> {
+public interface IKardexRepositorio extends JpaRepository<Kardex, Integer> {
 
     @Query("SELECT k FROM Kardex k WHERE k.producto.productoId = :productoId")
     Optional<Kardex> findByProducto(Integer productoId);

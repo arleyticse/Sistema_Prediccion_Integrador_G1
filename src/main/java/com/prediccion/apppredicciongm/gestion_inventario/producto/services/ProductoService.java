@@ -1,15 +1,15 @@
-package com.prediccion.apppredicciongm.services;
+package com.prediccion.apppredicciongm.gestion_inventario.producto.services;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
-import com.prediccion.apppredicciongm.repository.IProductoRepositorio;
+import com.prediccion.apppredicciongm.gestion_inventario.producto.repository.IProductoRepositorio;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ProductoService implements IProductoServicio{
+public class ProductoService implements IProductoServicio {
 
     private final IProductoRepositorio productoRepositorio;
     @Override
