@@ -14,14 +14,14 @@ export interface ProductoResponse {
   costoPedido: number;
 }
 
-export interface Pageable {
-	pageNumber: number;
-	pageSize: number;
+export interface PageInfo {
+  size: number;          
+  number: number;       
+  totalElements: number;
+  totalPages: number;
 }
 
 export interface PageProductoResponse {
-	content: ProductoResponse[];
-	pageable: Pageable;
-	totalElements: number;
-	totalPages: number;
+  content: ProductoResponse[];
+  page: PageInfo;
 }

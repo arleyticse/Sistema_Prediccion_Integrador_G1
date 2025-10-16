@@ -18,7 +18,7 @@
         <p-button label="Nueva Unidad de Medida" icon="pi pi-plus" (onClick)="nuevaUnidadMedida()" />
         }
     </div>
-    <p-table [columns]="cols" [value]="unidadMedidas()" [tableStyle]="{ 'min-width': '50rem' }">
+    <p-table [columns]="cols" [value]="unidadMedidas()" [scrollable]="true" scrollHeight="300px" [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template #header let-columns>
             <tr>
                 @for (col of columns; track col.field) {

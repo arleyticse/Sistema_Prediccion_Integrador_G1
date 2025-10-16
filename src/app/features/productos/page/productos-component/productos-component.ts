@@ -1,11 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ViewChild } from '@angular/core';
 import { ProductoResponse } from '../../models/ProductoResponse';
 import { ConfirmationService } from 'primeng/api';
 import { ProductoService } from '../../service/producto-service';
 import { Dialog } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Categoria } from '../../../categorias/models/Categoria';
 import { CategoriaServicio } from '../../../categorias/services/categoria-servicio';
 import { UnidaMedidaService } from '../../../unidades-medida/service/unida-medida-service';
@@ -14,24 +14,39 @@ import { Select } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProductoRequest } from '../../models/ProductoRequest';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { ChangeDetectionStrategy } from '@angular/core';
 interface Column {
   field: keyof ProductoResponse | 'acciones';
   header: string;
 }
 @Component({
   selector: 'app-productos-component',
-  imports: [Dialog, ButtonModule, InputTextModule, ReactiveFormsModule, Select, TableModule,ConfirmDialogModule],
+  imports: [Dialog, ButtonModule, InputTextModule, ReactiveFormsModule, Select, TableModule, ConfirmDialogModule, PaginatorModule,IconField, InputIcon,FormsModule],
   templateUrl: './productos-component.html',
   styleUrl: './productos-component.css',
-  providers: [ConfirmationService]
+  providers: [ConfirmationService],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductosComponent {
+
+  @ViewChild('dt') dataTable: any;
+
   productos = signal<ProductoResponse[]>([]);
   visible = signal<boolean>(false);
   categorias = signal<Categoria[]>([]);
   unidadMedidas = signal<UnidadMedida[]>([]);
   isEditing = signal<boolean>(false);
   productoIdSeleccionado = signal<number | null>(null);
+  searchValue = signal<string>('');
+
+  first = signal<number>(0);
+  rows = signal<number>(10);
+  totalRecords = signal<number>(0);
+  rowsPerPageOptions = [10, 20, 30];
+
   productoForm = new FormGroup({
     nombre: new FormControl<string>('', Validators.required),
     categoria: new FormControl<Categoria | null>(null, Validators.required),
@@ -52,19 +67,17 @@ export class ProductosComponent {
     { field: 'acciones', header: 'Acciones' }
   ];
 
-  private confirmationService = inject(ConfirmationService);
-  private productoService = inject(ProductoService);
-  private categoriaService = inject(CategoriaServicio);
-  private unidadMedidaService = inject(UnidaMedidaService);
+private readonly confirmationService = inject(ConfirmationService);
+private readonly productoService = inject(ProductoService);
+private readonly categoriaService = inject(CategoriaServicio);
+private readonly unidadMedidaService = inject(UnidaMedidaService);
 
   constructor() {
     this.cargarDatos();
   }
 
   private cargarDatos(): void {
-    this.productoService.obtenerProductos(0, 10).subscribe(productos => {
-      this.productos.set(productos.content);
-    });
+    this.cargarProductos();
     this.categoriaService.obtenerCategorias().subscribe(categorias => {
       this.categorias.set(categorias);
     });
@@ -72,7 +85,13 @@ export class ProductosComponent {
       this.unidadMedidas.set(unidades);
     });
   }
-
+  private cargarProductos(): void {
+    const page = Math.floor(this.first() / this.rows());
+    this.productoService.obtenerProductos(page, this.rows()).subscribe(response => {
+      this.productos.set(response.content);
+      this.totalRecords.set(response.page.totalElements);
+    });
+  }
   showDialog(): void {
     this.isEditing.set(false);
     this.productoIdSeleccionado.set(null);
@@ -80,6 +99,11 @@ export class ProductosComponent {
     this.visible.set(true);
   }
 
+  onPageChange(event: PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? 10);
+    this.cargarProductos();
+  }
   editar(producto: ProductoResponse): void {
     this.isEditing.set(true);
     this.productoIdSeleccionado.set(producto.productoId);
@@ -101,7 +125,18 @@ export class ProductosComponent {
     this.productoForm.reset();
     this.isEditing.set(false);
   }
-
+clearSearch(): void {
+  this.searchValue.set('');
+  if (this.dataTable) {
+    this.dataTable.filterGlobal('', 'contains');
+  }
+}
+  onSearchChange(value: string): void {
+  this.searchValue.set(value);
+  if (this.dataTable) {
+    this.dataTable.filterGlobal(value, 'contains');
+  }
+}
   onSubmit(): void {
     if (this.productoForm.valid) {
       const formValue = this.productoForm.value;
@@ -116,7 +151,7 @@ export class ProductosComponent {
           costoPedido: formValue.costoPedido!
         };
         this.productoService.actualizarProducto(productoActualizado, this.productoIdSeleccionado()!).subscribe(() => {
-          this.cargarDatos();
+           this.cargarProductos();
           this.closeDialog();
         });
       } else {
@@ -130,7 +165,8 @@ export class ProductosComponent {
           costoPedido: formValue.costoPedido!
         };
         this.productoService.crearProducto(nuevoProducto).subscribe(() => {
-          this.cargarDatos();
+          this.first.set(0);
+          this.cargarProductos();
           this.closeDialog();
         });
       }
@@ -144,7 +180,7 @@ export class ProductosComponent {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.productoService.eliminarProducto(producto.productoId).subscribe(() => {
-          this.productos.update(prods => prods.filter(p => p.productoId !== producto.productoId));
+  this.cargarProductos();
         });
       }
     });

@@ -55,6 +55,7 @@ export class UnidadMedidaComponent {
     };
     this.unidadMedidaService.actualizarUnidadMedida(unidadActualizada).subscribe(() => {
       this.cargarDatos();
+      this.cancelar();
     });
   }
   cancelar() {
@@ -70,6 +71,7 @@ export class UnidadMedidaComponent {
     };
     this.unidadMedidaService.crearUnidadMedida(nuevaUnidad).subscribe(() => {
       this.cargarDatos();
+      this.cancelar();
     });
   }
   eliminar(unidad: UnidadMedida) {
