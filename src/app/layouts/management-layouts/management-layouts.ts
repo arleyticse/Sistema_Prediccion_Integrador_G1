@@ -14,6 +14,8 @@ import { RouterOutlet, RouterLinkWithHref } from '@angular/router';
           <li><a [routerLink]="['/administracion']" class="text-blue-600 hover:underline">Dashboard</a></li>
           <li><a [routerLink]="['/administracion/usuarios']" class="text-blue-600 hover:underline">Users</a></li>
           <li><a [routerLink]="['/administracion/categorias']" class="text-blue-600 hover:underline">Categorias</a></li>
+          <li><a [routerLink]="['/administracion/unidades-medida']" class="text-blue-600 hover:underline">Unidades de Medida</a></li>
+          <li><a [routerLink]="['/administracion/productos']" class="text-blue-600 hover:underline">Productos</a></li>
         </ul>
       </aside>
       <!-- Main Content Area -->

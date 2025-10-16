@@ -1,0 +1,51 @@
+<p>Seccion de Unidad de Medida</p>
+<div class="card mt-8">
+    <div class="flex w-full justify-content-between mb-2 gap-4">
+        <p-floatlabel>
+            <input pInputText id="over_label" [(ngModel)]="nombre"
+                (ngModelChange)="nombre.set($event)" autocomplete="off" class="w-full" />
+            <label for="over_label">Nombre Unidad de Medida</label>
+        </p-floatlabel>
+        <p-floatlabel>
+            <input pInputText id="over_label" [(ngModel)]="abreviatura"
+                (ngModelChange)="abreviatura.set($event)" autocomplete="on" class="w-full" />
+            <label for="over_label">Abreviatura Unidad de Medida</label>
+        </p-floatlabel>
+        @if(unidadMedidaId()){
+        <p-button label="Actualizar Unidad de Medida" icon="pi pi-check" (onClick)="actualizarUnidadMedida()" />
+        <p-button label="Cancelar" icon="pi pi-times" severity="danger" (onClick)="cancelar()" />
+        }@else {
+        <p-button label="Nueva Unidad de Medida" icon="pi pi-plus" (onClick)="nuevaUnidadMedida()" />
+        }
+    </div>
+    <p-table [columns]="cols" [value]="unidadMedidas()" [tableStyle]="{ 'min-width': '50rem' }">
+        <ng-template #header let-columns>
+            <tr>
+                @for (col of columns; track col.field) {
+                <th>{{ col.header }}</th>
+                }
+            </tr>
+        </ng-template>
+        <ng-template #body let-rowData let-columns="columns">
+            <tr>
+                @for (col of columns; track col.field) {
+                @if (col.field === 'acciones') {
+                <td>
+                    <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info"
+                        (onClick)="editar(rowData)" />
+                    <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger"
+                        (onClick)="eliminar(rowData)" />
+                </td>
+                } @else {
+                <td>{{ rowData[col.field] }}</td>
+                }
+                }@empty {
+                <td [attr.colspan]="cols.length" class="text-center py-4">
+                    <p class="text-gray-500">No hay unidades de medida registradas</p>
+                </td>
+                }
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+<p-confirmDialog />
