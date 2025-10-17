@@ -29,5 +29,14 @@ public class UnidadeMedidaServicio implements IUnidadeMedidaServicio {
     public List<UnidadMedida> obtenerUnidadesMedida() {
         return unidadMedidaRepositorio.findAll();
     }
-    
+
+    @Override
+    public void actualizarUnidadMedida(Integer id, UnidadMedida unidadMedida) {
+        UnidadMedida unidadExistente = unidadMedidaRepositorio.findById(id).orElse(null);
+        if (unidadExistente != null) {
+            unidadExistente.setNombre(unidadMedida.getNombre());
+            unidadExistente.setAbreviatura(unidadMedida.getAbreviatura());
+            unidadMedidaRepositorio.save(unidadExistente);
+        }
+    }
 }

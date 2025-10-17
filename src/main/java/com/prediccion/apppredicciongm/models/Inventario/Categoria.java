@@ -24,8 +24,4 @@ public class Categoria implements Serializable {
     @NotNull(message = "El nombre de la categoría no puede ser nulo")
     @Column(name = "nombre", unique = true)
     private String nombre;
-
-    @NotNull(message = "La descripción de la categoría no puede ser nula")
-    @Column(name = "descripcion")
-    private String descripcion;
 }

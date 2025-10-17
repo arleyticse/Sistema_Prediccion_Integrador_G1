@@ -13,6 +13,7 @@ import com.prediccion.apppredicciongm.services.IUnidadeMedidaServicio;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
@@ -36,5 +37,10 @@ public class UnidadMedidaControlador {
     @DeleteMapping("/{id}")
     public void eliminarUnidadMedida(@PathVariable Integer id) {
         unidadMedidaServicio.eliminarUnidadMedida(id);
+    }
+
+    @PutMapping("/{id}")
+    public void actualizarUnidadMedida(@PathVariable Integer id, @RequestBody UnidadMedida unidadMedida) {
+        unidadMedidaServicio.actualizarUnidadMedida(id, unidadMedida);
     }
 }

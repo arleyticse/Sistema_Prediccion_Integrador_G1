@@ -16,6 +16,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 @RestController
@@ -39,5 +41,10 @@ public class CategoriaControlador {
     @DeleteMapping("/{id}")
     public void eliminarCategoria(@PathVariable Integer id) {
         categoriaServicio.eliminarCategoria(id);
+    }
+
+   @PutMapping("/{id}")
+    public void actualizarCategoria(@PathVariable Integer id, @RequestBody @Valid Categoria categoria) {
+        categoriaServicio.actualizarCategoria(id, categoria);
     }
 }

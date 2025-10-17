@@ -14,18 +14,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductoCreateRequest {
+public class ProductoUpdateRequest {
     
-    @NotBlank(message = "El nombre del producto es obligatorio")
+    @NotBlank(message = "El nombre del producto no puede estar vacío")
     private String nombre;
     
-    @NotNull(message = "La categoría es obligatoria")
-    private Integer categoriaId;
-    
-    @NotNull(message = "La unidad de medida es obligatoria")
-    private Integer unidadMedidaId;
-    
-    @NotNull(message = "Los días de lead time son obligatorios")
     @Min(value = 1, message = "Los días de lead time deben ser al menos 1")
     private Integer diasLeadTime;
     
@@ -33,11 +26,9 @@ public class ProductoCreateRequest {
     @Min(value = 0, message = "El costo de adquisición no puede ser negativo")
     private BigDecimal costoAdquisicion;
     
-    @NotNull(message = "El costo de mantenimiento es obligatorio")
     @Min(value = 0, message = "El costo de mantenimiento no puede ser negativo")
     private BigDecimal costoMantenimiento;
     
-    @NotNull(message = "El costo de pedido es obligatorio")
     @Min(value = 0, message = "El costo de pedido no puede ser negativo")
     private BigDecimal costoPedido;
 }

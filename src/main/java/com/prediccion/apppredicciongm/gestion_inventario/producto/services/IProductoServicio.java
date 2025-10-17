@@ -1,16 +1,21 @@
 package com.prediccion.apppredicciongm.gestion_inventario.producto.services;
 
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 
-import com.prediccion.apppredicciongm.models.Inventario.Producto;
+import com.prediccion.apppredicciongm.gestion_inventario.producto.dto.request.ProductoCreateRequest;
+
+import com.prediccion.apppredicciongm.gestion_inventario.producto.dto.response.ProductoEliminadoResponse;
+import com.prediccion.apppredicciongm.gestion_inventario.producto.dto.response.ProductoResponse;
 
 public interface IProductoServicio {
-    Producto crearProducto(Producto producto);
-    Producto actualizarProducto(Integer productoId, Producto producto);
-    void eliminarProducto(Integer productoId);
-    Page<Producto> listarProductos(int pagina, int tamanioPagina);
-    Producto obtenerProductoPorId(Integer productoId);
-    Page<Producto> buscarPorCategoria(Integer categoriaId, int pagina, int tamanioPagina);
-    Page<Producto> buscarPorNombre(String nombre, int pagina, int tamanioPagina);
+    ProductoResponse crearProducto(ProductoCreateRequest request);
+    ProductoResponse actualizarProducto(Integer productoId, ProductoCreateRequest request);
+    ProductoEliminadoResponse eliminarProducto(Integer productoId);
+    Page<ProductoResponse> listarProductos(int pagina, int tamanioPagina);
+    ProductoResponse obtenerProductoPorId(Integer productoId);
+    Page<ProductoResponse> buscarPorCategoria(Integer categoriaId, int pagina, int tamanioPagina);
+    Page<ProductoResponse> buscarPorNombre(String nombre, int pagina, int tamanioPagina);
+    List<ProductoResponse> listarTodos();
 }

@@ -7,8 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @SpringBootApplication
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)// Configura la serialización de Page para usar DTOs permiter paginación directa en controladores para no exponer entidades JPA
 public class AppPrediccionGmApplication {
 
     public static void main(String[] args) {

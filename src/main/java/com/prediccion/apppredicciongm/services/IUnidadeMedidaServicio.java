@@ -8,4 +8,5 @@ public interface IUnidadeMedidaServicio {
     List<UnidadMedida> obtenerUnidadesMedida();
     void crearUnidadMedida(UnidadMedida unidadMedida);
     void eliminarUnidadMedida(Integer id);
+    void actualizarUnidadMedida(Integer id, UnidadMedida unidadMedida);
 }

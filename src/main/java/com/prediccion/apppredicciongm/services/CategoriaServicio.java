@@ -28,4 +28,13 @@ public class CategoriaServicio implements ICategoriaServicio {
     public List<Categoria> obtenerCategorias() {
         return categoriaRepositorio.findAll();
     }
+
+    @Override
+    public void actualizarCategoria(Integer id, Categoria categoria) {
+        Categoria categoriaExistente = categoriaRepositorio.findById(id).orElse(null);
+        if (categoriaExistente != null) {
+            categoriaExistente.setNombre(categoria.getNombre());
+            categoriaRepositorio.save(categoriaExistente);  
+        }
+    }
 }
