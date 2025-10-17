@@ -49,6 +49,20 @@ export class ProductoService {
     );
   }
 
+  // Obtener todos los productos sin paginación para select
+  obtenerTodosProductos() {
+    const cacheKey = 'productos_todos';
+    const cached = this.getFromCache<ProductoResponse[]>(cacheKey);
+
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.http.get<ProductoResponse[]>(`${this.URL}/todos`).pipe(
+      tap(response => this.setCache(cacheKey, response))
+    );
+  }
+
   private getFromCache<T>(key: string): T | null {
     const entry = this.cache.get(key) as CacheEntry<T> | undefined;
 

@@ -4,9 +4,16 @@ import { Page } from "../../../shared/models/Page";
 export interface InventarioResponse {
     inventarioId: number;
     productoId: number;
-    cantidad: number;
-    ubicacion: string;
+    nombreProducto: string;
+    stockDisponible: number;
+    stockReservado?: number;
+    stockEnTransito?: number;
+    stockMinimo: number;
+    stockMaximo?: number;
+    puntoReorden: number;
+    ubicacionAlmacen: string;
     estado: string;
+    observaciones?: string;
 }
 
 
