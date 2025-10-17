@@ -1,1 +1,206 @@
-<p>proveedor-component works!</p>
+<p>Proveedores</p>
+<div class="mb-4 flex justify-end">
+    <p-button (click)="showDialog()" label="Nuevo Proveedor" icon="pi pi-plus" />
+</div>
+
+<!-- Dialog para crear/editar proveedor -->
+<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [style]="{ width: '40rem' }">
+    <ng-template #header>
+        <h2>{{ isEditing() ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+    </ng-template>
+
+    <form [formGroup]="proveedorForm" (ngSubmit)="onSubmit()">
+        <div class="p-fluid">
+            <!-- Razón Social -->
+            <div class="flex flex-col mb-4">
+                <label for="razonSocial">Razón Social</label>
+                <input id="razonSocial" type="text" pInputText formControlName="razonSocial" />
+                @if (proveedorForm.get('razonSocial')?.hasError('required') && proveedorForm.get('razonSocial')?.touched) {
+                    <small class="p-error">Razón social requerida</small>
+                }
+            </div>
+
+            <!-- Nombre Comercial -->
+            <div class="flex flex-col mb-4">
+                <label for="nombreComercial">Nombre Comercial</label>
+                <input id="nombreComercial" type="text" pInputText formControlName="nombreComercial" />
+                @if (proveedorForm.get('nombreComercial')?.hasError('required') && proveedorForm.get('nombreComercial')?.touched) {
+                    <small class="p-error">Nombre comercial requerido</small>
+                }
+            </div>
+
+            <!-- RUC/NIT -->
+            <div class="flex flex-col mb-4">
+                <label for="rucNit">RUC/NIT</label>
+                <input id="rucNit" type="text" pInputText formControlName="rucNit" />
+                @if (proveedorForm.get('rucNit')?.hasError('required') && proveedorForm.get('rucNit')?.touched) {
+                    <small class="p-error">RUC/NIT requerido</small>
+                }
+            </div>
+
+            <!-- Email -->
+            <div class="flex flex-col mb-4">
+                <label for="email">Email</label>
+                <input id="email" type="email" pInputText formControlName="email" />
+                @if (proveedorForm.get('email')?.hasError('required') && proveedorForm.get('email')?.touched) {
+                    <small class="p-error">Email requerido</small>
+                }
+                @if (proveedorForm.get('email')?.hasError('email') && proveedorForm.get('email')?.touched) {
+                    <small class="p-error">Email no válido</small>
+                }
+            </div>
+
+            <!-- Teléfono -->
+            <div class="flex flex-col mb-4">
+                <label for="telefono">Teléfono</label>
+                <input id="telefono" type="text" pInputText formControlName="telefono" />
+                @if (proveedorForm.get('telefono')?.hasError('required') && proveedorForm.get('telefono')?.touched) {
+                    <small class="p-error">Teléfono requerido</small>
+                }
+            </div>
+
+            <!-- Dirección -->
+            <div class="flex flex-col mb-4">
+                <label for="direccion">Dirección</label>
+                <input id="direccion" type="text" pInputText formControlName="direccion" />
+                @if (proveedorForm.get('direccion')?.hasError('required') && proveedorForm.get('direccion')?.touched) {
+                    <small class="p-error">Dirección requerida</small>
+                }
+            </div>
+
+            <!-- Ciudad -->
+            <div class="flex flex-col mb-4">
+                <label for="ciudad">Ciudad</label>
+                <input id="ciudad" type="text" pInputText formControlName="ciudad" />
+                @if (proveedorForm.get('ciudad')?.hasError('required') && proveedorForm.get('ciudad')?.touched) {
+                    <small class="p-error">Ciudad requerida</small>
+                }
+            </div>
+
+            <!-- País -->
+            <div class="flex flex-col mb-4">
+                <label for="pais">País</label>
+                <input id="pais" type="text" pInputText formControlName="pais" />
+                @if (proveedorForm.get('pais')?.hasError('required') && proveedorForm.get('pais')?.touched) {
+                    <small class="p-error">País requerido</small>
+                }
+            </div>
+
+            <!-- Persona de Contacto -->
+            <div class="flex flex-col mb-4">
+                <label for="personaContacto">Persona de Contacto</label>
+                <input id="personaContacto" type="text" pInputText formControlName="personaContacto" />
+                @if (proveedorForm.get('personaContacto')?.hasError('required') && proveedorForm.get('personaContacto')?.touched) {
+                    <small class="p-error">Persona de contacto requerida</small>
+                }
+            </div>
+
+            <!-- Tiempo de Entrega (días) -->
+            <div class="flex flex-col mb-4">
+                <label for="tiempoEntregaDias">Tiempo de Entrega (días)</label>
+                <p-inputNumber 
+                    id="tiempoEntregaDias"
+                    formControlName="tiempoEntregaDias"
+                    [min]="1"
+                    placeholder="Cantidad de días" />
+                @if (proveedorForm.get('tiempoEntregaDias')?.hasError('required') && proveedorForm.get('tiempoEntregaDias')?.touched) {
+                    <small class="p-error">Tiempo de entrega requerido</small>
+                }
+            </div>
+
+            <!-- Días de Crédito -->
+            <div class="flex flex-col mb-4">
+                <label for="diasCredito">Días de Crédito</label>
+                <p-inputNumber 
+                    id="diasCredito"
+                    formControlName="diasCredito"
+                    [min]="0"
+                    placeholder="Cantidad de días" />
+                @if (proveedorForm.get('diasCredito')?.hasError('required') && proveedorForm.get('diasCredito')?.touched) {
+                    <small class="p-error">Días de crédito requerido</small>
+                }
+            </div>
+
+            <!-- Calificación -->
+            <div class="flex flex-col mb-4">
+                <label for="calificacion">Calificación (0-10)</label>
+                <p-inputNumber 
+                    id="calificacion"
+                    formControlName="calificacion"
+                    [min]="0"
+                    [max]="10"
+                    placeholder="Calificación" />
+                @if (proveedorForm.get('calificacion')?.hasError('required') && proveedorForm.get('calificacion')?.touched) {
+                    <small class="p-error">Calificación requerida</small>
+                }
+            </div>
+
+            <!-- Observaciones -->
+            <div class="flex flex-col mb-4">
+                <label for="observaciones">Observaciones</label>
+                <textarea 
+                    id="observaciones"
+                    pInputTextarea
+                    formControlName="observaciones"
+                    cols="30"
+                    rows="5"
+                    placeholder="Notas adicionales..."
+                    [autoResize]="true"></textarea>
+            </div>
+        </div>
+    </form>
+
+    <ng-template #footer>
+        <p-button 
+            [label]="isEditing() ? 'Actualizar' : 'Guardar'" 
+            icon="pi pi-check" 
+            (onClick)="onSubmit()"
+            [disabled]="proveedorForm.invalid" />
+        <p-button 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            severity="danger"
+            (click)="closeDialog()" />
+    </ng-template>
+</p-dialog>
+
+<!-- Tabla de Proveedores -->
+<p-table 
+    [columns]="cols" 
+    [value]="proveedores()" 
+    [scrollable]="true"
+    scrollHeight="400px"
+    [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template #header let-columns>
+        <tr>
+            @for (col of columns; track col.field) {
+                <th>{{ col.header }}</th>
+            }
+        </tr>
+    </ng-template>
+    <ng-template #body let-proveedor let-columns="columns">
+        <tr>
+            @for (col of columns; track col.field) {
+                @if (col.field === 'acciones') {
+                    <td>
+                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info" (onClick)="editar(proveedor)" />
+                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger" (onClick)="eliminar(proveedor)" />
+                    </td>
+                } @else if (col.field === 'estado') {
+                    <td>
+                        <p-checkbox [ngModel]="proveedor[col.field]" [disabled]="true" [binary]="true" />
+                    </td>
+                } @else {
+                    <td>{{ proveedor[col.field] }}</td>
+                }
+            }
+            @empty {
+                <td [attr.colspan]="cols.length" class="text-center py-4">
+                    <p class="text-gray-500">No hay proveedores registrados</p>
+                </td>
+            }
+        </tr>
+    </ng-template>
+</p-table>
+
+<p-confirmDialog />
