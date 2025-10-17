@@ -1,3 +1,4 @@
+import { PageInfo } from "../../../shared/models/PageInfo";
 import { Categoria } from "../../categorias/models/Categoria";
 import { UnidadMedida } from "../../unidades-medida/models/UnidadMedida";
 
@@ -14,12 +15,6 @@ export interface ProductoResponse {
   costoPedido: number;
 }
 
-export interface PageInfo {
-  size: number;          
-  number: number;       
-  totalElements: number;
-  totalPages: number;
-}
 
 export interface PageProductoResponse {
   content: ProductoResponse[];
