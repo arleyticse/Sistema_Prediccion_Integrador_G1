@@ -5,6 +5,7 @@ import { UnidadMedidaComponent } from './features/unidades-medida/page/unidad-me
 import { ProductosComponent } from './features/productos/page/productos-component/productos-component';
 import { InventarioComponent } from './features/inventario/page/inventario-component/inventario-component';
 import { ProveedorComponent } from './features/proveedores/page/proveedor-component/proveedor-component';
+import { MovimientoComponent } from './features/movimientos/page/movimiento-component/movimiento-component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/administracion', pathMatch: 'full' },
@@ -15,7 +16,8 @@ export const routes: Routes = [
             { path: 'unidades-medida', component: UnidadMedidaComponent },
             { path: 'productos', component: ProductosComponent },
             {path: 'inventario', component: InventarioComponent},
-            { path: 'proveedores', component: ProveedorComponent }
+            { path: 'proveedores', component: ProveedorComponent },
+            { path: 'movimientos', component: MovimientoComponent }
         ]
     }
 ];
