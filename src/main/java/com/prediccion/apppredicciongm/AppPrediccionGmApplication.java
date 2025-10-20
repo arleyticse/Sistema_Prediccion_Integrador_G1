@@ -14,18 +14,15 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 public class AppPrediccionGmApplication {
 
     public static void main(String[] args) {
-        // Desactivar headless para permitir UI Swing
         new SpringApplicationBuilder(AppPrediccionGmApplication.class)
                 .headless(false)
                 .run(args);
     }
 
-    // Abrir el JFrame cuando Spring termine de arrancar
     @EventListener(ApplicationReadyEvent.class)
     public void launchSwingUI() {
         SwingUtilities.invokeLater(() -> {
             try {
-                // Opcional: Look & Feel Nimbus
                 for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                     if ("Nimbus".equals(info.getName())) {
                         UIManager.setLookAndFeel(info.getClassName());

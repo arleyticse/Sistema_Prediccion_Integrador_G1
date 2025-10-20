@@ -72,11 +72,14 @@ public class Kardex implements Serializable {
     private String referencia;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario")
+    @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario",nullable = true)
     private Usuario usuario;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
+
+    @Column(name = "anulado", nullable = false)
+    private boolean anulado = false;
 
     @Column(name = "ubicacion")
     private String ubicacion;

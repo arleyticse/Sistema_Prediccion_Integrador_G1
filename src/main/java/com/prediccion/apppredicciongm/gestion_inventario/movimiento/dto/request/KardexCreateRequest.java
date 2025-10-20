@@ -1,6 +1,9 @@
 package com.prediccion.apppredicciongm.gestion_inventario.movimiento.dto.request;
 
 import com.prediccion.apppredicciongm.enums.TipoMovimiento;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -19,10 +22,10 @@ public class KardexCreateRequest {
     
     @NotNull(message = "El ID del producto es obligatorio")
     private Integer productoId;
-    
-    private LocalDateTime fechaMovimiento;
-    
+
+
     @NotNull(message = "El tipo de movimiento es obligatorio")
+    @Enumerated(EnumType.STRING)
     private TipoMovimiento tipoMovimiento;
     
     private String tipoDocumento;
@@ -46,8 +49,6 @@ public class KardexCreateRequest {
     private String motivo;
     
     private String referencia;
-    
-    private Integer usuarioId;
     
     private String observaciones;
     

@@ -11,11 +11,12 @@ import java.math.BigDecimal;
 public interface KardexMapper {
     
     @Mapping(source = "productoId", target = "producto.productoId")
-    @Mapping(source = "proveedorId", target = "proveedor.proveedorId")
-    @Mapping(source = "usuarioId", target = "usuario.usuarioId")
+    @Mapping(target = "proveedor", ignore = true)
     @Mapping(target = "kardexId", ignore = true)
     @Mapping(target = "saldoCantidad", ignore = true)
     @Mapping(target = "fechaRegistro", ignore = true)
+    @Mapping(target = "usuario", ignore = true)
+    @Mapping(target = "anulado", ignore = true)
     Kardex toEntity(KardexCreateRequest request);
     
     @Mapping(source = "producto.productoId", target = "productoId")

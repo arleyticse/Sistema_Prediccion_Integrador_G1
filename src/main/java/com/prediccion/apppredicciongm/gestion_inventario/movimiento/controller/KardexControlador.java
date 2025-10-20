@@ -66,9 +66,9 @@ public class KardexControlador {
                description = "Retorna una lista paginada de todos los movimientos")
     @GetMapping
     public ResponseEntity<Page<KardexResponse>> listarMovimientos(
-            @Parameter(description = "Número de página") @RequestParam(defaultValue = "0") @Min(0) int pagina,
-            @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") @Min(1) int tamano) {
-        Page<KardexResponse> response = kardexService.listarMovimientos(pagina, tamano);
+            @Parameter(description = "Número de página") @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "10") @Min(1) int size) {
+        Page<KardexResponse> response = kardexService.listarMovimientos(page, size);
         return ResponseEntity.ok(response);
     }
 

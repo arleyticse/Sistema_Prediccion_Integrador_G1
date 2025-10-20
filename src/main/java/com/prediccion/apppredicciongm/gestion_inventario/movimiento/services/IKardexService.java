@@ -17,6 +17,7 @@ public interface IKardexService {
     KardexResponse obtenerMovimientoPorId(Long kardexId);
     Page<KardexResponse> listarMovimientos(int pagina, int tamanioPagina);
     void eliminarMovimiento(Long kardexId);
+void restaurarMovimiento(Long kardexId) ;
     
     // Búsquedas por producto
     Page<KardexResponse> listarMovimientosPorProducto(Integer productoId, int pagina, int tamanioPagina);
