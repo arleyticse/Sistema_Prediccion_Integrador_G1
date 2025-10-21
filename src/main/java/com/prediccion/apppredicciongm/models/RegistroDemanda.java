@@ -1,6 +1,9 @@
 package com.prediccion.apppredicciongm.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -9,6 +12,9 @@ import com.prediccion.apppredicciongm.models.Inventario.Producto;
 
 @Entity
 @Table(name="registro_demanda")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegistroDemanda implements Serializable {
     private static final long serialVersionUID = 1L;
 
