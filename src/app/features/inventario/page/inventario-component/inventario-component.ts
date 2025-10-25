@@ -49,6 +49,8 @@ export class InventarioComponent {
   inventarioIdSeleccionado = signal<number | null>(null);
   loadingProductos = signal<boolean>(false);
 
+    loading = signal<boolean>(false);
+
   first = signal<number>(0);
   rows = signal<number>(10);
   totalRecords = signal<number>(0);
@@ -90,10 +92,12 @@ export class InventarioComponent {
   }
 
   private cargarInventarios(): void {
+    this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
     this.inventarioService.obtenerInventarios(page, this.rows()).subscribe(response => {
       this.inventarios.set(response.content);
       this.totalRecords.set(response.page.totalElements);
+      this.loading.set(false);
     });
   }
 

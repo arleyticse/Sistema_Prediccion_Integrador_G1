@@ -29,6 +29,8 @@ export class CategoriasComponent {
 
   nombreCategoria = signal<string>('');
   categoriaId = signal<number | null>(null);
+  loading = signal<boolean>(false);
+
   cols: Column[] = [
     { field: 'categoriaId', header: 'ID' },
     { field: 'nombre', header: 'Nombre' },
@@ -43,9 +45,11 @@ export class CategoriasComponent {
   }
 
   private cargarCategorias(): void {
+    this.loading.set(true);
     this.categoriaServicio.obtenerCategorias().subscribe(categorias => {
       this.categorias.set(categorias);
       console.log("Categorias cargadas:", categorias);
+      this.loading.set(false);
     });
   }
 

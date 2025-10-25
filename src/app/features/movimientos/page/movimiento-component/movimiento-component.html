@@ -190,7 +190,7 @@
     </div>
 </div>
 
-<p-table #dt [columns]="cols" [value]="movimientos()" [scrollable]="true" scrollHeight="400px" [tableStyle]="{ 'min-width': '50rem' }">
+<p-table #dt [columns]="cols" [value]="movimientos()" [scrollable]="true" scrollHeight="400px" [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.field) {

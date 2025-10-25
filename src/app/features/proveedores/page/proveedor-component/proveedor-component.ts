@@ -42,6 +42,7 @@ export class ProveedorComponent {
   visible = signal<boolean>(false);
   isEditing = signal<boolean>(false);
   proveedorIdSeleccionado = signal<number | null>(null);
+  loading = signal<boolean>(false);
 
   proveedorForm = new FormGroup({
     razonSocial: new FormControl<string>('', Validators.required),
@@ -77,8 +78,10 @@ export class ProveedorComponent {
   }
 
   private cargarProveedores(): void {
+    this.loading.set(true);
     this.proveedorService.getProveedores().subscribe(proveedores => {
       this.proveedores.set(proveedores);
+      this.loading.set(false);
     });
   }
 

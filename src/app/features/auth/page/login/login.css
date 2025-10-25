@@ -1,0 +1,54 @@
+/* Animación fade-in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Estilos PrimeNG */
+:deep(.p-card) {
+  border: none;
+  border-radius: 12px;
+}
+
+:deep(.p-inputtext) {
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+:deep(.p-inputtext:focus) {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+:deep(.p-password) {
+  width: 100%;
+}
+
+:deep(.p-password .p-inputtext) {
+  width: 100%;
+}
+
+:deep(.p-button) {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+:deep(.p-divider) {
+  margin: 1.5rem 0;
+}
+
+/* Placeholder styling */
+:deep(.p-inputtext::placeholder),
+:deep(.p-password .p-inputtext::placeholder) {
+  color: #9ca3af;
+}

@@ -27,6 +27,7 @@ export class UnidadMedidaComponent {
   unidadMedidaId = signal<number | null>(null);
   nombre = signal<string>('');
   abreviatura = signal<string>('');
+    loading = signal<boolean>(false);
 
   cols: Column[] = [
     { field: 'unidadMedidaId', header: 'ID' },
@@ -42,8 +43,10 @@ export class UnidadMedidaComponent {
   }
 
   private cargarDatos() {
+    this.loading.set(true);
     this.unidadMedidaService.obtenerUnidadesMedida().subscribe(unidades => {
       this.unidadMedidas.set(unidades);
+      this.loading.set(false);
     });
   }
 

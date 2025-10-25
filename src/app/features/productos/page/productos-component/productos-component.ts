@@ -41,6 +41,7 @@ export class ProductosComponent {
   isEditing = signal<boolean>(false);
   productoIdSeleccionado = signal<number | null>(null);
   searchValue = signal<string>('');
+  loading = signal<boolean>(false);
 
   first = signal<number>(0);
   rows = signal<number>(10);
@@ -86,10 +87,12 @@ private readonly unidadMedidaService = inject(UnidaMedidaService);
     });
   }
   private cargarProductos(): void {
+    this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
     this.productoService.obtenerProductos(page, this.rows()).subscribe(response => {
       this.productos.set(response.content);
       this.totalRecords.set(response.page.totalElements);
+      this.loading.set(false);
     });
   }
   showDialog(): void {

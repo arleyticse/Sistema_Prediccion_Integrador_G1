@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { PageProductoResponse, ProductoResponse } from '../models/ProductoResponse';
 import { ProductoRequest } from '../models/ProductoRequest';
 import { Observable, of, tap } from 'rxjs';
-
+import { environment } from '../../../environments/environment';
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -12,9 +12,9 @@ interface CacheEntry<T> {
   providedIn: 'root'
 })
 export class ProductoService {
-  private readonly URL = 'http://localhost:8080/api/productos';
+  private readonly URL = `${environment.apiUrl}/productos`;
   private readonly http = inject(HttpClient);
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+  private readonly CACHE_DURATION = 5 * 60 * 1000;
 
   private cache = new Map<string, CacheEntry<unknown>>();
 

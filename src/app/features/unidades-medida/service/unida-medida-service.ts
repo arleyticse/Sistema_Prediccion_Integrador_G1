@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { UnidadMedida } from '../models/UnidadMedida';
-
+import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class UnidaMedidaService {
-  URL = "http://localhost:8080/api/unidades-medida";
+  URL = `${environment.apiUrl}/unidades-medida`;
   http = inject(HttpClient);
 
   obtenerUnidadesMedida() {

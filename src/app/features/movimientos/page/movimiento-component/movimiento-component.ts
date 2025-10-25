@@ -61,6 +61,8 @@ export class MovimientoComponent {
   tiposMovimiento = signal<TipoMovimientoDTO[]>([]);
   searchValue = signal<string>('');
 
+    loading = signal<boolean>(false);
+
   first = signal<number>(0);
   rows = signal<number>(10);
   totalRecords = signal<number>(0);
@@ -112,10 +114,12 @@ export class MovimientoComponent {
   }
 
   private cargarMovimientos(): void {
+    this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
     this.movimientoService.getKardex(page, this.rows()).subscribe(response => {
       this.movimientos.set(response.content);
       this.totalRecords.set(response.page.totalElements);
+      this.loading.set(false);
     });
   }
 

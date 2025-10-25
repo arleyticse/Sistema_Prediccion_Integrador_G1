@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Proveedor } from '../model/Proveedor';
-
+import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class ProveedorService {
-  private readonly URL = 'http://localhost:8080/api/proveedores';
+  private readonly URL = `${environment.apiUrl}/proveedores`;
   private readonly http = inject(HttpClient);
 
   getProveedores() {

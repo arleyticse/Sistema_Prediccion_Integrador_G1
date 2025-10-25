@@ -2,12 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { InventarioCreateRequest } from '../model/InventarioRequest';
 import { PageInventarioResponse } from '../model/InventarioResponse';
-
+import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class InventarioService {
-  private readonly URL = 'http://localhost:8080/api/inventarios';
+  private readonly URL = `${environment.apiUrl}/inventarios`;
   private readonly http = inject(HttpClient);
 
 
