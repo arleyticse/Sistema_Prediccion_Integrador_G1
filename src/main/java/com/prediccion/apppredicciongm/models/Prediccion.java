@@ -1,6 +1,9 @@
 package com.prediccion.apppredicciongm.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -10,6 +13,9 @@ import com.prediccion.apppredicciongm.models.Inventario.Producto;
 
 @Entity
 @Table(name="prediccion")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Prediccion implements Serializable {
 
     private static final long serialVersionUID = 1L;

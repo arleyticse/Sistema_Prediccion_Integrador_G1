@@ -35,12 +35,11 @@ public class KardexControlador {
 
     private final IKardexService kardexService;
 
-    @Operation(summary = "Registrar nuevo movimiento",
-               description = "Registra un movimiento de inventario (entrada, salida o ajuste)")
+    @Operation(summary = "Registrar nuevo movimiento", description = "Registra un movimiento de inventario (entrada, salida o ajuste)")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Movimiento registrado exitosamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos o stock insuficiente"),
-        @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+            @ApiResponse(responseCode = "201", description = "Movimiento registrado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o stock insuficiente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     @PostMapping
     public ResponseEntity<KardexResponse> registrarMovimiento(
@@ -49,11 +48,10 @@ public class KardexControlador {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Obtener movimiento por ID",
-               description = "Retorna los detalles de un movimiento específico")
+    @Operation(summary = "Obtener movimiento por ID", description = "Retorna los detalles de un movimiento específico")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Movimiento encontrado"),
-        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado")
+            @ApiResponse(responseCode = "200", description = "Movimiento encontrado"),
+            @ApiResponse(responseCode = "404", description = "Movimiento no encontrado")
     })
     @GetMapping("/{id}")
     public ResponseEntity<KardexResponse> obtenerMovimientoPorId(
@@ -62,8 +60,7 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Listar todos los movimientos",
-               description = "Retorna una lista paginada de todos los movimientos")
+    @Operation(summary = "Listar todos los movimientos", description = "Retorna una lista paginada de todos los movimientos")
     @GetMapping
     public ResponseEntity<Page<KardexResponse>> listarMovimientos(
             @Parameter(description = "Número de página") @RequestParam(defaultValue = "0") @Min(0) int page,
@@ -72,11 +69,10 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Eliminar movimiento",
-               description = "Elimina un movimiento de inventario (usar con precaución)")
+    @Operation(summary = "Eliminar movimiento", description = "Elimina un movimiento de inventario (usar con precaución)")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Movimiento eliminado exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Movimiento no encontrado")
+            @ApiResponse(responseCode = "204", description = "Movimiento eliminado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Movimiento no encontrado")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarMovimiento(
@@ -85,8 +81,7 @@ public class KardexControlador {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Listar movimientos por producto",
-               description = "Retorna todos los movimientos de un producto específico")
+    @Operation(summary = "Listar movimientos por producto", description = "Retorna todos los movimientos de un producto específico")
     @GetMapping("/producto/{productoId}")
     public ResponseEntity<Page<KardexResponse>> listarMovimientosPorProducto(
             @Parameter(description = "ID del producto") @PathVariable Integer productoId,
@@ -96,15 +91,12 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Listar movimientos por producto y fecha",
-               description = "Retorna movimientos de un producto dentro de un rango de fechas")
+    @Operation(summary = "Listar movimientos por producto y fecha", description = "Retorna movimientos de un producto dentro de un rango de fechas")
     @GetMapping("/producto/{productoId}/fecha")
     public ResponseEntity<Page<KardexResponse>> listarMovimientosPorProductoYFecha(
             @Parameter(description = "ID del producto") @PathVariable Integer productoId,
-            @Parameter(description = "Fecha inicio (formato: yyyy-MM-dd'T'HH:mm:ss)") 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
-            @Parameter(description = "Fecha fin (formato: yyyy-MM-dd'T'HH:mm:ss)") 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @Parameter(description = "Fecha inicio (formato: yyyy-MM-dd'T'HH:mm:ss)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @Parameter(description = "Fecha fin (formato: yyyy-MM-dd'T'HH:mm:ss)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
             @RequestParam(defaultValue = "0") @Min(0) int pagina,
             @RequestParam(defaultValue = "10") @Min(1) int tamano) {
         Page<KardexResponse> response = kardexService.listarMovimientosPorProductoYFecha(
@@ -112,8 +104,7 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Obtener último movimiento de un producto",
-               description = "Retorna el movimiento más reciente de un producto")
+    @Operation(summary = "Obtener último movimiento de un producto", description = "Retorna el movimiento más reciente de un producto")
     @GetMapping("/producto/{productoId}/ultimo")
     public ResponseEntity<KardexResponse> obtenerUltimoMovimientoProducto(
             @Parameter(description = "ID del producto") @PathVariable Integer productoId) {
@@ -121,8 +112,7 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Listar por tipo de movimiento",
-               description = "Retorna movimientos filtrados por tipo (COMPRA, VENTA, AJUSTE, etc.)")
+    @Operation(summary = "Listar por tipo de movimiento", description = "Retorna movimientos filtrados por tipo (COMPRA, VENTA, AJUSTE, etc.)")
     @GetMapping("/tipo/{tipoMovimiento}")
     public ResponseEntity<Page<KardexResponse>> listarPorTipoMovimiento(
             @Parameter(description = "Tipo de movimiento") @PathVariable TipoMovimiento tipoMovimiento,
@@ -132,34 +122,30 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Listar por producto y tipo",
-               description = "Retorna movimientos de un producto filtrados por tipo")
+    @Operation(summary = "Listar por producto y tipo", description = "Retorna movimientos de un producto filtrados por tipo")
     @GetMapping("/producto/{productoId}/tipo/{tipoMovimiento}")
     public ResponseEntity<Page<KardexResponse>> listarPorProductoYTipo(
             @Parameter(description = "ID del producto") @PathVariable Integer productoId,
             @Parameter(description = "Tipo de movimiento") @PathVariable TipoMovimiento tipoMovimiento,
             @RequestParam(defaultValue = "0") @Min(0) int pagina,
             @RequestParam(defaultValue = "10") @Min(1) int tamano) {
-        Page<KardexResponse> response = kardexService.listarPorProductoYTipo(productoId, tipoMovimiento, pagina, tamano);
+        Page<KardexResponse> response = kardexService.listarPorProductoYTipo(productoId, tipoMovimiento, pagina,
+                tamano);
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Listar por rango de fechas",
-               description = "Retorna movimientos dentro de un período específico")
+    @Operation(summary = "Listar por rango de fechas", description = "Retorna movimientos dentro de un período específico")
     @GetMapping("/fecha")
     public ResponseEntity<Page<KardexResponse>> listarPorRangoFecha(
-            @Parameter(description = "Fecha inicio") 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
-            @Parameter(description = "Fecha fin") 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
+            @Parameter(description = "Fecha inicio") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @Parameter(description = "Fecha fin") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin,
             @RequestParam(defaultValue = "0") @Min(0) int pagina,
             @RequestParam(defaultValue = "10") @Min(1) int tamano) {
         Page<KardexResponse> response = kardexService.listarPorRangoFecha(fechaInicio, fechaFin, pagina, tamano);
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Listar movimientos por proveedor",
-               description = "Retorna todos los movimientos asociados a un proveedor")
+    @Operation(summary = "Listar movimientos por proveedor", description = "Retorna todos los movimientos asociados a un proveedor")
     @GetMapping("/proveedor/{proveedorId}")
     public ResponseEntity<Page<KardexResponse>> listarPorProveedor(
             @Parameter(description = "ID del proveedor") @PathVariable Integer proveedorId,
@@ -169,8 +155,7 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Listar movimientos por usuario",
-               description = "Retorna movimientos registrados por un usuario específico")
+    @Operation(summary = "Listar movimientos por usuario", description = "Retorna movimientos registrados por un usuario específico")
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<Page<KardexResponse>> listarPorUsuario(
             @Parameter(description = "ID del usuario") @PathVariable Integer usuarioId,
@@ -180,8 +165,7 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Buscar por número de documento",
-               description = "Busca movimientos por número de factura, guía, etc.")
+    @Operation(summary = "Buscar por número de documento", description = "Busca movimientos por número de factura, guía, etc.")
     @GetMapping("/documento/{numeroDocumento}")
     public ResponseEntity<List<KardexResponse>> buscarPorNumeroDocumento(
             @Parameter(description = "Número de documento") @PathVariable String numeroDocumento) {
@@ -189,8 +173,7 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Buscar por lote",
-               description = "Retorna todos los movimientos de un lote específico")
+    @Operation(summary = "Buscar por lote", description = "Retorna todos los movimientos de un lote específico")
     @GetMapping("/lote/{lote}")
     public ResponseEntity<List<KardexResponse>> buscarPorLote(
             @Parameter(description = "Código de lote") @PathVariable String lote) {
@@ -198,20 +181,16 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Buscar productos por vencer",
-               description = "Retorna movimientos con productos próximos a vencer")
+    @Operation(summary = "Buscar productos por vencer", description = "Retorna movimientos con productos próximos a vencer")
     @GetMapping("/vencimiento-proximo")
     public ResponseEntity<List<KardexResponse>> buscarPorVencimientoProximo(
-            @Parameter(description = "Fecha inicio") 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
-            @Parameter(description = "Fecha fin") 
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
+            @Parameter(description = "Fecha inicio") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @Parameter(description = "Fecha fin") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFin) {
         List<KardexResponse> response = kardexService.buscarPorVencimientoProximo(fechaInicio, fechaFin);
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Obtener historial de precios",
-               description = "Retorna el historial de precios de un producto")
+    @Operation(summary = "Obtener historial de precios", description = "Retorna el historial de precios de un producto")
     @GetMapping("/producto/{productoId}/historial-precios")
     public ResponseEntity<List<KardexResponse>> obtenerHistorialPreciosProducto(
             @Parameter(description = "ID del producto") @PathVariable Integer productoId) {
@@ -219,16 +198,14 @@ public class KardexControlador {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Obtener resumen de movimientos",
-               description = "Retorna estadísticas generales de los movimientos")
+    @Operation(summary = "Obtener resumen de movimientos", description = "Retorna estadísticas generales de los movimientos")
     @GetMapping("/resumen")
     public ResponseEntity<MovimientoResumenResponse> obtenerResumenMovimientos() {
         MovimientoResumenResponse response = kardexService.obtenerResumenMovimientos();
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Calcular saldo actual de un producto",
-               description = "Retorna el saldo actual según el último movimiento")
+    @Operation(summary = "Calcular saldo actual de un producto", description = "Retorna el saldo actual según el último movimiento")
     @GetMapping("/producto/{productoId}/saldo")
     public ResponseEntity<Integer> calcularSaldoActualProducto(
             @Parameter(description = "ID del producto") @PathVariable Integer productoId) {

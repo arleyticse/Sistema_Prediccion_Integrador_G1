@@ -10,8 +10,19 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+/**
+ * Aplicación principal del sistema de predicción de gestión de materiales.
+ * 
+ * Configura la aplicación Spring Boot con:
+ * - Soporte para Spring Data Web con DTOs (evita exponer entidades JPA)
+ * - Programación de tareas asincrónicas
+ * - Interfaz Swing para la consola administrativa
+ * 
+ * @version 1.0
+ * @since 1.0
+ */
 @SpringBootApplication
-@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)// Configura la serialización de Page para usar DTOs permiter paginación directa en controladores para no exponer entidades JPA
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 @EnableScheduling
 public class AppPrediccionGmApplication {
 
@@ -21,6 +32,12 @@ public class AppPrediccionGmApplication {
                 .run(args);
     }
 
+    /**
+     * Inicia la interfaz gráfica Swing cuando la aplicación está lista.
+     * 
+     * Aplica el Look and Feel "Nimbus" si está disponible y muestra
+     * la ventana principal de administración.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void launchSwingUI() {
         SwingUtilities.invokeLater(() -> {
@@ -33,7 +50,6 @@ public class AppPrediccionGmApplication {
                 }
             } catch (Exception ignored) {}
 
-            // Mostrar tu JFrame
             com.prediccion.apppredicciongm.view.App frame = new com.prediccion.apppredicciongm.view.App();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);

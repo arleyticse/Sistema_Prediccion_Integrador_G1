@@ -9,6 +9,6 @@ import com.prediccion.apppredicciongm.models.Proveedor;
 @Mapper(componentModel = "spring")
 public interface ProveedorMapper {
     
-    @Mapping(target = "proveedorId", ignore = true)//Asegura que el ID no se sobrescriba
+    @Mapping(target = "proveedorId", ignore = true)
     void updateFromEntity(Proveedor request, @MappingTarget Proveedor proveedor);
 }

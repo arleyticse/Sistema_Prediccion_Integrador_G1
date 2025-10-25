@@ -2,6 +2,7 @@ package com.prediccion.apppredicciongm.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,7 @@ import com.prediccion.apppredicciongm.enums.TipoDatosImportacion;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
 public class ImportacionDatos implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -37,6 +39,9 @@ public class ImportacionDatos implements Serializable {
 
     @Column(name = "fecha_importacion", nullable = false)
     private LocalDateTime fechaImportacion;
+
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion;
 
     @Column(name = "registros_procesados")
     private Integer registrosProcesados;

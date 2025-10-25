@@ -28,11 +28,10 @@ public class ProductoResponse {
     private BigDecimal costoPedido;
     private LocalDateTime fechaRegistro;
     
-    // Información de inventario (si existe)
     private Boolean tieneInventario;
     private Integer stockDisponible;
     private Integer stockMinimo;
     private Integer puntoReorden;
     private String estadoInventario;
-    private BigDecimal valorInventario; // stockDisponible * costoAdquisicion
+    private BigDecimal valorInventario;
 }
