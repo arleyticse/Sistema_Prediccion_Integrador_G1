@@ -1,0 +1,13 @@
+appId: com.tuempresa.angular-prime-prediccion
+productName: sistema-prediccion
+asar: false
+directories:
+  output: release
+files:
+  - dist/**/*
+  - main.js
+  - package.json
+win:
+  target: nsis
+extraResources:
+  - dist/**/*

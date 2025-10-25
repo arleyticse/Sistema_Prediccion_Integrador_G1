@@ -1,95 +1,65 @@
-import { Injectable, inject } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor,
-  HttpErrorResponse
-} from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, filter, take, switchMap } from 'rxjs/operators';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth';
 
-@Injectable()
-export class JwtInterceptor implements HttpInterceptor {
-  private authService = inject(AuthService);
-  private refreshTokenInProgress = false;
-  private refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+/**
+ * Interceptor funcional para agregar JWT token a las peticiones HTTP
+ */
+export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
 
-  /**
-   * URLs públicas que NO necesitan token
-   */
-  private publicUrls = [
+  console.log('Interceptando solicitud:', req.url);
+
+  // Endpoints públicos que NO necesitan token
+  const publicEndpoints = [
     '/iniciar-sesion',
-    '/registro'
+    '/registro',
+    '/auth/login',
+    '/auth/register'
   ];
 
-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    // Agregar token a la solicitud si existe
-    const token = this.authService.getToken();
-    
-    if (token && !this.isPublicUrl(request.url)) {
-      request = this.addToken(request, token);
-    }
-
-    return next.handle(request).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 401 && !this.isPublicUrl(error.url || '')) {
-          // Token expiró, intentar refresh
-          return this.handle401Error(request, next);
-        }
-        return throwError(() => error);
-      })
-    );
+  // Verificar si es endpoint público
+  const isPublic = publicEndpoints.some(endpoint => req.url.includes(endpoint));
+  
+  if (isPublic) {
+    console.log('Endpoint público, sin token');
+    return next(req);
   }
 
-  /**
-   * Agregar token JWT a la solicitud
-   */
-  private addToken(request: HttpRequest<any>, token: string): HttpRequest<any> {
-    return request.clone({
+  // Obtener token
+  const token = authService.getToken();
+
+  if (token) {
+    const clonedRequest = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
-  }
+    
+    return next(clonedRequest).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error(' Error HTTP interceptado:', {
+          status: error.status,
+          statusText: error.statusText,
+          url: error.url
+        });
 
-  /**
-   * Manejar error 401
-   */
-  private handle401Error(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (!this.refreshTokenInProgress) {
-      this.refreshTokenInProgress = true;
-      this.refreshTokenSubject.next(null);
-
-      // Si hay token, intentar refresh (esto es un stub para versión futura)
-      const token = this.authService.getToken();
-      if (token) {
-        // Aquí iría la llamada para refrescar el token
-        // Por ahora, logout
-        this.authService.logout();
-        this.refreshTokenInProgress = false;
-        return throwError(() => new Error('Token expirado'));
-      }
-    }
-
-    return this.refreshTokenSubject.pipe(
-      filter(result => result !== null),
-      take(1),
-      switchMap((token: string | null) => {
-        if (token) {
-          return next.handle(this.addToken(request, token));
+        // Si es 401, token inválido/expirado - cerrar sesión
+        if (error.status === 401) {
+          console.error(' Error 401: Token inválido o expirado');
+          authService.logout();
         }
-        this.authService.logout();
-        return throwError(() => new Error('No se pudo refrescar el token'));
+        
+        if (error.status === 403) {
+          console.warn('Error 403: Acceso denegado (puede ser problema de permisos del backend)');
+        }
+
+        return throwError(() => error);
       })
     );
+  } else {
+    console.warn(' No hay token disponible - enviando request sin Authorization');
+    return next(req);
   }
-
-  /**
-   * Verificar si la URL es pública
-   */
-  private isPublicUrl(url: string): boolean {
-    return this.publicUrls.some(publicUrl => url.includes(publicUrl));
-  }
-}
+};

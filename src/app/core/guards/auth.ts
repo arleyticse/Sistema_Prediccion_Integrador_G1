@@ -13,7 +13,6 @@ export const authGuard: CanActivateFn = (
     return true;
   }
 
-  // Guardar URL para redirigir después del login
   router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
   return false;
 };

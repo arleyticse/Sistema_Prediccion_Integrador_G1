@@ -1,19 +1,22 @@
 {
   "name": "angular-prime-prediccion",
   "version": "0.0.0",
+  "description": "Aplicación de predicción con Angular y PrimeNG",
+  "author": "Tu Nombre <tuemail@ejemplo.com>",
   "scripts": {
   "ng": "ng",
   "start": "ng serve",
   "ng:serve": "ng serve",
   "build": "ng build",
+  "build:electron": "ng build --configuration production && node fix-base.js",
   "watch": "ng build --watch --configuration development",
   "test": "ng test",
   "electron": "electron .",
   "electron:dev": "concurrently \"npm run ng:serve\" \"wait-on http://localhost:4200 && cross-env NODE_ENV=development electron .\"",
-  "electron:build": "ng build --configuration production && electron-builder",
-  "electron:build-win": "ng build --configuration production && electron-builder --win",
-  "electron:build-mac": "ng build --configuration production && electron-builder --mac",
-  "electron:build-linux": "ng build --configuration production && electron-builder --linux"
+  "electron:build": "npm run build:electron && node build-electron.js",
+  "electron:build-win": "npm run build:electron && node build-electron.js",
+  "electron:build-mac": "npm run build:electron && electron-builder --mac",
+  "electron:build-linux": "npm run build:electron && electron-builder --linux"
 },
   "prettier": {
     "printWidth": 100,
@@ -28,30 +31,6 @@
     ]
   },
   "main": "main.js",
-"build": {
-  "appId": "com.tuempresa.angular-prime-prediccion",
-  "productName": "AngularPrimePrediccion",
-  "directories": {
-    "output": "release"
-  },
-  "files": [
-    "dist/**/*",
-    "main.js",
-    "package.json"
-  ],
-  "win": {
-    "target": "nsis",
-    "icon": "src/assets/icon.ico"
-  },
-  "mac": {
-    "target": "dmg",
-    "icon": "src/assets/icon.icns"
-  },
-  "linux": {
-    "target": "AppImage",
-    "icon": "src/assets/icon.png"
-  }
-},
   "private": true,
   "dependencies": {
     "@angular/common": "^20.3.0",
