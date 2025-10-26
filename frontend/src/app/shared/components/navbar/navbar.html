@@ -1,0 +1,35 @@
+<div class="flex items-center justify-between bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 shadow-lg">
+  <!-- Logo -->
+  <div class="flex items-center gap-2">
+    <h1 class="text-2xl font-bold">Predicción</h1>
+    <span class="text-sm opacity-75">Gestión de Inventario</span>
+  </div>
+
+  <!-- Menu -->
+  <p-menubar [model]="items" class="bg-transparent border-0"></p-menubar>
+
+  <!-- Usuario y Logout -->
+  <div class="flex items-center gap-4">
+    @if (usuario()) {
+      <div class="flex items-center gap-2">
+        <p-avatar
+          [label]="initials()"
+          class="bg-blue-400 text-white font-bold"
+          size="large"
+          shape="circle"
+        ></p-avatar>
+        <div class="hidden sm:block">
+          <p class="text-sm font-semibold">{{ usuario()?.nombreCompleto }}</p>
+          <p class="text-xs opacity-75">{{ usuario()?.rol }}</p>
+        </div>
+      </div>
+
+      <button
+        (click)="onLogout()"
+        class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white font-semibold transition"
+      >
+        Logout
+      </button>
+    }
+  </div>
+</div>

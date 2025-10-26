@@ -1,0 +1,29 @@
+/* Estilos para navbar */
+:deep(.p-menubar) {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+:deep(.p-menubar .p-menubar-start),
+:deep(.p-menubar .p-menubar-end) {
+  margin-left: 0;
+}
+
+:deep(.p-menubar .p-menuitem-link) {
+  color: white;
+  font-weight: 500;
+}
+
+:deep(.p-menubar .p-menuitem-link:hover) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+:deep(.p-avatar) {
+  font-size: 12px;
+}
+
+/* Estilos del botón logout */
+button:focus {
+  outline: none;
+}
