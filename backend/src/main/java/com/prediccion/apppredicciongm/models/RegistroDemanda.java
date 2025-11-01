@@ -36,7 +36,4 @@ public class RegistroDemanda implements Serializable {
     @JoinColumn(name="id_producto", referencedColumnName = "id_producto")
     private Producto producto;
 
-    @ManyToOne
-    @JoinColumn(name="id_usuario", referencedColumnName = "id_usuario")
-    private Usuario usuario;
 }

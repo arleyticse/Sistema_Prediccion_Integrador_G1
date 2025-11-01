@@ -94,6 +94,13 @@
             <version>3.6.1</version>
         </dependency>
 
+        <!-- OpenCSV para importación de archivos CSV -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.9</version>
+        </dependency>
+
         <!-- JWT para autenticación -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

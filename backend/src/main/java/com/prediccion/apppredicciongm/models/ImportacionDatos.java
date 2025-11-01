@@ -64,7 +64,7 @@ public class ImportacionDatos implements Serializable {
     private Usuario usuario;
 
     @Column(name = "errores", length = 2000)
-    private String errores; // JSON o texto con errores encontrados
+    private String errores;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
@@ -77,7 +77,6 @@ public class ImportacionDatos implements Serializable {
         }
     }
 
-    // Método para calcular tasa de éxito
     public Double getTasaExito() {
         if (registrosProcesados == null || registrosProcesados == 0) {
             return 0.0;
