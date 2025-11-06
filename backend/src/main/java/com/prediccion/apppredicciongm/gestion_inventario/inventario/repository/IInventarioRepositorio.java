@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.prediccion.apppredicciongm.enums.EstadoInventario;
 import com.prediccion.apppredicciongm.models.Inventario.Inventario;
+import com.prediccion.apppredicciongm.models.Inventario.Producto;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,10 @@ public interface IInventarioRepositorio extends JpaRepository<Inventario, Intege
 
     @Query("SELECT i FROM Inventario i WHERE i.producto.productoId = :productoId")
     Optional<Inventario> findByProducto(@Param("productoId") Integer productoId);
+    
+    // Verificar si existe inventario para un producto
+    @Query("SELECT CASE WHEN COUNT(i) > 0 THEN true ELSE false END FROM Inventario i WHERE i.producto = :producto")
+    boolean existsByProducto(@Param("producto") Producto producto);
     
     // Buscar inventarios con stock bajo (por debajo del punto de reorden)
     @Query("SELECT i FROM Inventario i WHERE i.stockDisponible <= i.puntoReorden AND i.estado = 'ACTIVO'")

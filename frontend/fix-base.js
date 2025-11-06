@@ -22,4 +22,4 @@ html = html.replace(/href="\//g, 'href="./');
 html = html.replace(/src="\//g, 'src="./');
 
 fs.writeFileSync(indexPath, html);
-console.log('✅ Rutas actualizadas correctamente');
+console.log('Rutas actualizadas correctamente');

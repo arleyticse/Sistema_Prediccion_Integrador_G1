@@ -1,7 +1,21 @@
 <p>Movimientos</p>
-<div class="mb-4 flex justify-end">
+<div class="mb-4 flex justify-between">
+    <p-button 
+        (click)="abrirImportacion()" 
+        label="Importar CSV" 
+        icon="pi pi-upload"
+        severity="info"
+        [outlined]="true" />
     <p-button (click)="showDialog()" label="Nuevo Movimiento" icon="pi pi-plus" />
 </div>
+
+<!-- Componente de importación -->
+<app-importacion-csv
+    #importacionCsv
+    endpoint="/importacion/kardex"
+    tipoImportacion="Movimientos (Kardex)"
+    nombrePlantilla="plantilla_kardex.csv"
+    (importacionCompletada)="cargarMovimientos()" />
 
 <p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [style]="{ width: '35rem' }">
     <ng-template #header>

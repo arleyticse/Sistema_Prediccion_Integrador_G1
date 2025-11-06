@@ -18,13 +18,28 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { ChangeDetectionStrategy } from '@angular/core';
+import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
+
 interface Column {
   field: keyof ProductoResponse | 'acciones';
   header: string;
 }
 @Component({
   selector: 'app-productos-component',
-  imports: [Dialog, ButtonModule, InputTextModule, ReactiveFormsModule, Select, TableModule, ConfirmDialogModule, PaginatorModule,IconField, InputIcon,FormsModule],
+  imports: [
+    Dialog, 
+    ButtonModule, 
+    InputTextModule, 
+    ReactiveFormsModule, 
+    Select, 
+    TableModule, 
+    ConfirmDialogModule, 
+    PaginatorModule,
+    IconField, 
+    InputIcon,
+    FormsModule,
+    ImportacionCsvComponent
+  ],
   templateUrl: './productos-component.html',
   styleUrl: './productos-component.css',
   providers: [ConfirmationService],
@@ -33,6 +48,7 @@ interface Column {
 export class ProductosComponent {
 
   @ViewChild('dt') dataTable: any;
+  @ViewChild('importacionCsv') importacionCsv!: ImportacionCsvComponent;
 
   productos = signal<ProductoResponse[]>([]);
   visible = signal<boolean>(false);
@@ -86,7 +102,8 @@ private readonly unidadMedidaService = inject(UnidaMedidaService);
       this.unidadMedidas.set(unidades);
     });
   }
-  private cargarProductos(): void {
+
+  cargarProductos(): void {
     this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
     this.productoService.obtenerProductos(page, this.rows()).subscribe(response => {
@@ -94,6 +111,10 @@ private readonly unidadMedidaService = inject(UnidaMedidaService);
       this.totalRecords.set(response.page.totalElements);
       this.loading.set(false);
     });
+  }
+
+  abrirImportacion(): void {
+    this.importacionCsv.showDialog();
   }
   showDialog(): void {
     this.isEditing.set(false);

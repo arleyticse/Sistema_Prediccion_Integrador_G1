@@ -1,0 +1,68 @@
+package com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.service;
+
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.request.CalcularOptimizacionRequest;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.OptimizacionResponse;
+
+/**
+ * Servicio para calcular optimización de inventario (EOQ/ROP)
+ * basado en predicciones de demanda
+ */
+public interface IOptimizacionInventarioService {
+    
+    /**
+     * Calcula la optimización completa (EOQ + ROP) basada en una predicción
+     * 
+     * @param request Parámetros de costos y tiempos
+     * @return Resultados de optimización con EOQ, ROP, costos y recomendaciones
+     */
+    OptimizacionResponse calcularOptimizacion(CalcularOptimizacionRequest request);
+    
+    /**
+     * Obtiene la última optimización calculada para una predicción
+     * 
+     * @param prediccionId ID de la predicción
+     * @return Optimización guardada o null si no existe
+     */
+    OptimizacionResponse obtenerOptimizacionPorPrediccion(Long prediccionId);
+    
+    /**
+     * Calcula solo EOQ (Economic Order Quantity)
+     * Fórmula: EOQ = √((2 × D × S) / H)
+     * 
+     * @param demandaAnual Demanda anual del producto
+     * @param costoPedido Costo de realizar un pedido
+     * @param costoAlmacenamiento Costo de mantener inventario por unidad/año
+     * @return Cantidad económica de pedido
+     */
+    Double calcularEOQ(Double demandaAnual, Double costoPedido, Double costoAlmacenamiento);
+    
+    /**
+     * Calcula solo ROP (Reorder Point)
+     * Fórmula: ROP = d × L + SS
+     * 
+     * @param demandaDiaria Demanda diaria promedio
+     * @param tiempoEntregaDias Lead time en días
+     * @param stockSeguridad Stock de seguridad calculado
+     * @return Punto de reorden
+     */
+    Double calcularROP(Double demandaDiaria, Integer tiempoEntregaDias, Double stockSeguridad);
+    
+    /**
+     * Calcula Stock de Seguridad
+     * Fórmula: SS = Z × σ × √L
+     * 
+     * @param factorZ Factor de servicio (1.65 = 95%, 1.96 = 97.5%, 2.33 = 99%)
+     * @param desviacionEstandar Desviación estándar de la demanda
+     * @param tiempoEntregaDias Lead time en días
+     * @return Stock de seguridad
+     */
+    Double calcularStockSeguridad(Double factorZ, Double desviacionEstandar, Integer tiempoEntregaDias);
+    
+    /**
+     * Obtiene el factor Z de la distribución normal según nivel de servicio
+     * 
+     * @param nivelServicio Nivel de servicio deseado (0.90 = 90%, 0.95 = 95%, etc.)
+     * @return Factor Z correspondiente
+     */
+    Double obtenerFactorZ(Double nivelServicio);
+}

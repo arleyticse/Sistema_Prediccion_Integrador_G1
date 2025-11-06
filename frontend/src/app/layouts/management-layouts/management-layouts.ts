@@ -237,7 +237,7 @@ export class ManagementLayouts {
       icon: 'pi pi-fw pi-chart-line',
       items: [
         {
-          label: 'Predicciones ARIMA',
+          label: 'Predicciones',
           icon: 'pi pi-fw pi-chart-bar',
           routerLink: ['/administracion/predicciones'],
           badgeSeverity: 'success'

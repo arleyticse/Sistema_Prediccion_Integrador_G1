@@ -1,232 +1,420 @@
 package com.prediccion.apppredicciongm.gestion_prediccion.prediccion.controller;
 
-import com.prediccion.apppredicciongm.models.Prediccion;
-import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.service.IPrediccionService;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.dto.request.GenerarPrediccionRequest;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.dto.response.PrediccionResponse;
-import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.mapper.PrediccionMapper;
-import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.errors.DatosInsuficientesException;
-import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.errors.PrediccionNoEncontradaException;
-import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.errors.ProductoNoEncontradoException;
+import com.prediccion.apppredicciongm.models.Prediccion;
+import com.prediccion.apppredicciongm.models.Inventario.Producto;
+import com.prediccion.apppredicciongm.models.Inventario.Kardex;
+import com.prediccion.apppredicciongm.gestion_inventario.producto.repository.IProductoRepositorio;
+import com.prediccion.apppredicciongm.gestion_inventario.movimiento.repository.IKardexRepositorio;
+import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.service.PrediccionServiceImpl;
+import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.service.AnalisisAutomaticoService;
+import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.service.AnalisisAutomaticoService.RecomendacionAlgoritmo;
+import com.prediccion.apppredicciongm.enums.TipoMovimiento;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Controlador REST para operaciones de predicción ARIMA.
- * Proporciona endpoints para generar y consultar predicciones de demanda.
- *
+ * Controlador REST para gestionar las predicciones de demanda.
+ * 
+ * <p>Proporciona endpoints para generar predicciones usando diferentes algoritmos
+ * (SMA, SES, Holt-Winters), consultar predicciones existentes y obtener información
+ * sobre los algoritmos disponibles.</p>
+ * 
+ * <p>Todos los endpoints requieren autenticación y roles específicos según la operación.</p>
+ * 
  * @author Sistema de Predicción
  * @version 1.0
- * @since 2025-10-21
  */
 @RestController
 @RequestMapping("/api/predicciones")
-@RequiredArgsConstructor
-@Slf4j
-@Tag(name = "Predicciones", description = "API para gestionar predicciones ARIMA de demanda")
+@Tag(name = "Predicciones", description = "Endpoints para gestión de predicciones de demanda")
 public class PrediccionControlador {
 
-    private final IPrediccionService prediccionService;
-    private final PrediccionMapper prediccionMapper;
+    private static final Logger logger = LoggerFactory.getLogger(PrediccionControlador.class);
+
+    @Autowired
+    private PrediccionServiceImpl prediccionService;
+    
+    @Autowired
+    private AnalisisAutomaticoService analisisAutomaticoService;
+    
+    @Autowired
+    private IProductoRepositorio productoRepositorio;
+    
+    @Autowired
+    private IKardexRepositorio kardexRepositorio;
 
     /**
-     * Genera una nueva predicción ARIMA para un producto.
-     *
-     * @param productoId ID del producto
-     * @param request datos de la solicitud de predicción
-     * @return la predicción generada
+     * Genera una nueva predicción de demanda para un producto.
+     * 
+     * <p>Este endpoint ejecuta el algoritmo seleccionado con los parámetros especificados
+     * para generar una predicción de la demanda futura del producto.</p>
+     * 
+     * @param request Datos de la solicitud (productoId, algoritmo, horizonteTiempo, parametros)
+     * @return La predicción generada con métricas de error y valores predichos
      */
-    @PostMapping("/generar/{productoId}")
-    @Operation(summary = "Generar predicción ARIMA", 
-               description = "Genera una nueva predicción de demanda para un producto usando algoritmo ARIMA")
-    public ResponseEntity<PrediccionResponse> generarPrediccion(
-            @PathVariable Integer productoId,
-            @RequestBody(required = false) GenerarPrediccionRequest request) {
-        
-        log.info("📊 POST /generar/{} - Generando predicción", productoId);
-        
-        // Usar valores por defecto si no se envía request
-        int diasProcesar = (request != null && request.getDiasPronostico() > 0) ? request.getDiasPronostico() : 30;
+    @PostMapping("/generar")
+    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN')")
+    @Operation(summary = "Generar nueva predicción",
+               description = "Genera una predicción de demanda usando el algoritmo seleccionado")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Predicción generada exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Parámetros inválidos o datos insuficientes"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
+    public ResponseEntity<PrediccionResponse> generarPrediccion(@Valid @RequestBody GenerarPrediccionRequest request) {
+        logger.info("Solicitud de generacion de prediccion para producto ID: {}", request.getProductoId());
+        logger.debug("Algoritmo: {}, Horizonte: {} dias", request.getAlgoritmo(), request.getHorizonteTiempo());
         
         try {
-            Prediccion prediccion = prediccionService.generarPrediccion(productoId, diasProcesar);
-            PrediccionResponse response = prediccionMapper.prediccionToResponse(prediccion);
+            // Usar el nuevo método que devuelve PrediccionResponse completo
+            PrediccionResponse response = prediccionService.generarPrediccionCompleta(
+                request.getProductoId(),
+                request.getAlgoritmo(),
+                request.getHorizonteTiempo(),
+                request.getParametros()
+            );
             
-            log.info("✅ Predicción generada exitosamente para producto {}", productoId);
+            logger.info("Prediccion generada exitosamente con ID: {}", response.getPrediccionId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (ProductoNoEncontradoException e) {
-            log.error("❌ Producto no encontrado: {}", productoId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (DatosInsuficientesException e) {
-            log.error("❌ Datos insuficientes para predicción: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validacion: {}", e.getMessage());
+            // Crear una respuesta con estado FALLIDA
+            PrediccionResponse errorResponse = new PrediccionResponse();
+            errorResponse.establecerEstado(true); // Marcar como fallida
+            errorResponse.getAdvertencias().add("Error de validación: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+            
+        } catch (IllegalStateException e) {
+            logger.error("Datos insuficientes: {}", e.getMessage());
+            // Crear una respuesta con estado FALLIDA
+            PrediccionResponse errorResponse = new PrediccionResponse();
+            errorResponse.establecerEstado(true); // Marcar como fallida
+            errorResponse.getAdvertencias().add("Datos insuficientes: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+            
+        } catch (Exception e) {
+            logger.error("Error inesperado al generar prediccion", e);
+            // Crear una respuesta con estado FALLIDA
+            PrediccionResponse errorResponse = new PrediccionResponse();
+            errorResponse.establecerEstado(true); // Marcar como fallida
+            errorResponse.getAdvertencias().add("Error inesperado: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     /**
      * Obtiene todas las predicciones con paginación.
-     *
-     * @param page número de página (0-indexed)
-     * @param size tamaño de página
-     * @return página de predicciones
+     * 
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @return Página de predicciones
      */
     @GetMapping
-    @Operation(summary = "Obtener todas las predicciones",
-               description = "Retorna todas las predicciones con paginación")
+    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @Operation(summary = "Listar todas las predicciones",
+               description = "Retorna todas las predicciones generadas con paginación")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Predicciones obtenidas exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
     public ResponseEntity<Page<PrediccionResponse>> obtenerTodasLasPredicciones(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
-        log.info("📋 GET / - Obteniendo todas las predicciones (page={}, size={})", page, size);
+        logger.debug("Obteniendo todas las predicciones (page={}, size={})", page, size);
         
-        try {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Prediccion> prediccionesPage = prediccionService.obtenerTodasLasPredicciones(pageable);
-            Page<PrediccionResponse> responsePage = prediccionesPage.map(prediccionMapper::prediccionToResponse);
-            
-            log.info("✅ Se obtuvieron {} predicciones de {} total", 
-                    responsePage.getNumberOfElements(), responsePage.getTotalElements());
-            return ResponseEntity.ok(responsePage);
-        } catch (Exception e) {
-            log.error("❌ Error al obtener predicciones: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Prediccion> prediccionesPage = prediccionService.obtenerTodasLasPredicciones(pageable);
+        
+        // Reconstruir cada predicción con datos completos
+        Page<PrediccionResponse> responsePage = prediccionesPage.map(prediccion -> 
+            prediccionService.reconstruirPrediccionCompleta(prediccion)
+        );
+        
+        logger.info("Se obtuvieron {} predicciones de {} total", 
+                   responsePage.getNumberOfElements(), responsePage.getTotalElements());
+        return ResponseEntity.ok(responsePage);
     }
 
     /**
-     * Obtiene todas las predicciones de un producto.
-     *
+     * Obtiene todas las predicciones de un producto específico.
+     * 
      * @param productoId ID del producto
-     * @param page número de página (0-indexed)
-     * @param size tamaño de página
-     * @return lista de predicciones
+     * @param page Número de página
+     * @param size Tamaño de página
+     * @return Lista de predicciones del producto
      */
     @GetMapping("/producto/{productoId}")
-    @Operation(summary = "Obtener predicciones por producto",
-               description = "Retorna todas las predicciones de un producto específico con paginación")
+    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @Operation(summary = "Listar predicciones por producto",
+               description = "Retorna todas las predicciones generadas para un producto específico")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Predicciones del producto obtenidas exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
     public ResponseEntity<List<PrediccionResponse>> obtenerPrediccionesPorProducto(
             @PathVariable Integer productoId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
-        log.info("📋 GET /producto/{} - Obteniendo predicciones (page={}, size={})", productoId, page, size);
+        logger.debug("Obteniendo predicciones para producto ID: {}", productoId);
         
         try {
             Pageable pageable = PageRequest.of(page, size);
             List<Prediccion> predicciones = prediccionService.obtenerPrediccionesByProducto(productoId, pageable);
-            List<PrediccionResponse> responses = prediccionMapper.prediccionListToResponseList(predicciones);
             
-            log.info("✅ Se obtuvieron {} predicciones para producto {}", responses.size(), productoId);
+            // Reconstruir cada predicción con datos completos
+            List<PrediccionResponse> responses = predicciones.stream()
+                .map(prediccion -> prediccionService.reconstruirPrediccionCompleta(prediccion))
+                .collect(Collectors.toList());
+            
+            logger.info("Se obtuvieron {} predicciones para producto {}", responses.size(), productoId);
             return ResponseEntity.ok(responses);
-        } catch (ProductoNoEncontradoException e) {
-            log.error("❌ Producto no encontrado: {}", productoId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            
+        } catch (IllegalArgumentException e) {
+            logger.error("Producto no encontrado: {}", productoId);
+            return ResponseEntity.notFound().build();
         }
     }
 
     /**
-     * Obtiene una predicción específica por ID.
-     *
-     * @param prediccionId ID de la predicción
-     * @return la predicción solicitada
-     */
-    @GetMapping("/{prediccionId}")
-    @Operation(summary = "Obtener predicción por ID",
-               description = "Retorna los detalles de una predicción específica")
-    public ResponseEntity<PrediccionResponse> obtenerPrediccion(@PathVariable Long prediccionId) {
-        log.info("🔍 GET /{} - Obteniendo predicción", prediccionId);
-        
-        try {
-            // Obtener desde base de datos
-            return ResponseEntity.ok().build();
-        } catch (PrediccionNoEncontradaException e) {
-            log.error("❌ Predicción no encontrada: {}", prediccionId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-
-    /**
-     * Obtiene la última predicción de un producto.
-     *
+     * Obtiene la última predicción generada para un producto.
+     * 
      * @param productoId ID del producto
-     * @return la última predicción
+     * @return Última predicción del producto
      */
     @GetMapping("/ultima/{productoId}")
-    @Operation(summary = "Obtener última predicción",
-               description = "Retorna la predicción más reciente de un producto")
+    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @Operation(summary = "Obtener última predicción de un producto",
+               description = "Retorna la predicción más reciente generada para un producto")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Última predicción obtenida exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado o sin predicciones"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
     public ResponseEntity<PrediccionResponse> obtenerUltimaPrediccion(@PathVariable Integer productoId) {
-        log.info("📌 GET /ultima/{} - Obteniendo última predicción", productoId);
+        logger.debug("Obteniendo ultima prediccion para producto ID: {}", productoId);
         
         try {
             Prediccion prediccion = prediccionService.obtenerUltimaPrediccion(productoId);
-            PrediccionResponse response = prediccionMapper.prediccionToResponse(prediccion);
             
-            log.info("✅ Última predicción obtenida para producto {}", productoId);
+            if (prediccion == null) {
+                logger.warn("No se encontraron predicciones para producto: {}", productoId);
+                return ResponseEntity.notFound().build();
+            }
+            
+            // Reconstruir predicción con datos completos
+            PrediccionResponse response = prediccionService.reconstruirPrediccionCompleta(prediccion);
             return ResponseEntity.ok(response);
-        } catch (ProductoNoEncontradoException e) {
-            log.error("❌ Producto no encontrado: {}", productoId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (PrediccionNoEncontradaException e) {
-            log.error("❌ No hay predicciones disponibles: {}", productoId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            
+        } catch (IllegalArgumentException e) {
+            logger.error("Producto no encontrado: {}", productoId);
+            return ResponseEntity.notFound().build();
         }
     }
 
     /**
-     * Elimina una predicción.
-     *
-     * @param prediccionId ID de la predicción
+     * Elimina una predicción de la base de datos.
+     * 
+     * @param prediccionId ID de la predicción a eliminar
+     * @return Respuesta sin contenido si fue exitoso
      */
     @DeleteMapping("/{prediccionId}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar predicción",
-               description = "Elimina una predicción de la base de datos")
+               description = "Elimina permanentemente una predicción de la base de datos")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Predicción eliminada exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Predicción no encontrada"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado - se requiere rol ADMIN")
+    })
     public ResponseEntity<Void> eliminarPrediccion(@PathVariable Long prediccionId) {
-        log.info("🗑️ DELETE /{} - Eliminando predicción", prediccionId);
+        logger.info("Solicitud de eliminacion para prediccion ID: {}", prediccionId);
         
         try {
             prediccionService.eliminarPrediccion(prediccionId);
-            log.info("✅ Predicción eliminada");
+            logger.info("Prediccion eliminada exitosamente: {}", prediccionId);
             return ResponseEntity.noContent().build();
-        } catch (PrediccionNoEncontradaException e) {
-            log.error("❌ Predicción no encontrada: {}", prediccionId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            
+        } catch (IllegalArgumentException e) {
+            logger.error("Prediccion no encontrada: {}", prediccionId);
+            return ResponseEntity.notFound().build();
         }
     }
 
     /**
-     * Manejador de excepciones para ProductoNoEncontradoException.
+     * Obtiene la lista de algoritmos disponibles en el sistema.
+     * 
+     * @return Mapa con código y nombre de cada algoritmo
      */
-    @ExceptionHandler(ProductoNoEncontradoException.class)
-    public ResponseEntity<String> handleProductoNoEncontrado(ProductoNoEncontradoException e) {
-        log.error("❌ Error: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    @GetMapping("/algoritmos")
+    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @Operation(summary = "Listar algoritmos disponibles",
+               description = "Retorna la lista de algoritmos de predicción disponibles en el sistema")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Algoritmos obtenidos exitosamente"),
+        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
+    public ResponseEntity<Map<String, String>> obtenerAlgoritmosDisponibles() {
+        logger.debug("Obteniendo lista de algoritmos disponibles");
+        
+        Map<String, String> algoritmos = prediccionService.obtenerAlgoritmosDisponibles();
+        
+        logger.info("Algoritmos disponibles: {}", algoritmos.keySet());
+        return ResponseEntity.ok(algoritmos);
     }
 
     /**
-     * Manejador de excepciones para DatosInsuficientesException.
+     * Obtiene información detallada sobre los parámetros de cada algoritmo.
+     * 
+     * @return Información sobre parámetros y rangos válidos
      */
-    @ExceptionHandler(DatosInsuficientesException.class)
-    public ResponseEntity<String> handleDatosInsuficientes(DatosInsuficientesException e) {
-        log.error("❌ Error: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    @GetMapping("/algoritmos/info")
+    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @Operation(summary = "Obtener información de algoritmos",
+               description = "Retorna información detallada sobre parámetros y configuración de cada algoritmo")
+    public ResponseEntity<Map<String, Object>> obtenerInfoAlgoritmos() {
+        logger.debug("Obteniendo informacion detallada de algoritmos");
+        
+        Map<String, Object> info = new HashMap<>();
+        
+        Map<String, Object> smaInfo = new HashMap<>();
+        smaInfo.put("codigo", "SMA");
+        smaInfo.put("nombre", "Promedio Movil Simple");
+        smaInfo.put("parametros", Map.of("ventana", Map.of(
+            "descripcion", "Tamano de la ventana movil",
+            "tipo", "integer",
+            "rango", "3-100",
+            "default", 14
+        )));
+        smaInfo.put("minimosDatos", 7);
+        smaInfo.put("usoCaso", "Productos con demanda estable sin tendencia ni estacionalidad");
+        
+        Map<String, Object> sesInfo = new HashMap<>();
+        sesInfo.put("codigo", "SES");
+        sesInfo.put("nombre", "Suavizado Exponencial Simple");
+        sesInfo.put("parametros", Map.of("alpha", Map.of(
+            "descripcion", "Factor de suavizado",
+            "tipo", "double",
+            "rango", "0.01-0.99",
+            "default", 0.3
+        )));
+        sesInfo.put("minimosDatos", 5);
+        sesInfo.put("usoCaso", "Productos sin tendencia ni estacionalidad marcada");
+        
+        Map<String, Object> hwInfo = new HashMap<>();
+        hwInfo.put("codigo", "HOLT_WINTERS");
+        hwInfo.put("nombre", "Holt-Winters (Triple Exponencial)");
+        hwInfo.put("parametros", Map.of(
+            "alpha", Map.of("descripcion", "Factor de nivel", "rango", "0.01-0.99", "default", 0.4),
+            "beta", Map.of("descripcion", "Factor de tendencia", "rango", "0.01-0.99", "default", 0.2),
+            "gamma", Map.of("descripcion", "Factor de estacionalidad", "rango", "0.01-0.99", "default", 0.3),
+            "periodo", Map.of("descripcion", "Periodo estacional", "rango", "2-52", "default", 7)
+        ));
+        hwInfo.put("minimosDatos", 14);
+        hwInfo.put("usoCaso", "Productos con patrones estacionales claros");
+        
+        info.put("SMA", smaInfo);
+        info.put("SES", sesInfo);
+        info.put("HOLT_WINTERS", hwInfo);
+        
+        return ResponseEntity.ok(info);
     }
 
     /**
-     * Manejador de excepciones para PrediccionNoEncontradaException.
+     * Obtiene una recomendación automática de algoritmo basada en análisis de datos históricos.
+     * 
+     * <p>Este endpoint analiza los patrones en los datos de ventas del producto (tendencia,
+     * estacionalidad, volatilidad) y recomienda el algoritmo más apropiado con parámetros optimizados.</p>
+     * 
+     * @param productoId ID del producto a analizar
+     * @return Recomendación con algoritmo, parámetros, justificación y nivel de confianza
      */
-    @ExceptionHandler(PrediccionNoEncontradaException.class)
-    public ResponseEntity<String> handlePrediccionNoEncontrada(PrediccionNoEncontradaException e) {
-        log.error("❌ Error: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    @GetMapping("/recomendar/{productoId}")
+    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'USUARIO')")
+    @Operation(summary = "Obtener recomendación automática de algoritmo",
+               description = "Analiza datos históricos y recomienda el algoritmo óptimo con parámetros configurados")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Recomendación generada exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos insuficientes para análisis (mínimo 7 registros)"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    public ResponseEntity<?> obtenerRecomendacion(@PathVariable Integer productoId) {
+        logger.info("Solicitud de recomendación automática para producto ID: {}", productoId);
+        
+        try {
+            // Validar que el producto existe
+            Producto producto = productoRepositorio.findById(productoId)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + productoId));
+            
+            // Obtener datos históricos de ventas (usar paginación para obtener todos)
+            Pageable pageable = PageRequest.of(0, 1000); // Obtener hasta 1000 registros
+            Page<Kardex> kardexPage = kardexRepositorio.findByProductoAndTipo(
+                productoId, 
+                TipoMovimiento.SALIDA_VENTA, 
+                pageable
+            );
+            
+            List<Double> datosHistoricos = kardexPage.getContent().stream()
+                .map(k -> k.getCantidad().doubleValue())
+                .collect(Collectors.toList());
+            
+            // Revertir el orden (findByProductoAndTipo viene descendente)
+            java.util.Collections.reverse(datosHistoricos);
+            
+            if (datosHistoricos.size() < 7) {
+                logger.warn("Datos insuficientes para producto ID {}: solo {} registros", 
+                           productoId, datosHistoricos.size());
+                return ResponseEntity.badRequest()
+                    .body(Map.of(
+                        "error", "Datos insuficientes",
+                        "mensaje", "Se necesitan al menos 7 registros de venta para el análisis automático",
+                        "registrosActuales", datosHistoricos.size()
+                    ));
+            }
+            
+            // Generar recomendación
+            RecomendacionAlgoritmo recomendacion = analisisAutomaticoService.analizarYRecomendar(datosHistoricos);
+            
+            logger.info("Recomendación generada para producto {}: {} con {}% de confianza",
+                       productoId, 
+                       recomendacion.getAlgoritmo(),
+                       (int)(recomendacion.getConfianza() * 100));
+            
+            return ResponseEntity.ok(recomendacion);
+            
+        } catch (IllegalArgumentException e) {
+            logger.error("Error en validación de datos: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Validación fallida", "mensaje", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error al generar recomendación para producto {}: {}", productoId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error interno", "mensaje", "No se pudo analizar el producto"));
+        }
     }
 }
+

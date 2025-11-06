@@ -94,6 +94,13 @@
             <version>3.6.1</version>
         </dependency>
 
+        <!-- Apache Commons CSV para importación de archivos CSV -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
         <!-- JWT para autenticación -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

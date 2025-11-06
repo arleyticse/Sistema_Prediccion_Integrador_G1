@@ -1,0 +1,268 @@
+{
+  "wizard": {
+    "titulo": "Asistente de Creación de Predicciones",
+    "descripcion": "Este asistente te guía paso a paso para generar predicciones de demanda basadas en datos históricos de ventas.",
+    "pasos": {
+      "1": {
+        "titulo": "Configuración Inicial",
+        "descripcion": "Selecciona el producto y define cuántos días hacia el futuro deseas predecir."
+      },
+      "2": {
+        "titulo": "Selección de Algoritmo",
+        "descripcion": "Elige entre modo automático (el sistema recomienda) o manual (tú decides el algoritmo)."
+      },
+      "3": {
+        "titulo": "Ajuste de Parámetros",
+        "descripcion": "Configura los parámetros del algoritmo seleccionado para optimizar la predicción."
+      }
+    }
+  },
+  "campos": {
+    "producto": {
+      "label": "Producto",
+      "tooltip": "Selecciona el producto del cual deseas predecir la demanda futura.",
+      "ayuda": "El sistema necesita al menos 7 registros de ventas históricos para poder generar una predicción confiable.",
+      "ejemplo": "Ejemplo: Si seleccionas 'Gaseosa Naranja 2lt', el sistema analizará todas sus ventas anteriores."
+    },
+    "horizontePrediccion": {
+      "label": "Horizonte de Predicción (días)",
+      "tooltip": "Número de días hacia el futuro que deseas predecir.",
+      "ayuda": "Define cuántos días futuros quieres proyectar. Por ejemplo, 30 días te mostrará la demanda esperada para el próximo mes.",
+      "recomendacion": "Se recomienda entre 7 y 60 días para obtener predicciones confiables.",
+      "ejemplo": "Si hoy es 4 de noviembre y eliges 15 días, la predicción llegará hasta el 19 de noviembre."
+    },
+    "modoAutomatico": {
+      "label": "Modo de Selección",
+      "tooltip": "En modo automático, el sistema analiza tus datos y recomienda el mejor algoritmo. En modo manual, tú eliges.",
+      "ayuda": {
+        "automatico": "El sistema analiza patrones en tus datos (estacionalidad, tendencias, volatilidad) y selecciona automáticamente el algoritmo más adecuado con parámetros optimizados.",
+        "manual": "Puedes elegir manualmente el algoritmo y ajustar sus parámetros. Recomendado solo si tienes experiencia en análisis de series temporales."
+      },
+      "recomendacion": "Usa modo automático si no estás seguro de qué algoritmo elegir."
+    }
+  },
+  "algoritmos": {
+    "simpleMovingAverageAlgorithm": {
+      "nombre": "Promedio Móvil Simple (SMA)",
+      "descripcion": "Calcula el promedio de las últimas N ventas para predecir el futuro.",
+      "cuando_usar": "Ideal para productos con demanda estable y sin cambios drásticos.",
+      "ventajas": [
+        "Muy simple de entender",
+        "Suaviza el ruido aleatorio",
+        "No requiere muchos datos históricos"
+      ],
+      "desventajas": [
+        "No detecta tendencias",
+        "No captura patrones estacionales",
+        "Reacciona lento a cambios reales"
+      ],
+      "ejemplo": "Útil para productos como arroz o aceite que se venden de forma constante."
+    },
+    "simpleExponentialSmoothingAlgorithm": {
+      "nombre": "Suavizado Exponencial Simple (SES)",
+      "descripcion": "Da más peso a las ventas recientes que a las antiguas para predecir el futuro.",
+      "cuando_usar": "Ideal para productos con tendencia pero sin patrones estacionales marcados.",
+      "ventajas": [
+        "Reacciona rápido a cambios en la demanda",
+        "Asigna más importancia a datos recientes",
+        "Funciona bien con tendencias"
+      ],
+      "desventajas": [
+        "No captura estacionalidad",
+        "Puede ser sensible a valores atípicos",
+        "Requiere calibrar el parámetro alpha"
+      ],
+      "ejemplo": "Útil para productos con tendencia creciente o decreciente, como bebidas de temporada."
+    },
+    "holtWintersAlgorithm": {
+      "nombre": "Holt-Winters (Triple Exponencial)",
+      "descripcion": "Algoritmo avanzado que captura nivel, tendencia y patrones estacionales (semanales o mensuales).",
+      "cuando_usar": "Ideal para productos con patrones repetitivos, como picos de venta los fines de semana.",
+      "ventajas": [
+        "Detecta estacionalidad (semanal, mensual)",
+        "Captura tendencias a largo plazo",
+        "Predicciones muy precisas en datos con patrones"
+      ],
+      "desventajas": [
+        "Requiere más datos históricos (mínimo 2 ciclos estacionales)",
+        "Más complejo de entender",
+        "Varios parámetros que ajustar"
+      ],
+      "ejemplo": "Perfecto para gaseosas, cervezas o productos que se venden más los viernes/sábados."
+    }
+  },
+  "parametros": {
+    "simpleMovingAverageAlgorithm": {
+      "ventana": {
+        "label": "Tamaño de Ventana",
+        "tooltip": "Número de datos históricos usados para calcular el promedio.",
+        "ayuda": "Una ventana de 7 días usa las últimas 7 ventas para calcular el promedio. Una ventana más grande suaviza más pero reacciona más lento.",
+        "recomendacion": {
+          "minimo": 3,
+          "maximo": 21,
+          "sugerido": "Entre 7 y 14 días para demanda semanal"
+        },
+        "impacto": {
+          "bajo": "Ventana pequeña (3-5): Reacciona rápido pero con más ruido",
+          "medio": "Ventana media (7-14): Balance entre suavizado y reactividad",
+          "alto": "Ventana grande (15+): Muy suave pero lento ante cambios"
+        },
+        "ejemplo": "Con ventana=7, si las últimas ventas son [10,12,11,13,10,12,11], el promedio es 11.29 unidades."
+      }
+    },
+    "simpleExponentialSmoothingAlgorithm": {
+      "alpha": {
+        "label": "Alpha (Factor de Suavizado)",
+        "tooltip": "Controla cuánto peso das a las ventas recientes vs antiguas.",
+        "ayuda": "Alpha cercano a 1 significa 'confía más en lo que pasó ayer'. Alpha cercano a 0 significa 'promedia todo el historial'.",
+        "recomendacion": {
+          "minimo": 0.1,
+          "maximo": 0.9,
+          "sugerido": "Entre 0.2 y 0.5 para demanda estable"
+        },
+        "impacto": {
+          "bajo": "Alpha=0.1-0.2: Suavizado fuerte, cambios lentos",
+          "medio": "Alpha=0.3-0.5: Balance entre estabilidad y reactividad",
+          "alto": "Alpha=0.6-0.9: Reacciona muy rápido a cambios"
+        },
+        "formula": "Predicción = α × Venta_Actual + (1-α) × Predicción_Anterior",
+        "ejemplo": "Con alpha=0.3, si ayer vendiste 10 y tu predicción anterior era 12, la nueva predicción es: 0.3×10 + 0.7×12 = 11.4"
+      }
+    },
+    "holtWintersAlgorithm": {
+      "alpha": {
+        "label": "Alpha (Nivel Base)",
+        "tooltip": "Controla qué tan rápido se ajusta el nivel base de la demanda.",
+        "ayuda": "Define cuánto peso das a la demanda actual al calcular el nivel promedio de ventas.",
+        "recomendacion": {
+          "minimo": 0.1,
+          "maximo": 0.9,
+          "sugerido": "Entre 0.2 y 0.4 para la mayoría de productos"
+        },
+        "ejemplo": "Alpha=0.3 significa que el 30% del ajuste viene de la venta actual y el 70% de la tendencia histórica."
+      },
+      "beta": {
+        "label": "Beta (Tendencia)",
+        "tooltip": "Controla qué tan rápido se ajusta la tendencia (crecimiento o decrecimiento).",
+        "ayuda": "Define cuánto peso das a la tendencia reciente al proyectar hacia el futuro.",
+        "recomendacion": {
+          "minimo": 0.05,
+          "maximo": 0.5,
+          "sugerido": "Entre 0.1 y 0.3 si hay tendencia clara"
+        },
+        "ejemplo": "Beta=0.2 significa que si las ventas están creciendo, ese crecimiento se refleja moderadamente en la predicción."
+      },
+      "gamma": {
+        "label": "Gamma (Estacionalidad)",
+        "tooltip": "Controla qué tan rápido se ajustan los patrones estacionales (picos de venta).",
+        "ayuda": "Define cuánto peso das al patrón semanal o mensual al calcular picos y valles de demanda.",
+        "recomendacion": {
+          "minimo": 0.05,
+          "maximo": 0.5,
+          "sugerido": "Entre 0.2 y 0.4 si hay patrón semanal/mensual"
+        },
+        "ejemplo": "Gamma=0.3 significa que si los viernes vendes el doble, ese patrón se mantiene pero se ajusta lentamente con nueva información."
+      },
+      "periodo": {
+        "label": "Periodo Estacional",
+        "tooltip": "Cada cuántos días se repite el patrón de ventas.",
+        "ayuda": "Define la longitud del ciclo estacional. 7 días significa patrón semanal, 30 días significa patrón mensual.",
+        "recomendacion": {
+          "valores": [7, 14, 30],
+          "sugerido": "7 días para patrones semanales (fin de semana), 30 días para patrones mensuales (quincenas)"
+        },
+        "impacto": {
+          "7": "Patrón semanal: Las ventas se repiten cada semana (ej: pico en viernes)",
+          "14": "Patrón bisemanal: Patrón se repite cada dos semanas",
+          "30": "Patrón mensual: Patrón se repite cada mes (ej: pico en quincena)"
+        },
+        "ejemplo": "Si periodo=7 y el próximo domingo es día 5 del ciclo, el sistema usará los datos del último domingo para predecir."
+      }
+    }
+  },
+  "estados": {
+    "cargando": "Analizando datos históricos del producto...",
+    "exito": "¡Análisis completado! El sistema ha encontrado el mejor algoritmo para tus datos.",
+    "error": {
+      "sinDatos": "Este producto no tiene suficientes registros de venta (se necesitan al menos 7). Por favor, selecciona otro producto o registra más ventas.",
+      "sinProducto": "Por favor selecciona un producto para comenzar el análisis.",
+      "sinAlgoritmo": "Selecciona un algoritmo de predicción para continuar."
+    }
+  },
+  "recomendacion": {
+    "confianza": {
+      "label": "Nivel de Confianza",
+      "tooltip": "Indica qué tan seguro está el sistema de que este algoritmo es el mejor para tus datos.",
+      "interpretacion": {
+        "alta": "90-100%: El patrón en tus datos es muy claro, el algoritmo debería funcionar excelente.",
+        "media": "70-89%: El patrón es moderado, el algoritmo es apropiado pero hay cierta variabilidad.",
+        "baja": "50-69%: El patrón es débil o tus datos son muy irregulares. Considera recolectar más información."
+      }
+    },
+    "justificacion": {
+      "label": "Por qué este algoritmo",
+      "tooltip": "Explicación de por qué el sistema eligió este algoritmo específico para tu producto."
+    },
+    "parametros": {
+      "label": "Parámetros Optimizados",
+      "tooltip": "El sistema calculó estos valores automáticamente basándose en el análisis de tus datos históricos."
+    }
+  },
+  "validacion": {
+    "horizonteMin": "El horizonte mínimo es 1 día.",
+    "horizonteMax": "El horizonte máximo recomendado es 60 días.",
+    "alphaRango": "Alpha debe estar entre 0.1 y 0.9",
+    "betaRango": "Beta debe estar entre 0.05 y 0.5",
+    "gammaRango": "Gamma debe estar entre 0.05 y 0.5",
+    "ventanaRango": "La ventana debe estar entre 3 y 21 días",
+    "periodoValores": "El periodo debe ser 7, 14 o 30 días"
+  },
+  "glosario": {
+    "estacionalidad": {
+      "termino": "Estacionalidad",
+      "definicion": "Patrón que se repite en intervalos regulares (semanal, mensual, anual).",
+      "ejemplo": "Las gaseosas se venden más los fines de semana = estacionalidad semanal."
+    },
+    "tendencia": {
+      "termino": "Tendencia",
+      "definicion": "Dirección general de la demanda a largo plazo (creciente, decreciente o estable).",
+      "ejemplo": "Si las ventas de un producto aumentan 5% cada mes, tiene tendencia creciente."
+    },
+    "volatilidad": {
+      "termino": "Volatilidad",
+      "definicion": "Medida de qué tan impredecibles son las ventas de un producto.",
+      "ejemplo": "Producto con ventas muy variables (10, 50, 5, 60) = alta volatilidad."
+    },
+    "suavizado": {
+      "termino": "Suavizado",
+      "definicion": "Técnica para eliminar variaciones aleatorias y ver el patrón real.",
+      "ejemplo": "Si las ventas reales son [8,12,9,13,10], el suavizado muestra ~10.4."
+    },
+    "autocorrelacion": {
+      "termino": "Autocorrelación",
+      "definicion": "Medida de qué tan relacionadas están las ventas de hoy con las ventas de hace X días.",
+      "ejemplo": "Si las ventas de cada lunes son similares, hay autocorrelación en intervalo de 7 días."
+    }
+  },
+  "ayudaGeneral": {
+    "queEsUnaPrediccion": {
+      "titulo": "¿Qué es una Predicción de Demanda?",
+      "contenido": "Es una estimación de cuántas unidades de un producto se venderán en el futuro, basándose en datos históricos de ventas anteriores.",
+      "beneficios": [
+        "Evita quedarte sin stock (pérdida de ventas)",
+        "Evita exceso de inventario (capital inmovilizado)",
+        "Mejora la planificación de compras a proveedores",
+        "Optimiza el espacio en almacén"
+      ]
+    },
+    "comoInterpretarResultados": {
+      "titulo": "¿Cómo Interpretar los Resultados?",
+      "contenido": "La predicción te muestra un gráfico con dos líneas: tus ventas pasadas (azul) y la proyección futura (naranja). Usa estos valores para planificar tus compras.",
+      "recomendaciones": [
+        "Considera un margen de seguridad del 10-15% adicional",
+        "Revisa las predicciones mensualmente con datos nuevos",
+        "Si la predicción difiere mucho de la realidad, ajusta los parámetros"
+      ]
+    }
+  }
+}

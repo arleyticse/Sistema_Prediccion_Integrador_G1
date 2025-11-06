@@ -1,6 +1,6 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, throwError, tap } from 'rxjs';
 import { AuthService } from '../services/auth';
 
 /**
@@ -9,21 +9,20 @@ import { AuthService } from '../services/auth';
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
-  console.log('Interceptando solicitud:', req.url);
-
   // Endpoints públicos que NO necesitan token
   const publicEndpoints = [
     '/iniciar-sesion',
     '/registro',
     '/auth/login',
-    '/auth/register'
+    '/auth/register',
+    '/plantilla', // Descargas de plantillas CSV
+    '/validar'    // Validación de CSV (puede ser pública)
   ];
 
   // Verificar si es endpoint público
   const isPublic = publicEndpoints.some(endpoint => req.url.includes(endpoint));
   
   if (isPublic) {
-    console.log('Endpoint público, sin token');
     return next(req);
   }
 
@@ -39,7 +38,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     
     return next(clonedRequest).pipe(
       catchError((error: HttpErrorResponse) => {
-        console.error(' Error HTTP interceptado:', {
+        console.error('❌ Error HTTP:', {
           status: error.status,
           statusText: error.statusText,
           url: error.url
@@ -47,19 +46,18 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
         // Si es 401, token inválido/expirado - cerrar sesión
         if (error.status === 401) {
-          console.error(' Error 401: Token inválido o expirado');
+          console.error('Token inválido o expirado - cerrando sesión');
           authService.logout();
         }
         
         if (error.status === 403) {
-          console.warn('Error 403: Acceso denegado (puede ser problema de permisos del backend)');
+          console.warn('Acceso denegado - verifica permisos del backend');
         }
 
         return throwError(() => error);
       })
     );
   } else {
-    console.warn(' No hay token disponible - enviando request sin Authorization');
     return next(req);
   }
 };

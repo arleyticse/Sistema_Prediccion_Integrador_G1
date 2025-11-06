@@ -79,7 +79,8 @@ public class FiltroAutenticacionJwt extends OncePerRequestFilter {
                     tokenAutenticacion.setDetails(new WebAuthenticationDetailsSource().buildDetails(solicitud));
                     SecurityContextHolder.getContext().setAuthentication(tokenAutenticacion);
                     
-                    log.info("Usuario autenticado mediante JWT: {}", nombreUsuario);
+                    log.info("Usuario autenticado mediante JWT: {} con autoridades: {}", 
+                            nombreUsuario, detallesUsuario.getAuthorities());
                 } else {
                     log.warn("Validación de token fallida para usuario: {}", nombreUsuario);
                 }

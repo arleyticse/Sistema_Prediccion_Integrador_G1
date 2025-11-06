@@ -19,6 +19,7 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
 
 interface Column {
   field: keyof KardexResponse | 'acciones';
@@ -43,7 +44,8 @@ interface TipoMovimientoDTO {
     PaginatorModule,
     IconField,
     InputIcon,
-    FormsModule
+    FormsModule,
+    ImportacionCsvComponent
   ],
   templateUrl: './movimiento-component.html',
   styleUrl: './movimiento-component.css',
@@ -53,6 +55,7 @@ interface TipoMovimientoDTO {
 export class MovimientoComponent {
 
   @ViewChild('dt') dataTable: any;
+  @ViewChild('importacionCsv') importacionCsv!: ImportacionCsvComponent;
 
   movimientos = signal<KardexResponse[]>([]);
   visible = signal<boolean>(false);
@@ -113,7 +116,7 @@ export class MovimientoComponent {
     this.cargarTiposMovimiento();
   }
 
-  private cargarMovimientos(): void {
+  cargarMovimientos(): void {
     this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
     this.movimientoService.getKardex(page, this.rows()).subscribe(response => {
@@ -121,6 +124,10 @@ export class MovimientoComponent {
       this.totalRecords.set(response.page.totalElements);
       this.loading.set(false);
     });
+  }
+
+  abrirImportacion(): void {
+    this.importacionCsv.showDialog();
   }
 
   private cargarProductos(): void {

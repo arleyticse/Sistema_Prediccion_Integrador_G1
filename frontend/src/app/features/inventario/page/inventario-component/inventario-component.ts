@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { PaginatorState } from 'primeng/paginator';
@@ -16,6 +16,7 @@ import { PaginatorModule } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
+import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
 
 interface Column {
   field: keyof InventarioResponse | 'acciones' | 'producto';
@@ -34,7 +35,8 @@ interface Column {
     PaginatorModule,
     SelectModule,
     DialogModule,
-    FormsModule
+    FormsModule,
+    ImportacionCsvComponent
   ],
   templateUrl: './inventario-component.html',
   styleUrl: './inventario-component.css',
@@ -42,6 +44,8 @@ interface Column {
   providers: [ConfirmationService]
 })
 export class InventarioComponent {
+  @ViewChild('importacionCsv') importacionCsv!: ImportacionCsvComponent;
+  
   inventarios = signal<InventarioResponse[]>([]);
   productos = signal<ProductoResponse[]>([]);
   visible = signal<boolean>(false);
@@ -91,7 +95,7 @@ export class InventarioComponent {
     this.cargarProductos();
   }
 
-  private cargarInventarios(): void {
+  cargarInventarios(): void {
     this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
     this.inventarioService.obtenerInventarios(page, this.rows()).subscribe(response => {
@@ -99,6 +103,10 @@ export class InventarioComponent {
       this.totalRecords.set(response.page.totalElements);
       this.loading.set(false);
     });
+  }
+
+  abrirImportacion(): void {
+    this.importacionCsv.showDialog();
   }
 
   private cargarProductos(): void {

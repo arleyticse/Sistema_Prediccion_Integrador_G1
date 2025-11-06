@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { Proveedor } from '../../model/Proveedor';
@@ -12,6 +12,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FormsModule } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
+import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
 
 interface Column {
   field: keyof Proveedor | 'acciones';
@@ -30,7 +31,8 @@ interface Column {
     InputNumberModule,
     CheckboxModule,
     FormsModule,
-    TextareaModule
+    TextareaModule,
+    ImportacionCsvComponent
   ],
   templateUrl: './proveedor-component.html',
   styleUrl: './proveedor-component.css',
@@ -38,6 +40,8 @@ interface Column {
   providers: [ConfirmationService]
 })
 export class ProveedorComponent {
+  @ViewChild('importacionCsv') importacionCsv!: ImportacionCsvComponent;
+  
   proveedores = signal<Proveedor[]>([]);
   visible = signal<boolean>(false);
   isEditing = signal<boolean>(false);
@@ -77,12 +81,16 @@ export class ProveedorComponent {
     this.cargarProveedores();
   }
 
-  private cargarProveedores(): void {
+  cargarProveedores(): void {
     this.loading.set(true);
     this.proveedorService.getProveedores().subscribe(proveedores => {
       this.proveedores.set(proveedores);
       this.loading.set(false);
     });
+  }
+
+  abrirImportacion(): void {
+    this.importacionCsv.showDialog();
   }
 
   showDialog(): void {

@@ -47,10 +47,12 @@ public class SeguridadConfig {
                                                 .requestMatchers(
                                                                 "/api/auth/**",
                                                                 "/api/catalogos/**",
+                                                                "/api/importacion/*/plantilla",
+                                                                "/api/importacion/*/validar",
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html"
-                                                ).permitAll()// Permitir acceso público a las rutas de autenticación
+                                                ).permitAll()// Permitir acceso público a las rutas de autenticación y plantillas
                                                 .requestMatchers("/css/**", "/js/**", "/img/**", "/").permitAll()// Permitir
                                                 .requestMatchers("/home/dashboard").hasAuthority("ROLE_Administrador")
                                                 .anyRequest().authenticated())

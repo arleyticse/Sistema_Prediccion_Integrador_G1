@@ -18,23 +18,24 @@ import java.util.List;
  */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface PrediccionMapper {
-
     /**
      * Convierte una entidad Prediccion a PrediccionResponse DTO.
      *
      * @param prediccion la entidad predicción
      * @return el DTO de respuesta
      */
-    @Mapping(target = "prediccionId", expression = "java(prediccion.getPrediccionId().longValue())")
+    @Mapping(target = "prediccionId", source = "prediccionId")
     @Mapping(target = "productoId", source = "producto.productoId")
     @Mapping(target = "productoNombre", source = "producto.nombre")
     @Mapping(target = "demandaPredichaTotal", source = "demandaPredichaTotal")
-    @Mapping(target = "precision", expression = "java(prediccion.getMetricasError() != null ? prediccion.getMetricasError().doubleValue() : 0.0)")
+    @Mapping(target = "precision", source = "metricasError")
     @Mapping(target = "algoritmo", source = "algoritmoUsado")
     @Mapping(target = "fechaGeneracion", source = "fechaEjecucion")
     @Mapping(target = "descripcion", ignore = true)
     @Mapping(target = "vigenciaHasta", ignore = true)
     @Mapping(target = "detallePronostico", ignore = true)
+    @Mapping(target = "estado", ignore = true)
+    @Mapping(target = "descripcionEstado", ignore = true)
     PrediccionResponse prediccionToResponse(Prediccion prediccion);
 
     /**

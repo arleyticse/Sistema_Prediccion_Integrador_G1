@@ -1,7 +1,21 @@
 <p>Inventario</p>
-<div class="mb-4 flex justify-end">
+<div class="mb-4 flex justify-between">
+    <p-button 
+        (click)="abrirImportacion()" 
+        label="Importar CSV" 
+        icon="pi pi-upload"
+        severity="info"
+        [outlined]="true" />
     <p-button (click)="showDialog()" label="Nuevo Inventario" icon="pi pi-plus" />
 </div>
+
+<!-- Componente de importación -->
+<app-importacion-csv
+    #importacionCsv
+    endpoint="/importacion/inventario"
+    tipoImportacion="Inventario"
+    nombrePlantilla="plantilla_inventario.csv"
+    (importacionCompletada)="cargarInventarios()" />
 
 <!-- Dialog para crear/editar inventario -->
 <p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [style]="{ width: '30rem' }">
