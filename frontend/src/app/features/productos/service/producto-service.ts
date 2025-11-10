@@ -31,6 +31,19 @@ export class ProductoService {
     );
   }
 
+  buscarGlobal(nombre: string, page: number, size: number): Observable<PageProductoResponse> {
+    const cacheKey = `productos_buscar_${nombre}_${page}_${size}`;
+    const cached = this.getFromCache<PageProductoResponse>(cacheKey);
+
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.http.get<PageProductoResponse>(`${this.URL}/buscar-global?nombre=${encodeURIComponent(nombre)}&pagina=${page}&tamanioPagina=${size}`).pipe(
+      tap(response => this.setCache(cacheKey, response))
+    );
+  }
+
   crearProducto(producto: ProductoRequest): Observable<ProductoResponse> {
     return this.http.post<ProductoResponse>(this.URL, producto).pipe(
       tap(() => this.invalidateCache())

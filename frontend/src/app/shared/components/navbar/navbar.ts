@@ -29,6 +29,17 @@ export default class NavbarComponent {
 
   items: MenuItem[] = [
     {
+      label: 'Dashboard',
+      icon: 'pi pi-home',
+      routerLink: '/administracion/dashboard'
+    },
+    {
+      label: 'Alertas',
+      icon: 'pi pi-bell',
+      routerLink: '/administracion/alertas-inventario',
+      badge: '0'
+    },
+    {
       label: 'Productos',
       routerLink: '/administracion/productos'
     },

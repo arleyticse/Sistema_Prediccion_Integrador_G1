@@ -1,7 +1,7 @@
 import { Component, inject, signal, ViewChild } from '@angular/core';
 import { KardexResponse } from '../../model/KardexResponse';
 import { KardexCreateRequest } from '../../model/KardexRequest';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { MovimientoService } from '../../service/movimiento-service';
 import { ProductoService } from '../../../productos/service/producto-service';
 import { ProveedorService } from '../../../proveedores/service/proveedor-service';
@@ -20,6 +20,13 @@ import { InputIcon } from 'primeng/inputicon';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { FloatLabel } from 'primeng/floatlabel';
+import { Message } from 'primeng/message';
+import { Toast } from 'primeng/toast';
+import { TextareaModule } from 'primeng/textarea';
+import { DatePipe, CurrencyPipe, DecimalPipe } from '@angular/common';
+import { DatePicker } from 'primeng/datepicker';
 
 interface Column {
   field: keyof KardexResponse | 'acciones';
@@ -45,11 +52,20 @@ interface TipoMovimientoDTO {
     IconField,
     InputIcon,
     FormsModule,
-    ImportacionCsvComponent
+    ImportacionCsvComponent,
+    InputNumberModule,
+    FloatLabel,
+    Message,
+    Toast,
+    TextareaModule,
+    DatePipe,
+    CurrencyPipe,
+    DecimalPipe,
+    DatePicker
   ],
   templateUrl: './movimiento-component.html',
   styleUrl: './movimiento-component.css',
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, MessageService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MovimientoComponent {
@@ -82,7 +98,7 @@ export class MovimientoComponent {
     cantidad: new FormControl<number>(0, [Validators.required, Validators.min(1)]),
     costoUnitario: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
     lote: new FormControl<string>(''),
-    fechaVencimiento: new FormControl<string>(''),
+    fechaVencimiento: new FormControl<Date | null>(null),
     motivo: new FormControl<string>('', Validators.required),
     referencia: new FormControl<string>(''),
     observaciones: new FormControl<string>(''),
@@ -104,9 +120,15 @@ export class MovimientoComponent {
   private readonly productoService = inject(ProductoService);
   private readonly proveedorService = inject(ProveedorService);
   private readonly http = inject(HttpClient);
+  private readonly messageService = inject(MessageService);
 
   constructor() {
     this.cargarDatos();
+  }
+
+  // TrackBy function para optimizar el rendimiento de la tabla
+  trackByKardexId(index: number, item: KardexResponse): number {
+    return item.kardexId ?? index;
   }
 
   private cargarDatos(): void {
@@ -173,7 +195,7 @@ export class MovimientoComponent {
       cantidad: 0,
       costoUnitario: 0,
       lote: '',
-      fechaVencimiento: '',
+      fechaVencimiento: null,
       motivo: '',
       referencia: '',
       observaciones: '',
@@ -199,7 +221,7 @@ export class MovimientoComponent {
       cantidad: 0,
       costoUnitario: 0,
       lote: '',
-      fechaVencimiento: '',
+      fechaVencimiento: null,
       motivo: '',
       referencia: '',
       observaciones: '',
@@ -221,10 +243,13 @@ export class MovimientoComponent {
     }
   }
 
-  private convertToLocalDateTime(dateString: string | null | undefined): string | undefined {
-    if (!dateString) return undefined;
-    // Convierte formato "2025-10-20" a "2025-10-20T00:00:00"
-    return `${dateString}T00:00:00`;
+  private convertToLocalDateTime(date: Date | null | undefined): string | undefined {
+    if (!date) return undefined;
+    // Convierte Date object a formato ISO LocalDateTime "2025-10-20T00:00:00"
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T00:00:00`;
   }
 
   onSubmit(): void {
@@ -248,12 +273,22 @@ export class MovimientoComponent {
 
       this.movimientoService.createKardex(nuevoMovimiento).subscribe(
         () => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Movimiento registrado correctamente' 
+          });
           this.first.set(0);
           this.cargarMovimientos();
           this.closeDialog();
         },
         (error) => {
           console.error('Error creando movimiento:', error);
+          this.messageService.add({ 
+            severity: 'error', 
+            summary: 'Error', 
+            detail: 'No se pudo registrar el movimiento' 
+          });
         }
       );
     }
@@ -267,10 +302,20 @@ export class MovimientoComponent {
       accept: () => {
         this.movimientoService.deleteKardex(movimiento.kardexId!).subscribe(
           () => {
+            this.messageService.add({ 
+              severity: 'success', 
+              summary: 'Éxito', 
+              detail: 'Movimiento anulado correctamente' 
+            });
             this.cargarMovimientos();
           },
           (error) => {
             console.error('Error anulando movimiento:', error);
+            this.messageService.add({ 
+              severity: 'error', 
+              summary: 'Error', 
+              detail: 'No se pudo anular el movimiento' 
+            });
           }
         );
       }

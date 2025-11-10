@@ -1,5 +1,6 @@
 package com.prediccion.apppredicciongm.models.Inventario;
 
+import com.prediccion.apppredicciongm.models.Proveedor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -56,6 +57,10 @@ public class Producto implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_um", referencedColumnName = "id_um")
     private UnidadMedida unidadMedida;
+
+    @ManyToOne
+    @JoinColumn(name = "id_proveedor_principal", referencedColumnName = "id_proveedor")
+    private Proveedor proveedorPrincipal;
 
     @PrePersist
     protected void onCreate() {

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Proveedor } from '../../model/Proveedor';
 import { ProveedorService } from '../../service/proveedor-service';
 import { ButtonModule } from 'primeng/button';
@@ -13,6 +13,10 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { FormsModule } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
 import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
+import { KeyFilterModule } from 'primeng/keyfilter';
+import { MessageModule } from 'primeng/message';
+import { FloatLabel } from 'primeng/floatlabel';
+import { Toast } from 'primeng/toast';
 
 interface Column {
   field: keyof Proveedor | 'acciones';
@@ -32,12 +36,16 @@ interface Column {
     CheckboxModule,
     FormsModule,
     TextareaModule,
-    ImportacionCsvComponent
+    ImportacionCsvComponent,
+    KeyFilterModule,
+    MessageModule,
+    FloatLabel,
+    Toast
   ],
   templateUrl: './proveedor-component.html',
   styleUrl: './proveedor-component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ConfirmationService]
+  providers: [ConfirmationService, MessageService]
 })
 export class ProveedorComponent {
   @ViewChild('importacionCsv') importacionCsv!: ImportacionCsvComponent;
@@ -76,6 +84,7 @@ export class ProveedorComponent {
 
   private readonly confirmationService = inject(ConfirmationService);
   private readonly proveedorService = inject(ProveedorService);
+  private readonly messageService = inject(MessageService);
 
   constructor() {
     this.cargarProveedores();
@@ -134,11 +143,21 @@ export class ProveedorComponent {
 
       if (this.isEditing()) {
         this.proveedorService.updateProveedor(this.proveedorIdSeleccionado()!, formValue).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Proveedor actualizado correctamente' 
+          });
           this.cargarProveedores();
           this.closeDialog();
         });
       } else {
         this.proveedorService.createProveedor(formValue).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Proveedor creado correctamente' 
+          });
           this.cargarProveedores();
           this.closeDialog();
         });
@@ -153,6 +172,11 @@ export class ProveedorComponent {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.proveedorService.deleteProveedor(proveedor.proveedorId).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Proveedor eliminado correctamente' 
+          });
           this.cargarProveedores();
         });
       }

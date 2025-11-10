@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import com.prediccion.apppredicciongm.models.Inventario.Categoria;
 import com.prediccion.apppredicciongm.models.Inventario.UnidadMedida;
+import com.prediccion.apppredicciongm.models.Proveedor;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class ProductoResponse {
     private String nombre;
     private Categoria categoria;
     private UnidadMedida unidadMedida;
+    private Proveedor proveedorPrincipal;
     private Integer diasLeadTime;
     private BigDecimal costoAdquisicion;
     private BigDecimal costoMantenimiento;

@@ -25,6 +25,9 @@ public class ProductoCreateRequest {
     @NotNull(message = "La unidad de medida es obligatoria")
     private Integer unidadMedidaId;
     
+    @NotNull(message = "El proveedor principal es obligatorio")
+    private Integer proveedorId;
+    
     @NotNull(message = "Los días de lead time son obligatorios")
     @Min(value = 1, message = "Los días de lead time deben ser al menos 1")
     private Integer diasLeadTime;

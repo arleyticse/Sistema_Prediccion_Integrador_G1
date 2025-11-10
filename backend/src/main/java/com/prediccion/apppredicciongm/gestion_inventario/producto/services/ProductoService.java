@@ -23,7 +23,9 @@ import com.prediccion.apppredicciongm.models.Inventario.Categoria;
 import com.prediccion.apppredicciongm.models.Inventario.Inventario;
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
 import com.prediccion.apppredicciongm.models.Inventario.UnidadMedida;
+import com.prediccion.apppredicciongm.models.Proveedor;
 import com.prediccion.apppredicciongm.repository.ICategoriaRepositorio;
+import com.prediccion.apppredicciongm.repository.IProveedorRepositorio;
 import com.prediccion.apppredicciongm.repository.IUnidadMedidaRepositorio;
 
 import lombok.RequiredArgsConstructor;
@@ -60,6 +62,11 @@ public class ProductoService implements IProductoServicio {
      * @return Producto creado con ID generado
      * @throws IllegalArgumentException Si la categoría o unidad de medida no existen
      */
+    /**
+     * Inyección del repositorio de proveedores
+     */
+    private final IProveedorRepositorio proveedorRepositorio;
+
     @Override
     @Transactional
     public ProductoResponse crearProducto(ProductoCreateRequest request) {
@@ -77,16 +84,25 @@ public class ProductoService implements IProductoServicio {
                     return new IllegalArgumentException("Unidad de medida no encontrada con ID: " + request.getUnidadMedidaId());
                 });
         
+        Proveedor proveedor = proveedorRepositorio.findById(request.getProveedorId())
+                .orElseThrow(() -> {
+                    log.error("Proveedor no encontrado: {}", request.getProveedorId());
+                    return new IllegalArgumentException("Proveedor no encontrado con ID: " + request.getProveedorId());
+                });
+        
         Producto producto = productoMapper.toEntity(request);
         producto.setCategoria(categoria);
         producto.setUnidadMedida(unidadMedida);
+        producto.setProveedorPrincipal(proveedor);
         
         BigDecimal costoMantenimientoAnual = request.getCostoMantenimiento()
                 .multiply(BigDecimal.valueOf(365));
         producto.setCostoMantenimientoAnual(costoMantenimientoAnual);
         
         Producto productoGuardado = productoRepositorio.save(producto);
-        log.info("Producto creado exitosamente - ID: {}, Nombre: {}", productoGuardado.getProductoId(), productoGuardado.getNombre());
+        log.info("Producto creado exitosamente - ID: {}, Nombre: {}, Proveedor: {}", 
+            productoGuardado.getProductoId(), productoGuardado.getNombre(), 
+            proveedor.getNombreComercial());
         
         ProductoResponse response = productoMapper.toResponse(productoGuardado);
         response.setTieneInventario(false);
@@ -108,6 +124,16 @@ public class ProductoService implements IProductoServicio {
         
         productoMapper.updateEntityFromDto(request, producto);
         
+        // Si se envía proveedor en request, actualizar la relación
+        if (request.getProveedorId() != null) {
+            Proveedor proveedor = proveedorRepositorio.findById(request.getProveedorId())
+                    .orElseThrow(() -> {
+                        log.error("Proveedor no encontrado al actualizar producto: {}", request.getProveedorId());
+                        return new IllegalArgumentException("Proveedor no encontrado con ID: " + request.getProveedorId());
+                    });
+            producto.setProveedorPrincipal(proveedor);
+        }
+
         if (request.getCostoMantenimiento() != null) {
             BigDecimal costoMantenimientoAnual = request.getCostoMantenimiento()
                     .multiply(BigDecimal.valueOf(365));
@@ -272,6 +298,36 @@ public class ProductoService implements IProductoServicio {
                 PageRequest.of(pagina, tamanioPagina));
         
         log.info("Se encontraron {} productos con nombre similar a: {}", productos.getTotalElements(), nombre);
+        return productos.map(this::enrichProductoResponse);
+    }
+    
+    /**
+     * Busca todos los productos por nombre con paginación (búsqueda global).
+     * 
+     * Realiza una búsqueda case-insensitive en todos los registros de la base de datos,
+     * no solo en la página actual. Mantiene escalabilidad mediante paginación incluso
+     * para catálogos muy grandes. Los resultados se ordenan alfabéticamente.
+     * 
+     * Busca a través de TODA la base de datos, no limitándose a un rango específico
+     * de datos pre-paginados. Esto permite buscar en todos los registros independientemente
+     * del tamaño actual de la página de consulta anterior.
+     * 
+     * @param nombre Nombre o parte del nombre a buscar
+     * @param pagina Número de página (0-indexado)
+     * @param tamanioPagina Cantidad de resultados por página
+     * @return Página de productos que coinciden con el criterio
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductoResponse> buscarGlobalPorNombre(String nombre, int pagina, int tamanioPagina) {
+        log.debug("Ejecutando búsqueda global paginada por nombre: {}", nombre);
+        
+        Page<Producto> productos = productoRepositorio.buscarGlobalPorNombre(nombre, 
+                PageRequest.of(pagina, tamanioPagina));
+        
+        log.info("Búsqueda global completada - Página {} de {}, encontrados {} productos totales con nombre similar a: {}", 
+            pagina, productos.getTotalPages(), productos.getTotalElements(), nombre);
+        
         return productos.map(this::enrichProductoResponse);
     }
     

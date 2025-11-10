@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { PaginatorState } from 'primeng/paginator';
 import { InventarioService } from '../../service/inventario-service';
 import { ProductoService } from '../../../productos/service/producto-service';
@@ -17,6 +17,9 @@ import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
+import { TextareaModule } from 'primeng/textarea';
+import { Toast } from 'primeng/toast';
+import { Message } from 'primeng/message';
 
 interface Column {
   field: keyof InventarioResponse | 'acciones' | 'producto';
@@ -36,12 +39,15 @@ interface Column {
     SelectModule,
     DialogModule,
     FormsModule,
-    ImportacionCsvComponent
+    ImportacionCsvComponent,
+    TextareaModule,
+    Toast,
+    Message
   ],
   templateUrl: './inventario-component.html',
   styleUrl: './inventario-component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ConfirmationService]
+  providers: [ConfirmationService, MessageService]
 })
 export class InventarioComponent {
   @ViewChild('importacionCsv') importacionCsv!: ImportacionCsvComponent;
@@ -63,10 +69,10 @@ export class InventarioComponent {
   inventarioForm = new FormGroup({
     producto: new FormControl<ProductoResponse | null>(null, Validators.required),
     stockDisponible: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
-    stockReservado: new FormControl<number>(0, [Validators.min(0)]),
-    stockEnTransito: new FormControl<number>(0, [Validators.min(0)]),
+    stockReservado: new FormControl<number>(0, [Validators.min(0), Validators.required]),
+    stockEnTransito: new FormControl<number>(0, [Validators.min(0), Validators.required]),
     stockMinimo: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
-    stockMaximo: new FormControl<number>(0, [Validators.min(0)]),
+    stockMaximo: new FormControl<number>(0, [Validators.min(0), Validators.required]),
     puntoReorden: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
     ubicacionAlmacen: new FormControl<string>(''),
     observaciones: new FormControl<string>('')
@@ -85,6 +91,7 @@ export class InventarioComponent {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly inventarioService = inject(InventarioService);
   private readonly productoService = inject(ProductoService);
+  private readonly messageService = inject(MessageService);
 
   constructor() {
     this.cargarDatos();
@@ -140,7 +147,6 @@ export class InventarioComponent {
     this.isEditing.set(true);
     this.inventarioIdSeleccionado.set(inventario.inventarioId);
     
-    // Buscar el producto en la lista para setear el objeto completo
     const producto = this.productos().find(p => p.productoId === inventario.productoId);
     
     this.inventarioForm.patchValue({
@@ -181,11 +187,21 @@ export class InventarioComponent {
 
       if (this.isEditing()) {
         this.inventarioService.actualizarInventario(this.inventarioIdSeleccionado()!, inventarioData).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Inventario actualizado correctamente' 
+          });
           this.cargarInventarios();
           this.closeDialog();
         });
       } else {
         this.inventarioService.crearInventario(inventarioData).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Inventario creado correctamente' 
+          });
           this.first.set(0);
           this.cargarInventarios();
           this.closeDialog();
@@ -201,6 +217,11 @@ export class InventarioComponent {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.inventarioService.eliminarInventario(inventario.inventarioId).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Inventario eliminado correctamente' 
+          });
           this.cargarInventarios();
         });
       }

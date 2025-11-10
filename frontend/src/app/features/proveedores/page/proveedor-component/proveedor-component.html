@@ -11,147 +11,170 @@
     nombrePlantilla="plantilla_proveedores.csv"
     (importacionCompletada)="cargarProveedores()" />
 
-<!-- Dialog para crear/editar proveedor -->
-<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [style]="{ width: '40rem' }">
+<!-- Dialog modal no draggable -->
+<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '50rem' }">
     <ng-template #header>
-        <h2>{{ isEditing() ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+        <h2 class="text-3xl">{{ isEditing() ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
     </ng-template>
 
-    <form [formGroup]="proveedorForm" (ngSubmit)="onSubmit()">
-        <div class="p-fluid">
-            <!-- Razón Social -->
-            <div class="flex flex-col mb-4">
-                <label for="razonSocial">Razón Social</label>
-                <input id="razonSocial" type="text" pInputText formControlName="razonSocial" />
-                @if (proveedorForm.get('razonSocial')?.hasError('required') && proveedorForm.get('razonSocial')?.touched) {
-                    <small class="p-error">Razón social requerida</small>
-                }
+    <form [formGroup]="proveedorForm" (ngSubmit)="onSubmit()" class="min-h-[27rem]">
+        <div class="space-y-6">
+            <!-- Sección 1: Razón Social y Nombre Comercial -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="razonSocial" pInputText formControlName="razonSocial" pKeyFilter="alpha" class="w-full"
+                            [invalid]="proveedorForm.get('razonSocial')?.hasError('required') && proveedorForm.get('razonSocial')?.touched" />
+                        <label for="razonSocial">Razón Social</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('razonSocial')?.hasError('required') && proveedorForm.get('razonSocial')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Razón social requerida</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="nombreComercial" pInputText formControlName="nombreComercial" pKeyFilter="alphanum" class="w-full"
+                            [invalid]="proveedorForm.get('nombreComercial')?.hasError('required') && proveedorForm.get('nombreComercial')?.touched" />
+                        <label for="nombreComercial">Nombre Comercial</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('nombreComercial')?.hasError('required') && proveedorForm.get('nombreComercial')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Nombre comercial requerido</p-message>
+                    }
+                </div>
             </div>
 
-            <!-- Nombre Comercial -->
-            <div class="flex flex-col mb-4">
-                <label for="nombreComercial">Nombre Comercial</label>
-                <input id="nombreComercial" type="text" pInputText formControlName="nombreComercial" />
-                @if (proveedorForm.get('nombreComercial')?.hasError('required') && proveedorForm.get('nombreComercial')?.touched) {
-                    <small class="p-error">Nombre comercial requerido</small>
-                }
+            <!-- Sección 2: RUC/NIT y Teléfono -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="rucNit" pInputText formControlName="rucNit" pKeyFilter="int" class="w-full"
+                            [invalid]="proveedorForm.get('rucNit')?.hasError('required') && proveedorForm.get('rucNit')?.touched" />
+                        <label for="rucNit">RUC/NIT</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('rucNit')?.hasError('required') && proveedorForm.get('rucNit')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">RUC/NIT requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="telefono" pInputText formControlName="telefono" pKeyFilter="num" class="w-full"
+                            [invalid]="proveedorForm.get('telefono')?.hasError('required') && proveedorForm.get('telefono')?.touched" />
+                        <label for="telefono">Teléfono</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('telefono')?.hasError('required') && proveedorForm.get('telefono')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Teléfono requerido</p-message>
+                    }
+                </div>
             </div>
 
-            <!-- RUC/NIT -->
-            <div class="flex flex-col mb-4">
-                <label for="rucNit">RUC/NIT</label>
-                <input id="rucNit" type="text" pInputText formControlName="rucNit" />
-                @if (proveedorForm.get('rucNit')?.hasError('required') && proveedorForm.get('rucNit')?.touched) {
-                    <small class="p-error">RUC/NIT requerido</small>
-                }
-            </div>
-
-            <!-- Email -->
-            <div class="flex flex-col mb-4">
-                <label for="email">Email</label>
-                <input id="email" type="email" pInputText formControlName="email" />
+            <!-- Sección 3: Email -->
+            <div class="field">
+                <p-floatlabel>
+                    <input id="email" pInputText formControlName="email" type="email" class="w-full"
+                        [invalid]="(proveedorForm.get('email')?.hasError('required') || proveedorForm.get('email')?.hasError('email')) && proveedorForm.get('email')?.touched" />
+                    <label for="email">Email</label>
+                </p-floatlabel>
                 @if (proveedorForm.get('email')?.hasError('required') && proveedorForm.get('email')?.touched) {
-                    <small class="p-error">Email requerido</small>
+                    <p-message severity="error" variant="simple" size="small">Email requerido</p-message>
                 }
                 @if (proveedorForm.get('email')?.hasError('email') && proveedorForm.get('email')?.touched) {
-                    <small class="p-error">Email no válido</small>
+                    <p-message severity="error" variant="simple" size="small">Email no válido</p-message>
                 }
             </div>
 
-            <!-- Teléfono -->
-            <div class="flex flex-col mb-4">
-                <label for="telefono">Teléfono</label>
-                <input id="telefono" type="text" pInputText formControlName="telefono" />
-                @if (proveedorForm.get('telefono')?.hasError('required') && proveedorForm.get('telefono')?.touched) {
-                    <small class="p-error">Teléfono requerido</small>
-                }
+            <!-- Sección 4: Dirección, Ciudad y País -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="direccion" pInputText formControlName="direccion" pKeyFilter="alphanum" class="w-full"
+                            [invalid]="proveedorForm.get('direccion')?.hasError('required') && proveedorForm.get('direccion')?.touched" />
+                        <label for="direccion">Dirección</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('direccion')?.hasError('required') && proveedorForm.get('direccion')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Dirección requerida</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="ciudad" pInputText formControlName="ciudad" pKeyFilter="alpha" class="w-full"
+                            [invalid]="proveedorForm.get('ciudad')?.hasError('required') && proveedorForm.get('ciudad')?.touched" />
+                        <label for="ciudad">Ciudad</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('ciudad')?.hasError('required') && proveedorForm.get('ciudad')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Ciudad requerida</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="pais" pInputText formControlName="pais" pKeyFilter="alpha" class="w-full"
+                            [invalid]="proveedorForm.get('pais')?.hasError('required') && proveedorForm.get('pais')?.touched" />
+                        <label for="pais">País</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('pais')?.hasError('required') && proveedorForm.get('pais')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">País requerido</p-message>
+                    }
+                </div>
             </div>
 
-            <!-- Dirección -->
-            <div class="flex flex-col mb-4">
-                <label for="direccion">Dirección</label>
-                <input id="direccion" type="text" pInputText formControlName="direccion" />
-                @if (proveedorForm.get('direccion')?.hasError('required') && proveedorForm.get('direccion')?.touched) {
-                    <small class="p-error">Dirección requerida</small>
-                }
-            </div>
-
-            <!-- Ciudad -->
-            <div class="flex flex-col mb-4">
-                <label for="ciudad">Ciudad</label>
-                <input id="ciudad" type="text" pInputText formControlName="ciudad" />
-                @if (proveedorForm.get('ciudad')?.hasError('required') && proveedorForm.get('ciudad')?.touched) {
-                    <small class="p-error">Ciudad requerida</small>
-                }
-            </div>
-
-            <!-- País -->
-            <div class="flex flex-col mb-4">
-                <label for="pais">País</label>
-                <input id="pais" type="text" pInputText formControlName="pais" />
-                @if (proveedorForm.get('pais')?.hasError('required') && proveedorForm.get('pais')?.touched) {
-                    <small class="p-error">País requerido</small>
-                }
-            </div>
-
-            <!-- Persona de Contacto -->
-            <div class="flex flex-col mb-4">
-                <label for="personaContacto">Persona de Contacto</label>
-                <input id="personaContacto" type="text" pInputText formControlName="personaContacto" />
+            <!-- Sección 5: Persona de Contacto -->
+            <div class="field">
+                <p-floatlabel>
+                    <input id="personaContacto" pInputText formControlName="personaContacto" pKeyFilter="alpha" class="w-full"
+                        [invalid]="proveedorForm.get('personaContacto')?.hasError('required') && proveedorForm.get('personaContacto')?.touched" />
+                    <label for="personaContacto">Persona de Contacto</label>
+                </p-floatlabel>
                 @if (proveedorForm.get('personaContacto')?.hasError('required') && proveedorForm.get('personaContacto')?.touched) {
-                    <small class="p-error">Persona de contacto requerida</small>
+                    <p-message severity="error" variant="simple" size="small">Persona de contacto requerida</p-message>
                 }
             </div>
 
-            <!-- Tiempo de Entrega (días) -->
-            <div class="flex flex-col mb-4">
-                <label for="tiempoEntregaDias">Tiempo de Entrega (días)</label>
-                <p-inputNumber 
-                    id="tiempoEntregaDias"
-                    formControlName="tiempoEntregaDias"
-                    [min]="1"
-                    placeholder="Cantidad de días" />
-                @if (proveedorForm.get('tiempoEntregaDias')?.hasError('required') && proveedorForm.get('tiempoEntregaDias')?.touched) {
-                    <small class="p-error">Tiempo de entrega requerido</small>
-                }
+            <!-- Sección 6: Tiempo de Entrega, Días de Crédito y Calificación -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="tiempoEntregaDias" formControlName="tiempoEntregaDias" [min]="1" class="w-full" suffix=" días" />
+                        <label for="tiempoEntregaDias">Tiempo de Entrega (días)</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('tiempoEntregaDias')?.hasError('required') && proveedorForm.get('tiempoEntregaDias')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Tiempo de entrega requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="diasCredito" formControlName="diasCredito" [min]="0" class="w-full" suffix=" días" />
+                        <label for="diasCredito">Días de Crédito</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('diasCredito')?.hasError('required') && proveedorForm.get('diasCredito')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Días de crédito requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="calificacion" formControlName="calificacion" [min]="0" [max]="10" class="w-full" suffix="/10" />
+                        <label for="calificacion">Calificación (0-10)</label>
+                    </p-floatlabel>
+                    @if (proveedorForm.get('calificacion')?.hasError('required') && proveedorForm.get('calificacion')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Calificación requerida</p-message>
+                    }
+                </div>
             </div>
 
-            <!-- Días de Crédito -->
-            <div class="flex flex-col mb-4">
-                <label for="diasCredito">Días de Crédito</label>
-                <p-inputNumber 
-                    id="diasCredito"
-                    formControlName="diasCredito"
-                    [min]="0"
-                    placeholder="Cantidad de días" />
-                @if (proveedorForm.get('diasCredito')?.hasError('required') && proveedorForm.get('diasCredito')?.touched) {
-                    <small class="p-error">Días de crédito requerido</small>
-                }
-            </div>
-
-            <!-- Calificación -->
-            <div class="flex flex-col mb-4">
-                <label for="calificacion">Calificación (0-10)</label>
-                <p-inputNumber 
-                    id="calificacion"
-                    formControlName="calificacion"
-                    [min]="0"
-                    [max]="10"
-                    placeholder="Calificación" />
-                @if (proveedorForm.get('calificacion')?.hasError('required') && proveedorForm.get('calificacion')?.touched) {
-                    <small class="p-error">Calificación requerida</small>
-                }
-            </div>
-
-            <!-- Observaciones -->
-            <div class="flex flex-col mb-4">
-                <label for="observaciones">Observaciones</label>
+            <!-- Sección 7: Observaciones -->
+            <div class="field">
+                <label for="observaciones" class="block mb-2">Observaciones</label>
                 <textarea 
                     id="observaciones"
                     pInputTextarea
                     formControlName="observaciones"
-                    cols="30"
-                    rows="5"
+                    rows="3"
+                    class="w-full"
                     placeholder="Notas adicionales..."
                     [autoResize]="true"></textarea>
             </div>
@@ -171,6 +194,8 @@
             (click)="closeDialog()" />
     </ng-template>
 </p-dialog>
+
+<p-toast />
 
 <!-- Tabla de Proveedores -->
 <p-table 

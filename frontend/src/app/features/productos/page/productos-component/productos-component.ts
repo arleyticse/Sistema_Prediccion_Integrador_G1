@@ -11,14 +11,19 @@ import { CategoriaServicio } from '../../../categorias/services/categoria-servic
 import { UnidaMedidaService } from '../../../unidades-medida/service/unida-medida-service';
 import { UnidadMedida } from '../../../unidades-medida/models/UnidadMedida';
 import { Select } from 'primeng/select';
+import { ProveedorService } from '../../../proveedores/service/proveedor-service';
+import { Proveedor } from '../../../proveedores/model/Proveedor';
 import { TableModule } from 'primeng/table';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProductoRequest } from '../../models/ProductoRequest';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { MessageModule } from 'primeng/message';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
+import { FloatLabel } from "primeng/floatlabel";
 
 interface Column {
   field: keyof ProductoResponse | 'acciones';
@@ -27,19 +32,22 @@ interface Column {
 @Component({
   selector: 'app-productos-component',
   imports: [
-    Dialog, 
-    ButtonModule, 
-    InputTextModule, 
-    ReactiveFormsModule, 
-    Select, 
-    TableModule, 
-    ConfirmDialogModule, 
+    Dialog,
+    ButtonModule,
+    InputTextModule,
+    ReactiveFormsModule,
+    Select,
+    TableModule,
+    ConfirmDialogModule,
     PaginatorModule,
-    IconField, 
+    IconField,
     InputIcon,
+    InputNumberModule,
+    MessageModule,
     FormsModule,
-    ImportacionCsvComponent
-  ],
+    ImportacionCsvComponent,
+    FloatLabel
+],
   templateUrl: './productos-component.html',
   styleUrl: './productos-component.css',
   providers: [ConfirmationService],
@@ -54,6 +62,7 @@ export class ProductosComponent {
   visible = signal<boolean>(false);
   categorias = signal<Categoria[]>([]);
   unidadMedidas = signal<UnidadMedida[]>([]);
+  proveedores = signal<Proveedor[]>([]);
   isEditing = signal<boolean>(false);
   productoIdSeleccionado = signal<number | null>(null);
   searchValue = signal<string>('');
@@ -68,7 +77,8 @@ export class ProductosComponent {
     nombre: new FormControl<string>('', Validators.required),
     categoria: new FormControl<Categoria | null>(null, Validators.required),
     unidadMedida: new FormControl<UnidadMedida | null>(null, Validators.required),
-    diasLeadTime: new FormControl<number>(0, [Validators.required, Validators.min(1)]),
+    proveedor: new FormControl<Proveedor | null>(null, Validators.required),
+    diasLeadTime: new FormControl<number>(0, [Validators.required, Validators.min(1), Validators.max(30)]),
     costoAdquisicion: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
     costoMantenimiento: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
     costoPedido: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
@@ -88,6 +98,7 @@ private readonly confirmationService = inject(ConfirmationService);
 private readonly productoService = inject(ProductoService);
 private readonly categoriaService = inject(CategoriaServicio);
 private readonly unidadMedidaService = inject(UnidaMedidaService);
+private readonly proveedorService = inject(ProveedorService);
 
   constructor() {
     this.cargarDatos();
@@ -101,16 +112,28 @@ private readonly unidadMedidaService = inject(UnidaMedidaService);
     this.unidadMedidaService.obtenerUnidadesMedida().subscribe(unidades => {
       this.unidadMedidas.set(unidades);
     });
+    this.proveedorService.getProveedores().subscribe(provs => {
+      this.proveedores.set(provs || []);
+    });
   }
 
   cargarProductos(): void {
     this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
-    this.productoService.obtenerProductos(page, this.rows()).subscribe(response => {
-      this.productos.set(response.content);
-      this.totalRecords.set(response.page.totalElements);
-      this.loading.set(false);
-    });
+    const search = this.searchValue();
+    if (search && search.trim().length > 0) {
+      this.productoService.buscarGlobal(search, page, this.rows()).subscribe(response => {
+        this.productos.set(response.content);
+        this.totalRecords.set((response as any).totalElements ?? (response as any).page?.totalElements ?? 0);
+        this.loading.set(false);
+      });
+    } else {
+      this.productoService.obtenerProductos(page, this.rows()).subscribe(response => {
+        this.productos.set(response.content);
+        this.totalRecords.set(response.page.totalElements);
+        this.loading.set(false);
+      });
+    }
   }
 
   abrirImportacion(): void {
@@ -135,6 +158,7 @@ private readonly unidadMedidaService = inject(UnidaMedidaService);
       nombre: producto.nombre,
       categoria: producto.categoria,
       unidadMedida: producto.unidadMedida,
+      proveedor: (producto as any).proveedorPrincipal ?? null,
       diasLeadTime: producto.diasLeadTime,
       costoAdquisicion: producto.costoAdquisicion,
       costoMantenimiento: producto.costoMantenimiento,
@@ -157,9 +181,10 @@ clearSearch(): void {
 }
   onSearchChange(value: string): void {
   this.searchValue.set(value);
-  if (this.dataTable) {
-    this.dataTable.filterGlobal(value, 'contains');
-  }
+  // Trigger server search (global) when user types; show spinner
+  this.loading.set(true);
+  this.first.set(0);
+  this.cargarProductos();
 }
   onSubmit(): void {
     if (this.productoForm.valid) {
@@ -169,6 +194,7 @@ clearSearch(): void {
           nombre: formValue.nombre!,
           categoriaId: formValue.categoria!.categoriaId!,
           unidadMedidaId: formValue.unidadMedida!.unidadMedidaId!,
+          proveedorId: formValue.proveedor?.proveedorId ?? null,
           diasLeadTime: formValue.diasLeadTime!,
           costoAdquisicion: formValue.costoAdquisicion!,
           costoMantenimiento: formValue.costoMantenimiento!,
@@ -183,6 +209,7 @@ clearSearch(): void {
           nombre: formValue.nombre!,
           categoriaId: formValue.categoria!.categoriaId!,
           unidadMedidaId: formValue.unidadMedida!.unidadMedidaId!,
+          proveedorId: formValue.proveedor?.proveedorId ?? null,
           diasLeadTime: formValue.diasLeadTime!,
           costoAdquisicion: formValue.costoAdquisicion!,
           costoMantenimiento: formValue.costoMantenimiento!,

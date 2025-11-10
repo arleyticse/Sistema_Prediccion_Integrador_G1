@@ -3,7 +3,7 @@ import { ManagementLayouts } from './layouts/management-layouts/management-layou
 import { authGuard } from './core/guards/auth';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/administracion', pathMatch: 'full' },
+    { path: '', redirectTo: '/administracion/dashboard', pathMatch: 'full' },
     {
         path: 'login',
         loadComponent: () =>
@@ -14,6 +14,17 @@ export const routes: Routes = [
         component: ManagementLayouts,
         canActivate: [authGuard],
         children: [
+            {
+                path: '',
+                redirectTo: 'dashboard',
+                pathMatch: 'full'
+            },
+            {
+                path: 'dashboard',
+                loadComponent: () =>
+                    import('./features/dashboard/page/dashboard-principal/dashboard-principal')
+                        .then(m => m.default)
+            },
             {
                 path: 'categorias',
                 loadComponent: () =>
@@ -61,6 +72,12 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./features/ordenes-compra/page/ordenes-compra/ordenes-compra')
                         .then(m => m.OrdenesCompraComponent)
+            },
+            {
+                path: 'alertas-inventario',
+                loadComponent: () =>
+                    import('./features/alertas-inventario/page/dashboard-alertas/dashboard-alertas')
+                        .then(m => m.default)
             }
         ]
     },

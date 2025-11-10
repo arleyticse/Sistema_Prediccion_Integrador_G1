@@ -14,6 +14,7 @@ public interface ProductoMapper {
     @Mapping(target = "productoId", ignore = true)
     @Mapping(target = "categoria", ignore = true)
     @Mapping(target = "unidadMedida", ignore = true)
+    @Mapping(target = "proveedorPrincipal", ignore = true)
     @Mapping(target = "fechaRegistro", ignore = true)
     @Mapping(target = "costoMantenimientoAnual", ignore = true)
     Producto toEntity(ProductoCreateRequest request);
@@ -21,6 +22,7 @@ public interface ProductoMapper {
     @Mapping(source = "productoId", target = "productoId")
     @Mapping(source = "categoria", target = "categoria")
     @Mapping(source = "unidadMedida.", target = "unidadMedida")
+    @Mapping(source = "proveedorPrincipal", target = "proveedorPrincipal")
     @Mapping(target = "tieneInventario", ignore = true)
     @Mapping(target = "stockDisponible", ignore = true)
     @Mapping(target = "stockMinimo", ignore = true)
@@ -37,6 +39,7 @@ public interface ProductoMapper {
     @Mapping(target = "productoId", ignore = true)
     @Mapping(target = "categoria", ignore = true)
     @Mapping(target = "unidadMedida", ignore = true)
+    @Mapping(target = "proveedorPrincipal", ignore = true)
     @Mapping(target = "fechaRegistro", ignore = true)
     @Mapping(target = "costoMantenimientoAnual", ignore = true)
     void updateEntityFromDto(ProductoCreateRequest request, @MappingTarget Producto producto);

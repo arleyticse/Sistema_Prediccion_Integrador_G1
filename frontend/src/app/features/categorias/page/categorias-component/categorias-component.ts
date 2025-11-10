@@ -3,12 +3,16 @@ import { Categoria } from '../../models/Categoria';
 import { CategoriaServicio } from '../../services/categoria-servicio';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabel } from 'primeng/floatlabel';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import { KeyFilterModule } from 'primeng/keyfilter';
+import { MessageModule } from 'primeng/message';
+import { Dialog } from 'primeng/dialog';
+import { Toast } from 'primeng/toast';
 
 interface Column {
   field: keyof Categoria | 'acciones';
@@ -18,18 +22,22 @@ interface Column {
 
 @Component({
   selector: 'app-categorias-component',
-  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule],
+  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule, KeyFilterModule, MessageModule, ReactiveFormsModule, Dialog, Toast],
   templateUrl: './categorias-component.html',
   styleUrl: './categorias-component.css',
-  providers: [ConfirmationService]
+  providers: [ConfirmationService, MessageService]
 })
 export class CategoriasComponent {
 
   categorias = signal<Categoria[]>([]);
-
-  nombreCategoria = signal<string>('');
+  visible = signal<boolean>(false);
+  isEditing = signal<boolean>(false);
   categoriaId = signal<number | null>(null);
   loading = signal<boolean>(false);
+
+  categoriaForm = new FormGroup({
+    nombre: new FormControl<string>('', Validators.required)
+  });
 
   cols: Column[] = [
     { field: 'categoriaId', header: 'ID' },
@@ -39,6 +47,7 @@ export class CategoriasComponent {
 
   private categoriaServicio = inject(CategoriaServicio);
   private confirmationService = inject(ConfirmationService);
+  private messageService = inject(MessageService);
 
   constructor() {
     this.cargarCategorias();
@@ -53,9 +62,27 @@ export class CategoriasComponent {
     });
   }
 
+  showDialog(): void {
+    this.isEditing.set(false);
+    this.categoriaId.set(null);
+    this.categoriaForm.reset();
+    this.visible.set(true);
+  }
+
+  closeDialog(): void {
+    this.visible.set(false);
+    this.categoriaId.set(null);
+    this.categoriaForm.reset();
+    this.isEditing.set(false);
+  }
+
   editar(categoria: Categoria): void {
-    this.nombreCategoria.set(categoria.nombre);
+    this.isEditing.set(true);
     this.categoriaId.set(categoria.categoriaId);
+    this.categoriaForm.patchValue({
+      nombre: categoria.nombre
+    });
+    this.visible.set(true);
   }
 
   eliminar(categoria: Categoria): void {
@@ -65,37 +92,50 @@ export class CategoriasComponent {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.categoriaServicio.eliminarCategoria(categoria.categoriaId!).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Categoría eliminada correctamente' 
+          });
           this.cargarCategorias();
         });
       }
     });
   }
 
-  actualizarCategoria() {
-    const categoriaActualizada: Categoria = {
-      categoriaId: this.categoriaId()!,
-      nombre: this.nombreCategoria()
-    };
-    this.categoriaServicio.actualizarCategoria(categoriaActualizada).subscribe(() => {
-      this.cargarCategorias();
-    });
-    this.categoriaId.set(null);
-    this.nombreCategoria.set('');
-  }
-
-
-  nuevaCategoria() {
-    const nuevaCategoria: Categoria = {
-      categoriaId: null,
-      nombre: this.nombreCategoria()
-    };
-    this.categoriaServicio.crearCategoria(nuevaCategoria).subscribe(() => {
-      this.cargarCategorias();
-    });
-    this.nombreCategoria.set('');
-  }
-  cancelar() {
-    this.categoriaId.set(null);
-    this.nombreCategoria.set('');
+  onSubmit(): void {
+    if (this.categoriaForm.valid) {
+      const formValue = this.categoriaForm.value;
+      
+      if (this.isEditing()) {
+        const categoriaActualizada: Categoria = {
+          categoriaId: this.categoriaId()!,
+          nombre: formValue.nombre!
+        };
+        this.categoriaServicio.actualizarCategoria(categoriaActualizada).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Categoría actualizada correctamente' 
+          });
+          this.cargarCategorias();
+          this.closeDialog();
+        });
+      } else {
+        const nuevaCategoria: Categoria = {
+          categoriaId: null,
+          nombre: formValue.nombre!
+        };
+        this.categoriaServicio.crearCategoria(nuevaCategoria).subscribe(() => {
+          this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Categoría creada correctamente' 
+          });
+          this.cargarCategorias();
+          this.closeDialog();
+        });
+      }
+    }
   }
 }

@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -49,6 +49,9 @@ public class SeguridadConfig {
                                                                 "/api/catalogos/**",
                                                                 "/api/importacion/*/plantilla",
                                                                 "/api/importacion/*/validar",
+                                                                "/api/alertas-inventario/jobs/**",
+                                                                "/api/alertas-inventario/dashboard",
+                                                                "/api/normalizacion/**",
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html"

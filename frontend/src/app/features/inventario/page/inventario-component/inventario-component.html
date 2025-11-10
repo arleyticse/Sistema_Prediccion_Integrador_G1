@@ -1,51 +1,34 @@
-<p>Inventario</p>
 <div class="mb-4 flex justify-between">
-    <p-button 
-        (click)="abrirImportacion()" 
-        label="Importar CSV" 
-        icon="pi pi-upload"
-        severity="info"
-        [outlined]="true" />
+    <p-button (click)="abrirImportacion()" label="Importar CSV" icon="pi pi-upload" severity="info" [outlined]="true" />
     <p-button (click)="showDialog()" label="Nuevo Inventario" icon="pi pi-plus" />
 </div>
 
 <!-- Componente de importación -->
-<app-importacion-csv
-    #importacionCsv
-    endpoint="/importacion/inventario"
-    tipoImportacion="Inventario"
-    nombrePlantilla="plantilla_inventario.csv"
-    (importacionCompletada)="cargarInventarios()" />
+<app-importacion-csv #importacionCsv endpoint="/importacion/inventario" tipoImportacion="Inventario"
+    nombrePlantilla="plantilla_inventario.csv" (importacionCompletada)="cargarInventarios()" />
 
-<!-- Dialog para crear/editar inventario -->
-<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [style]="{ width: '30rem' }">
+<!-- Dialog modal no draggable -->
+<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '50rem' }">
     <ng-template #header>
         <h2>{{ isEditing() ? 'Editar Inventario' : 'Nuevo Inventario' }}</h2>
     </ng-template>
 
-    <form [formGroup]="inventarioForm" (ngSubmit)="onSubmit()">
-        <div class="p-fluid">
+    <form [formGroup]="inventarioForm" (ngSubmit)="onSubmit()" class="min-h-[27rem]">
+        <div class="space-y-6">
             <!-- Select de Productos con búsqueda y virtual scroll -->
-            <div class="flex flex-col mb-4">
-                <label for="producto">Producto</label>
-                <p-select 
-                    id="producto"
-                    [options]="productos()"
-                    formControlName="producto"
-                    optionLabel="nombre"
-                    placeholder="Buscar producto..."
-                    [filter]="true"
-                    filterBy="nombre"
-                    [showClear]="true"
-                    [virtualScroll]="true"
-                    [virtualScrollItemSize]="38"
-                    [loading]="loadingProductos()">
+            <div class="field flex flex-col">
+                <label for="producto" class="block mb-2">Producto</label>
+                <p-select id="producto" [options]="productos()" formControlName="producto" optionLabel="nombre"
+                    placeholder="Buscar producto..." [filter]="true" filterBy="nombre" [showClear]="true"
+                    [invalid]="inventarioForm.get('producto')?.hasError('required')&& inventarioForm.get('producto')?.touched"
+                    [virtualScroll]="true" [virtualScrollItemSize]="38" [loading]="loadingProductos()">
                     <ng-template #selectedItem let-option>
                         @if (option) {
-                            <div class="flex flex-col gap-1">
-                                <span class="font-semibold">{{ option.nombre }}</span>
-                                <span class="text-sm text-gray-500">{{ option.categoria.nombre }}</span>
-                            </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="font-semibold">{{ option.nombre }}</span>
+                            <span class="text-sm text-gray-500">{{ option.categoria.nombre }}</span>
+                        </div>
                         }
                     </ng-template>
                     <ng-template let-product #item>
@@ -56,147 +39,142 @@
                     </ng-template>
                 </p-select>
                 @if (inventarioForm.get('producto')?.hasError('required') && inventarioForm.get('producto')?.touched) {
-                    <small class="p-error">El producto es requerido</small>
+                <p-message severity="error" variant="simple" size="small">El producto es requerido</p-message>
                 }
             </div>
 
-            <!-- Stock Disponible -->
-            <div class="flex flex-col mb-4">
-                <label for="stockDisponible">Stock Disponible</label>
-                <p-inputNumber 
-                    id="stockDisponible"
-                    formControlName="stockDisponible"
-                    [min]="0"
-                    placeholder="Cantidad disponible" />
-                @if (inventarioForm.get('stockDisponible')?.hasError('required') && inventarioForm.get('stockDisponible')?.touched) {
-                    <small class="p-error">Stock disponible requerido</small>
-                }
+            <!-- Stock Disponible, Reservado y En Tránsito en una fila -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="field">
+                    <label for="stockDisponible" class="block mb-2">Stock Disponible</label>
+                    <p-inputNumber id="stockDisponible" formControlName="stockDisponible" [min]="0" class="w-full"
+                        placeholder="Cantidad disponible"
+                        [invalid]="inventarioForm.get('stockDisponible')?.hasError('required')&& inventarioForm.get('stockDisponible')?.touched"
+                        />
+                    @if (inventarioForm.get('stockDisponible')?.hasError('required') &&
+                    inventarioForm.get('stockDisponible')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Stock disponible requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <label for="stockReservado" class="block mb-2">Stock Reservado</label>
+                    <p-inputNumber id="stockReservado" formControlName="stockReservado" [min]="0" class="w-full"
+                        placeholder="Cantidad reservada"
+                        [invalid]="inventarioForm.get('stockReservado')?.hasError('required')&& inventarioForm.get('stockReservado')?.touched"
+                        />
+                         @if (inventarioForm.get('stockReservado')?.hasError('required') &&
+                    inventarioForm.get('stockReservado')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Stock reservado requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <label for="stockEnTransito" class="block mb-2">Stock En Tránsito</label>
+                    <p-inputNumber id="stockEnTransito" formControlName="stockEnTransito" [min]="0" class="w-full"
+                        placeholder="Cantidad en tránsito"
+                        [invalid]="inventarioForm.get('stockEnTransito')?.hasError('required')&& inventarioForm.get('stockEnTransito')?.touched"
+                        />
+                    @if (inventarioForm.get('stockEnTransito')?.hasError('required') &&
+                    inventarioForm.get('stockEnTransito')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Stock en tránsito requerido</p-message>
+                    }
+                </div>
             </div>
 
-            <!-- Stock Reservado -->
-            <div class="flex flex-col mb-4">
-                <label for="stockReservado">Stock Reservado</label>
-                <p-inputNumber 
-                    id="stockReservado"
-                    formControlName="stockReservado"
-                    [min]="0"
-                    placeholder="Cantidad reservada" />
-            </div>
+            <!-- Stock Mínimo, Máximo y Punto de Reorden en una fila -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="field">
+                    <label for="stockMinimo" class="block mb-2">Stock Mínimo</label>
+                    <p-inputNumber id="stockMinimo" formControlName="stockMinimo" [min]="0" class="w-full"
+                        placeholder="Cantidad mínima"
+                        [invalid]="inventarioForm.get('stockMinimo')?.hasError('required')&& inventarioForm.get('stockMinimo')?.touched"
+                        />
+                    @if (inventarioForm.get('stockMinimo')?.hasError('required') &&
+                    inventarioForm.get('stockMinimo')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Stock mínimo requerido</p-message>
+                    }
+                </div>
 
-            <!-- Stock En Tránsito -->
-            <div class="flex flex-col mb-4">
-                <label for="stockEnTransito">Stock En Tránsito</label>
-                <p-inputNumber 
-                    id="stockEnTransito"
-                    formControlName="stockEnTransito"
-                    [min]="0"
-                    placeholder="Cantidad en tránsito" />
-            </div>
+                <div class="field">
+                    <label for="stockMaximo" class="block mb-2">Stock Máximo</label>
+                    <p-inputNumber id="stockMaximo" formControlName="stockMaximo" [min]="0" class="w-full"
+                        placeholder="Cantidad máxima" 
+                        [invalid]="inventarioForm.get('stockMaximo')?.hasError('required')&& inventarioForm.get('stockMaximo')?.touched"
+                        />
+                    @if (inventarioForm.get('stockMaximo')?.hasError('required') &&
+                    inventarioForm.get('stockMaximo')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Stock máximo requerido</p-message>
+                    }
+                </div>
 
-            <!-- Stock Mínimo -->
-            <div class="flex flex-col mb-4">
-                <label for="stockMinimo">Stock Mínimo</label>
-                <p-inputNumber 
-                    id="stockMinimo"
-                    formControlName="stockMinimo"
-                    [min]="0"
-                    placeholder="Cantidad mínima" />
-                @if (inventarioForm.get('stockMinimo')?.hasError('required') && inventarioForm.get('stockMinimo')?.touched) {
-                    <small class="p-error">Stock mínimo requerido</small>
-                }
-            </div>
-
-            <!-- Stock Máximo -->
-            <div class="flex flex-col mb-4">
-                <label for="stockMaximo">Stock Máximo</label>
-                <p-inputNumber 
-                    id="stockMaximo"
-                    formControlName="stockMaximo"
-                    [min]="0"
-                    placeholder="Cantidad máxima" />
-            </div>
-
-            <!-- Punto de Reorden -->
-            <div class="flex flex-col mb-4">
-                <label for="puntoReorden">Punto de Reorden</label>
-                <p-inputNumber 
-                    id="puntoReorden"
-                    formControlName="puntoReorden"
-                    [min]="0"
-                    placeholder="Punto de reorden" />
-                @if (inventarioForm.get('puntoReorden')?.hasError('required') && inventarioForm.get('puntoReorden')?.touched) {
-                    <small class="p-error">Punto de reorden requerido</small>
-                }
+                <div class="field">
+                    <label for="puntoReorden" class="block mb-2">Punto de Reorden</label>
+                    <p-inputNumber id="puntoReorden" formControlName="puntoReorden" [min]="0" class="w-full"
+                        placeholder="Punto de reorden" 
+                        [invalid]="inventarioForm.get('puntoReorden')?.hasError('required')&& inventarioForm.get('puntoReorden')?.touched"
+                        />
+                    @if (inventarioForm.get('puntoReorden')?.hasError('required') &&
+                    inventarioForm.get('puntoReorden')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Punto de reorden requerido</p-message>
+                    }
+                </div>
             </div>
 
             <!-- Ubicación Almacén -->
-            <div class="flex flex-col mb-4">
-                <label for="ubicacion">Ubicación Almacén</label>
-                <input 
-                    id="ubicacion"
-                    type="text" 
-                    pInputText 
-                    formControlName="ubicacionAlmacen"
+            <div class="field">
+                <label for="ubicacion" class="block mb-2">Ubicación Almacén</label>
+                <input id="ubicacion" type="text" pInputText formControlName="ubicacionAlmacen" class="w-full"
                     placeholder="Ej: Pasillo A, Estante 3" />
             </div>
 
             <!-- Observaciones -->
-            <div class="flex flex-col mb-4">
-                <label for="observaciones">Observaciones</label>
-                <textarea 
-                    id="observaciones"
-                    pInputTextarea
-                    formControlName="observaciones"
-                    [rows]="3"
-                    placeholder="Notas adicionales..."></textarea>
+            <div class="field">
+                <label for="observaciones" class="block mb-2">Observaciones</label>
+                <textarea id="observaciones" pInputTextarea formControlName="observaciones" [rows]="3" class="w-full"
+                    placeholder="Notas adicionales..." [autoResize]="true"></textarea>
             </div>
         </div>
     </form>
 
     <ng-template #footer>
-        <p-button 
-            [label]="isEditing() ? 'Actualizar' : 'Guardar'" 
-            icon="pi pi-check" 
-            (onClick)="onSubmit()"
+        <p-button [label]="isEditing() ? 'Actualizar' : 'Guardar'" icon="pi pi-check" (onClick)="onSubmit()"
             [disabled]="inventarioForm.invalid" />
-        <p-button 
-            label="Cancelar" 
-            icon="pi pi-times" 
-            severity="danger"
-            (click)="closeDialog()" />
+        <p-button label="Cancelar" icon="pi pi-times" severity="danger" (click)="closeDialog()" />
     </ng-template>
 </p-dialog>
 
+<p-toast />
+
 <!-- Tabla de Inventarios -->
-<p-table 
-    [columns]="cols" 
-    [value]="inventarios()" 
-    [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+<p-table [columns]="cols" [value]="inventarios()" [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.field) {
-                <th>{{ col.header }}</th>
+            <th>{{ col.header }}</th>
             }
         </tr>
     </ng-template>
     <ng-template #body let-inventario let-columns="columns">
         <tr>
             @for (col of columns; track col.field) {
-                @if (col.field === 'acciones') {
-                    <td>
-                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info" (onClick)="editar(inventario)" />
-                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger" (onClick)="eliminar(inventario)" />
-                    </td>
-                } @else if (col.field === 'producto') {
-                    <td>{{ inventario.nombreProducto }}</td>
-                } @else {
-                    <td>{{ inventario[col.field] }}</td>
-                }
+            @if (col.field === 'acciones') {
+            <td>
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info"
+                    (onClick)="editar(inventario)" />
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger"
+                    (onClick)="eliminar(inventario)" />
+            </td>
+            } @else if (col.field === 'producto') {
+            <td>{{ inventario.nombreProducto }}</td>
+            } @else {
+            <td>{{ inventario[col.field] }}</td>
+            }
             }
             @empty {
-                <td [attr.colspan]="cols.length" class="text-center py-4">
-                    <p class="text-gray-500">No hay inventarios registrados</p>
-                </td>
+            <td [attr.colspan]="cols.length" class="text-center py-4">
+                <p class="text-gray-500">No hay inventarios registrados</p>
+            </td>
             }
         </tr>
     </ng-template>
@@ -204,11 +182,7 @@
 
 <!-- Paginador -->
 <div class="card flex justify-center mt-4">
-    <p-paginator 
-        (onPageChange)="onPageChange($event)" 
-        [first]="first()" 
-        [rows]="rows()" 
-        [totalRecords]="totalRecords()" 
+    <p-paginator (onPageChange)="onPageChange($event)" [first]="first()" [rows]="rows()" [totalRecords]="totalRecords()"
         [rowsPerPageOptions]="rowsPerPageOptions" />
 </div>
 

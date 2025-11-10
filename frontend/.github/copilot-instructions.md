@@ -45,3 +45,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+## File Naming Conventions
+
+Do NOT include type-specific suffixes like `.component`, `.service`, `.directive`, or `.pipe` in file names. Use only the base name followed by the extension (e.g., `hero.ts` instead of `hero.component.ts` for a component, or `data.ts` instead of `data.service.ts` for a service). The type is inferred from the decorator (e.g., `@Component` or `@Injectable`).
+This applies to all Angular artifacts to align with Angular 20's simplified file structure for standalone elements.

@@ -123,10 +123,16 @@ public class ProductoControlador {
             @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Lista Productos", value = ProductoExamples.RESPONSE_LISTA_PRODUCTOS)))
     })
     public ResponseEntity<Page<ProductoResponse>> listarProductos(
-            @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") @Min(0) int page,
-            @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "20") @Min(1) int size) {
-        Page<ProductoResponse> productos = productoServicio.listarProductos(page, size);
-        return ResponseEntity.ok(productos);
+                        @Parameter(description = "Número de página (inicia en 0)") @RequestParam(defaultValue = "0") @Min(0) int page,
+                        @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "20") @Min(1) int size,
+                        @Parameter(description = "Texto de búsqueda - cuando se provee realiza búsqueda global (todos los registros) con paginación") @RequestParam(required = false) String search) {
+                if (search != null && !search.isBlank()) {
+                        Page<ProductoResponse> productos = productoServicio.buscarGlobalPorNombre(search, page, size);
+                        return ResponseEntity.ok(productos);
+                }
+
+                Page<ProductoResponse> productos = productoServicio.listarProductos(page, size);
+                return ResponseEntity.ok(productos);
     }
 
     @GetMapping("/todos")
@@ -150,7 +156,7 @@ public class ProductoControlador {
     }
 
     @GetMapping("/buscar")
-    @Operation(summary = "Buscar productos por nombre", description = "Realiza una búsqueda parcial de productos por nombre.")
+    @Operation(summary = "Buscar productos por nombre", description = "Realiza una búsqueda parcial de productos por nombre dentro de la página actual.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Productos encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Lista Productos", value = ProductoExamples.RESPONSE_LISTA_PRODUCTOS)))
     })
@@ -159,6 +165,20 @@ public class ProductoControlador {
             @Parameter(description = "Número de página") @RequestParam(defaultValue = "0") @Min(0) int pagina,
             @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "20") @Min(1) int tamanioPagina) {
         Page<ProductoResponse> productos = productoServicio.buscarPorNombre(nombre, pagina, tamanioPagina);
+        return ResponseEntity.ok(productos);
+    }
+
+    @GetMapping("/buscar-global")
+    @Operation(summary = "Buscar productos globalmente por nombre", description = "Realiza una búsqueda en todos los registros de la base de datos (no limitada a página actual) con paginación. " +
+            "Útil para encontrar productos sin importar el tamaño del catálogo. Los resultados se ordenan alfabéticamente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Productos encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Lista Productos", value = ProductoExamples.RESPONSE_LISTA_PRODUCTOS)))
+    })
+    public ResponseEntity<Page<ProductoResponse>> buscarGlobalPorNombre(
+            @Parameter(description = "Nombre o parte del nombre del producto a buscar globalmente") @RequestParam String nombre,
+            @Parameter(description = "Número de página") @RequestParam(defaultValue = "0") @Min(0) int pagina,
+            @Parameter(description = "Tamaño de página") @RequestParam(defaultValue = "20") @Min(1) int tamanioPagina) {
+        Page<ProductoResponse> productos = productoServicio.buscarGlobalPorNombre(nombre, pagina, tamanioPagina);
         return ResponseEntity.ok(productos);
     }
 }

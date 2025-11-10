@@ -1,0 +1,43 @@
+/* Estilos específicos del dashboard principal */
+
+:host ::ng-deep {
+  /* Personalización de cards */
+  .p-card {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .p-card-body {
+    padding: 1.5rem;
+  }
+
+  /* Personalización de badges */
+  .p-badge {
+    font-weight: 600;
+  }
+
+  /* Personalización de gráficos */
+  .p-chart {
+    canvas {
+      max-height: 100%;
+    }
+  }
+
+  /* Hover effects para tarjetas */
+  .p-card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  /* Animaciones suaves */
+  .transition-shadow {
+    transition: box-shadow 0.3s ease-in-out;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  :host ::ng-deep .p-card-body {
+    padding: 1rem;
+  }
+}

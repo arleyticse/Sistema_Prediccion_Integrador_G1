@@ -1,0 +1,667 @@
+<div class="dashboard-alertas-container">
+  <!-- Toast para notificaciones -->
+  <p-toast />
+  
+  <!-- Confirm Dialog -->
+  <p-confirmDialog />
+  
+  <!-- Toolbar superior con estadísticas y acciones -->
+  <p-toolbar styleClass="mb-4">
+    <ng-template #start>
+      <div class="flex items-center gap-4">
+        <i class="pi pi-bell text-3xl text-primary"></i>
+        <div>
+          <h2 class="text-2xl font-bold m-0">Alertas de Inventario</h2>
+          <p class="text-sm text-gray-600 m-0">Gestión automática de reabastecimiento</p>
+        </div>
+      </div>
+    </ng-template>
+    
+    <ng-template #end>
+      <div class="flex items-center gap-2">
+        <p-tag 
+          [value]="totalAlertas() + ' Total'" 
+          [severity]="'info'" 
+          [icon]="'pi pi-list'" 
+        />
+        <p-tag 
+          [value]="alertasCriticas() + ' Críticas'" 
+          [severity]="'danger'" 
+          [icon]="'pi pi-exclamation-circle'" 
+        />
+        <p-tag 
+          [value]="alertasAltas() + ' Altas'" 
+          [severity]="'warn'" 
+          [icon]="'pi pi-exclamation-triangle'" 
+        />
+      </div>
+    </ng-template>
+  </p-toolbar>
+  
+  <!-- Card con TreeTable -->
+  <p-card styleClass="bg-surface-0 dark:bg-surface-900">
+    <!-- Toolbar de búsqueda y filtros -->
+    <div class="mb-4">
+      <div class="flex flex-wrap gap-2 items-center justify-between">
+        <!-- Búsqueda global -->
+        <p-iconfield iconPosition="left" class="flex-1">
+          <p-inputicon>
+            <i class="pi pi-search"></i>
+          </p-inputicon>
+          <input 
+            pInputText 
+            type="text" 
+            [value]="filtroGlobal()"
+            (input)="filtroGlobal.set($any($event.target).value)" 
+            placeholder="Buscar por proveedor, producto, SKU..." 
+            class="w-full"
+          />
+        </p-iconfield>
+        
+        <!-- Filtros y acciones -->
+        <div class="flex gap-2">
+          <p-select 
+            [(ngModel)]="filtroCriticidad"
+            [options]="opcionesCriticidad" 
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Criticidad"
+            [showClear]="true"
+            styleClass="w-40"
+          />
+          
+          <p-button 
+            icon="pi pi-refresh" 
+            label="Recargar"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="cargarAlertas()"
+            pTooltip="Recargar alertas desde el servidor"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- TreeTable: Alertas agrupadas por proveedor -->
+    <p-treetable 
+      #tt
+      [value]="alertasTreeNodes()"
+      [loading]="cargando()"
+      [scrollable]="true"
+      scrollHeight="650px"
+      [tableStyle]="{'min-width': '80rem'}"
+      styleClass="p-treetable-sm"
+    >
+      <!-- Header -->
+      <ng-template #header>
+        <tr>
+          <th style="width: 20rem" class="bg-surface-50 dark:bg-surface-800">
+            Proveedor / Producto
+          </th>
+          <th style="width: 10rem" class="text-center bg-surface-50 dark:bg-surface-800">
+            Criticidad
+          </th>
+          <th style="width: 8rem" class="text-center bg-surface-50 dark:bg-surface-800">
+            Tipo Alerta
+          </th>
+          <th style="width: 8rem" class="text-right bg-surface-50 dark:bg-surface-800">
+            Stock Actual
+          </th>
+          <th style="width: 8rem" class="text-right bg-surface-50 dark:bg-surface-800">
+            Stock Mín.
+          </th>
+          <th style="width: 8rem" class="text-right bg-surface-50 dark:bg-surface-800">
+            Cant. Sugerida
+          </th>
+          <th style="width: 10rem" class="text-right bg-surface-50 dark:bg-surface-800">
+            Total Estimado
+          </th>
+          <th style="width: 12rem" class="text-center bg-surface-50 dark:bg-surface-800">
+            Acciones
+          </th>
+        </tr>
+      </ng-template>
+
+      <!-- Body: Nodos padre (Proveedor) y nodos hijos (Alertas) -->
+      <ng-template #body let-rowNode let-rowData="rowData">
+        <!-- FILA PADRE: Proveedor -->
+        <tr *ngIf="rowData.tipo === 'proveedor'" [ttRow]="rowNode" class="bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30">
+          <!-- Columna 1: Nombre del proveedor con toggler -->
+          <td>
+            <div class="flex items-center gap-2">
+              <p-treetable-toggler [rowNode]="rowNode" />
+              <i class="pi pi-building text-primary text-xl"></i>
+              <div>
+                <div class="font-bold text-lg text-primary">
+                  {{ rowData.proveedorNombre }}
+                </div>
+                <div class="text-xs text-surface-600 dark:text-surface-400">
+                  {{ rowData.totalProductos }} productos a reabastecer
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Columna 2: Resumen de criticidad -->
+          <td class="text-center">
+            <div class="flex flex-wrap gap-1 justify-center">
+              <p-tag 
+                *ngIf="rowData.alertasCriticas > 0"
+                [value]="rowData.alertasCriticas + ''"
+                severity="danger"
+                icon="pi pi-exclamation-circle"
+                pTooltip="Alertas críticas"
+              />
+              <p-tag 
+                *ngIf="rowData.alertasAltas > 0"
+                [value]="rowData.alertasAltas + ''"
+                severity="warn"
+                icon="pi pi-exclamation-triangle"
+                pTooltip="Alertas altas"
+              />
+              <p-tag 
+                *ngIf="rowData.alertasMedias > 0"
+                [value]="rowData.alertasMedias + ''"
+                severity="info"
+                icon="pi pi-info-circle"
+                pTooltip="Alertas medias"
+              />
+            </div>
+          </td>
+
+          <!-- Columna 3: Vacía -->
+          <td></td>
+
+          <!-- Columna 4-5: Vacías -->
+          <td></td>
+          <td></td>
+
+          <!-- Columna 6: Cantidad total -->
+          <td class="text-right">
+            <div class="flex items-center justify-end gap-1">
+              <i class="pi pi-box text-green-600"></i>
+              <span class="font-bold text-green-600 text-lg">
+                {{ rowData.cantidadTotal }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Columna 7: Total estimado de compra -->
+          <td class="text-right">
+            <div class="font-bold text-green-700 dark:text-green-400 text-lg">
+              {{ rowData.totalCompra | currency: 'S/ ' }}
+            </div>
+          </td>
+
+          <!-- Columna 8: Botón de procesar proveedor -->
+          <td class="text-center">
+            <p-button 
+              icon="pi pi-shopping-cart" 
+              label="Procesar Proveedor"
+              severity="success"
+              [loading]="procesando()"
+              [disabled]="procesando()"
+              (onClick)="procesarPorProveedor(rowData.proveedorId, rowData.proveedorNombre)"
+              pTooltip="Generar orden de compra para este proveedor"
+              styleClass="font-semibold"
+            />
+          </td>
+        </tr>
+
+        <!-- FILA HIJA: Alerta individual -->
+        <tr *ngIf="rowData.tipo === 'alerta'" [ttRow]="rowNode" class="hover:bg-surface-100 dark:hover:bg-surface-800">
+          <!-- Columna 1: Producto -->
+          <td>
+            <div class="flex items-center gap-2 pl-8">
+              <i class="pi pi-tag text-surface-500 dark:text-surface-400"></i>
+              <div>
+                <div class="font-medium text-surface-900 dark:text-surface-100">
+                  {{ rowData.producto.nombre }}
+                </div>
+                <div class="text-xs text-surface-600 dark:text-surface-400">
+                  SKU: {{ rowData.producto.codigoSKU }}
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Columna 2: Criticidad -->
+          <td class="text-center">
+            <p-tag 
+              [value]="rowData.nivelCriticidad" 
+              [severity]="getSeverityCriticidad(rowData.nivelCriticidad)"
+              [icon]="getIconCriticidad(rowData.nivelCriticidad)"
+            />
+          </td>
+
+          <!-- Columna 3: Tipo de alerta -->
+          <td class="text-center">
+            <div class="text-sm text-surface-700 dark:text-surface-300">
+              {{ getLabelTipo(rowData.tipoAlerta) }}
+            </div>
+          </td>
+
+          <!-- Columna 4: Stock actual -->
+          <td class="text-right">
+            <span 
+              [class.text-red-600]="rowData.stockActual && rowData.stockMinimo && rowData.stockActual < rowData.stockMinimo"
+              [class.dark:text-red-400]="rowData.stockActual && rowData.stockMinimo && rowData.stockActual < rowData.stockMinimo"
+              [class.font-bold]="rowData.stockActual && rowData.stockMinimo && rowData.stockActual < rowData.stockMinimo"
+              class="text-surface-800 dark:text-surface-200"
+            >
+              {{ rowData.stockActual || 0 }}
+            </span>
+          </td>
+
+          <!-- Columna 5: Stock mínimo -->
+          <td class="text-right text-surface-600 dark:text-surface-400">
+            {{ rowData.stockMinimo || 0 }}
+          </td>
+
+          <!-- Columna 6: Cantidad sugerida -->
+          <td class="text-right">
+            <span class="font-bold text-green-600 dark:text-green-400">
+              {{ rowData.cantidadSugerida || 0 }}
+            </span>
+          </td>
+
+          <!-- Columna 7: Vacía -->
+          <td></td>
+
+          <!-- Columna 8: Estado -->
+          <td class="text-center">
+            <p-tag 
+              [value]="rowData.estado" 
+              [severity]="getSeverityEstado(rowData.estado)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Empty message -->
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="8" class="text-center p-8 bg-surface-0 dark:bg-surface-900">
+            <i class="pi pi-inbox text-6xl text-surface-400 dark:text-surface-600 mb-4 block"></i>
+            <p class="text-xl text-surface-600 dark:text-surface-400 mb-2">
+              No se encontraron alertas pendientes
+            </p>
+            <p class="text-sm text-surface-500 dark:text-surface-500">
+              Todas las alertas han sido procesadas o no hay productos que requieran atención
+            </p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-treetable>
+  </p-card>
+  
+  <!-- Dialog de Resultados del Procesamiento -->
+  <p-dialog 
+    header="Resultados del Procesamiento Automático"
+    [(visible)]="dialogResultadosVisible"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: '70rem', maxHeight: '80vh' }"
+    [closable]="true"
+    [contentStyle]="{ maxHeight: 'calc(80vh - 150px)', overflow: 'auto' }"
+  >
+    <ng-container *ngIf="resultadoProcesamiento() as resultado">
+      <!-- Resumen general -->
+      <div class="mb-4 p-4 bg-gray-50 rounded">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-gray-600">Duración</label>
+            <p class="font-bold text-lg">
+              {{ formatearDuracion(resultado.tiempoEjecucionMs) }}
+            </p>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Alertas Procesadas</label>
+            <p class="font-bold text-lg">{{ resultado.totalProcesadas }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Resultados por tipo -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <p-card>
+          <div class="text-center">
+            <i class="pi pi-check-circle text-4xl text-green-500 mb-2"></i>
+            <p class="text-2xl font-bold">{{ resultado.exitosos }}</p>
+            <p class="text-sm text-gray-600">Exitosos</p>
+          </div>
+        </p-card>
+        
+        <p-card>
+          <div class="text-center">
+            <i class="pi pi-times-circle text-4xl text-red-500 mb-2"></i>
+            <p class="text-2xl font-bold">{{ resultado.fallidos }}</p>
+            <p class="text-sm text-gray-600">Fallidos</p>
+          </div>
+        </p-card>
+        
+        <p-card>
+          <div class="text-center">
+            <i class="pi pi-shopping-cart text-4xl text-blue-500 mb-2"></i>
+            <p class="text-2xl font-bold">{{ resultado.ordenesGeneradas.length }}</p>
+            <p class="text-sm text-gray-600">Órdenes Generadas</p>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- Sección de Órdenes Generadas -->
+      <div *ngIf="resultado.ordenesGeneradas && resultado.ordenesGeneradas.length > 0" class="mt-6">
+        <p-divider align="left">
+          <div class="inline-flex items-center gap-2">
+            <i class="pi pi-shopping-cart text-2xl text-primary"></i>
+            <span class="font-bold text-lg text-primary dark:text-primary">Órdenes de Compra Generadas</span>
+            <p-badge [value]="resultado.ordenesGeneradas.length + ''" severity="success" />
+          </div>
+        </p-divider>
+
+        <!-- Estado de carga -->
+        <div *ngIf="cargandoOrdenes()" class="flex justify-center items-center py-8">
+          <p-progressSpinner 
+            [style]="{ width: '50px', height: '50px' }" 
+            strokeWidth="4"
+            animationDuration="1s"
+          />
+          <span class="ml-3 text-surface-600 dark:text-surface-400">Cargando detalles de órdenes...</span>
+        </div>
+
+        <!-- DataView de órdenes -->
+        <p-dataview 
+          *ngIf="!cargandoOrdenes() && resumenOrdenes().length > 0" 
+          [value]="resumenOrdenes()"
+          layout="list"
+        >
+          <ng-template let-orden pTemplate="listItem">
+            <div class="p-4 mb-3 border border-surface-200 dark:border-surface-700 rounded-lg bg-surface-0 dark:bg-surface-800 hover:shadow-lg transition-shadow duration-200">
+              <!-- Header de la orden -->
+              <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <i class="pi pi-file-edit text-xl text-primary"></i>
+                    <h4 class="text-lg font-bold text-surface-900 dark:text-surface-0 m-0">
+                      {{ orden.numeroOrden }}
+                    </h4>
+                    <p-tag 
+                      [value]="orden.estadoOrden" 
+                      [severity]="orden.estadoOrden === 'BORRADOR' ? 'secondary' : 'info'"
+                      icon="pi pi-info-circle"
+                    />
+                  </div>
+                  
+                  <!-- Información del proveedor -->
+                  <div class="flex items-center gap-2 text-surface-600 dark:text-surface-400">
+                    <i class="pi pi-building text-sm"></i>
+                    <span class="font-semibold">{{ orden.proveedor.nombreComercial }}</span>
+                    <span class="text-xs">|</span>
+                    <span class="text-sm">RUC: {{ orden.proveedor.ruc }}</span>
+                  </div>
+                </div>
+
+                <!-- Total de la orden -->
+                <div class="text-right">
+                  <div class="text-xs text-surface-600 dark:text-surface-400 mb-1">Total Orden</div>
+                  <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {{ orden.totalOrden | currency: 'S/ ' }}
+                  </div>
+                </div>
+              </div>
+
+              <p-divider class="my-3" />
+
+              <!-- Información de fechas y cantidades -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <!-- Fecha de orden -->
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                    <i class="pi pi-calendar text-blue-600 dark:text-blue-400"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs text-surface-600 dark:text-surface-400">Fecha Orden</div>
+                    <div class="font-semibold text-surface-900 dark:text-surface-0">
+                      {{ orden.fechaOrden | date: 'dd/MM/yyyy' }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Fecha de entrega -->
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30">
+                    <i class="pi pi-truck text-green-600 dark:text-green-400"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs text-surface-600 dark:text-surface-400">Entrega Esperada</div>
+                    <div class="font-semibold text-surface-900 dark:text-surface-0">
+                      {{ orden.fechaEntregaEsperada | date: 'dd/MM/yyyy' }}
+                    </div>
+                    <div class="text-xs text-surface-500 dark:text-surface-500">
+                      ({{ orden.proveedor.tiempoEntrega }} días)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cantidad de productos -->
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                    <i class="pi pi-box text-purple-600 dark:text-purple-400"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs text-surface-600 dark:text-surface-400">Productos</div>
+                    <div class="font-semibold text-surface-900 dark:text-surface-0">
+                      {{ orden.cantidadProductos }} items
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lista de productos (colapsable) -->
+              <div class="mb-3">
+                <p-button 
+                  [label]="'Ver Productos (' + orden.cantidadProductos + ')'"
+                  icon="pi pi-chevron-down"
+                  [text]="true"
+                  size="small"
+                  severity="secondary"
+                  (onClick)="toggleProductosOrden(orden.ordenId)"
+                  [iconPos]="productosOrdenExpandidos()[orden.ordenId] ? 'right' : 'right'"
+                  [icon]="productosOrdenExpandidos()[orden.ordenId] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                />
+                
+                <div *ngIf="productosOrdenExpandidos()[orden.ordenId]" class="mt-3">
+                  <div class="border border-surface-200 dark:border-surface-700 rounded-lg overflow-hidden">
+                    <div class="bg-surface-50 dark:bg-surface-900 px-4 py-2 grid grid-cols-12 gap-2 text-xs font-semibold text-surface-700 dark:text-surface-300">
+                      <div class="col-span-5">Producto</div>
+                      <div class="col-span-2 text-center">SKU</div>
+                      <div class="col-span-2 text-right">Cantidad</div>
+                      <div class="col-span-2 text-right">P. Unit.</div>
+                      <div class="col-span-1 text-right">Subtotal</div>
+                    </div>
+                    <div *ngFor="let producto of orden.productos; let last = last" 
+                         class="px-4 py-3 grid grid-cols-12 gap-2 text-sm"
+                         [class.border-b]="!last"
+                         [class.border-surface-200]="!last"
+                         [class.dark:border-surface-700]="!last">
+                      <div class="col-span-5 flex items-center gap-2">
+                        <i class="pi pi-tag text-surface-400"></i>
+                        <span class="font-medium text-surface-900 dark:text-surface-0">
+                          {{ producto.nombre }}
+                        </span>
+                      </div>
+                      <div class="col-span-2 text-center text-surface-600 dark:text-surface-400">
+                        {{ producto.codigoSKU }}
+                      </div>
+                      <div class="col-span-2 text-right font-semibold text-blue-600 dark:text-blue-400">
+                        {{ producto.cantidadSolicitada }}
+                      </div>
+                      <div class="col-span-2 text-right text-surface-700 dark:text-surface-300">
+                        {{ producto.precioUnitario | currency: 'S/ ' }}
+                      </div>
+                      <div class="col-span-1 text-right font-semibold text-green-600 dark:text-green-400">
+                        {{ producto.subtotal | currency: 'S/ ' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Observaciones (si existen) -->
+              <div *ngIf="orden.observaciones" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-500">
+                <div class="flex items-start gap-2">
+                  <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 mt-1"></i>
+                  <div class="flex-1">
+                    <div class="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">Observaciones</div>
+                    <div class="text-sm text-surface-700 dark:text-surface-300">{{ orden.observaciones }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Badges de estado -->
+              <div class="flex flex-wrap gap-2 mb-3">
+                <p-badge 
+                  *ngIf="orden.generadaAutomaticamente" 
+                  value="Generada Automáticamente" 
+                  severity="success"
+                  [pTooltip]="'Esta orden fue creada por el sistema de predicción automática'"
+                />
+              </div>
+
+              <!-- Acciones -->
+              <div class="flex justify-end gap-2 pt-3 border-t border-surface-200 dark:border-surface-700">
+                <p-button 
+                  label="Ver Detalle"
+                  icon="pi pi-eye"
+                  severity="info"
+                  [outlined]="true"
+                  size="small"
+                  (onClick)="navegarAOrden(orden.ordenId)"
+                  pTooltip="Ver detalle completo de la orden"
+                />
+                <p-button 
+                  label="Editar Orden"
+                  icon="pi pi-pencil"
+                  severity="secondary"
+                  size="small"
+                  (onClick)="navegarAOrden(orden.ordenId)"
+                  pTooltip="Editar orden de compra"
+                />
+              </div>
+            </div>
+          </ng-template>
+
+          <!-- Empty state -->
+          <ng-template pTemplate="empty">
+            <div class="text-center py-8">
+              <i class="pi pi-inbox text-4xl text-surface-400 dark:text-surface-600 mb-3 block"></i>
+              <p class="text-surface-600 dark:text-surface-400">No se generaron órdenes</p>
+            </div>
+          </ng-template>
+        </p-dataview>
+
+        <!-- Botón para ver todas las órdenes -->
+        <div class="flex justify-center mt-4">
+          <p-button 
+            label="Ver Todas las Órdenes de Compra"
+            icon="pi pi-external-link"
+            severity="primary"
+            [raised]="true"
+            (onClick)="verTodasLasOrdenes()"
+          />
+        </div>
+      </div>
+
+      <!-- Mensaje cuando no hay órdenes -->
+      <div *ngIf="!resultado.ordenesGeneradas || resultado.ordenesGeneradas.length === 0" class="mt-6">
+        <div class="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-exclamation-triangle text-2xl text-yellow-600 dark:text-yellow-400"></i>
+            <div>
+              <div class="font-semibold text-yellow-900 dark:text-yellow-200 mb-1">
+                No se generaron órdenes de compra
+              </div>
+              <div class="text-sm text-yellow-700 dark:text-yellow-300">
+                Las alertas fueron procesadas pero no cumplían los criterios para generar órdenes automáticas.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalles adicionales -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-700">
+              <i class="pi pi-chart-line text-white"></i>
+            </div>
+            <div>
+              <div class="text-xs text-surface-600 dark:text-surface-400">Predicciones Generadas</div>
+              <div class="text-xl font-bold text-surface-900 dark:text-surface-0">
+                {{ resultado.prediccionesGeneradas.length }}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-full bg-purple-600 dark:bg-purple-700">
+              <i class="pi pi-cog text-white"></i>
+            </div>
+            <div>
+              <div class="text-xs text-surface-600 dark:text-surface-400">Optimizaciones (EOQ/ROP)</div>
+              <div class="text-xl font-bold text-surface-900 dark:text-surface-0">
+                {{ resultado.optimizacionesGeneradas.length }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Errores si existen -->
+      <div *ngIf="resultado.mensajesError && resultado.mensajesError.length > 0" class="mt-4">
+        <p-divider align="left">
+          <div class="inline-flex items-center gap-2">
+            <i class="pi pi-exclamation-circle text-xl text-red-600 dark:text-red-400"></i>
+            <span class="font-semibold text-red-700 dark:text-red-300">Errores Detectados</span>
+          </div>
+        </p-divider>
+        
+        <div class="space-y-2">
+          <div *ngFor="let error of resultado.mensajesError" 
+               class="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border-l-4 border-red-500">
+            <div class="flex items-start gap-2">
+              <i class="pi pi-times-circle text-red-600 dark:text-red-400 mt-1"></i>
+              <div class="flex-1">
+                <div class="text-sm font-medium text-red-900 dark:text-red-200">{{ error }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    
+    <ng-template #footer>
+      <div class="flex justify-between gap-2">
+        <div class="flex gap-2">
+          <p-button 
+            label="Ver Todas las Órdenes"
+            icon="pi pi-external-link"
+            severity="info"
+            [outlined]="true"
+            (onClick)="verTodasLasOrdenes()"
+          />
+        </div>
+        <p-button 
+          label="Cerrar"
+          icon="pi pi-times"
+          severity="secondary"
+          (onClick)="cerrarDialogResultados()"
+        />
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

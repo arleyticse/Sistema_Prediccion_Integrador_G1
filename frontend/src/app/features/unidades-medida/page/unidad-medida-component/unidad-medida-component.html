@@ -1,24 +1,58 @@
 <p>Seccion de Unidad de Medida</p>
-<div class="card mt-8">
-    <div class="flex w-full justify-content-between mb-2 gap-4">
-        <p-floatlabel>
-            <input pInputText id="over_label" [(ngModel)]="nombre"
-                (ngModelChange)="nombre.set($event)" autocomplete="off" class="w-full" />
-            <label for="over_label">Nombre Unidad de Medida</label>
-        </p-floatlabel>
-        <p-floatlabel>
-            <input pInputText id="over_label" [(ngModel)]="abreviatura"
-                (ngModelChange)="abreviatura.set($event)" autocomplete="on" class="w-full" />
-            <label for="over_label">Abreviatura Unidad de Medida</label>
-        </p-floatlabel>
-        @if(unidadMedidaId()){
-        <p-button label="Actualizar Unidad de Medida" icon="pi pi-check" (onClick)="actualizarUnidadMedida()" />
-        <p-button label="Cancelar" icon="pi pi-times" severity="danger" (onClick)="cancelar()" />
-        }@else {
-        <p-button label="Nueva Unidad de Medida" icon="pi pi-plus" (onClick)="nuevaUnidadMedida()" />
-        }
-    </div>
-    <p-table [columns]="cols" [value]="unidadMedidas()" [scrollable]="true" scrollHeight="300px" [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+
+<div class="mb-4 flex justify-end">
+    <p-button (click)="showDialog()" label="Nueva Unidad de Medida" icon="pi pi-plus" />
+</div>
+
+<!-- Dialog modal no draggable -->
+<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '35rem',height: '15rem' }">
+    <ng-template #header>
+        <h2 class="text-3xl">{{ isEditing() ? 'Editar Unidad de Medida' : 'Nueva Unidad de Medida' }}</h2>
+    </ng-template>
+
+    <form [formGroup]="unidadForm" (ngSubmit)="onSubmit()" class="min-h-[12rem]">
+        <div class="space-y-4">
+            <!-- Nombre y Abreviatura en 2 columnas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <input pInputText id="nombre" formControlName="nombre" pKeyFilter="alpha" class="w-full" />
+                        <label for="nombre">Nombre</label>
+                    </p-floatlabel>
+                    @if (unidadForm.get('nombre')?.hasError('required') && unidadForm.get('nombre')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">El nombre es requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <input pInputText id="abreviatura" formControlName="abreviatura" pKeyFilter="alphanum" class="w-full" />
+                        <label for="abreviatura">Abreviatura</label>
+                    </p-floatlabel>
+                    @if (unidadForm.get('abreviatura')?.hasError('required') && unidadForm.get('abreviatura')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">La abreviatura es requerida</p-message>
+                    }
+                    @if (unidadForm.get('abreviatura')?.hasError('maxlength') && unidadForm.get('abreviatura')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Máximo 5 caracteres</p-message>
+                    }
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <ng-template #footer>
+        <p-button [label]="isEditing() ? 'Actualizar' : 'Guardar'" icon="pi pi-check" (onClick)="onSubmit()"
+            [disabled]="unidadForm.invalid" />
+        <p-button label="Cancelar" icon="pi pi-times" severity="danger" (click)="closeDialog()" />
+    </ng-template>
+</p-dialog>
+
+<p-toast />
+<!-- Tabla de Unidades de Medida -->
+<div class="card">
+    <p-table [columns]="cols" [value]="unidadMedidas()" [scrollable]="true" scrollHeight="400px"
+        [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
         <ng-template #header let-columns>
             <tr>
                 @for (col of columns; track col.field) {

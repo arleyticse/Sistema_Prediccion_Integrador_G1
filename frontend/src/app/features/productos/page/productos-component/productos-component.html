@@ -1,109 +1,131 @@
-<p>Productos</p>
 <div class="mb-4 flex justify-between">
-    <p-button 
-        (click)="abrirImportacion()" 
-        label="Importar CSV" 
-        icon="pi pi-upload"
-        severity="info"
-        [outlined]="true" />
+    <p-button (click)="abrirImportacion()" label="Importar CSV" icon="pi pi-upload" severity="info" [outlined]="true" />
     <p-button (click)="showDialog()" label="Nuevo Producto" icon="pi pi-plus" />
 </div>
 
 <!-- Componente de importación -->
-<app-importacion-csv
-    #importacionCsv
-    endpoint="/importacion/productos"
-    tipoImportacion="Productos"
-    nombrePlantilla="plantilla_productos.csv"
-    (importacionCompletada)="cargarProductos()" />
+<app-importacion-csv #importacionCsv endpoint="/importacion/productos" tipoImportacion="Productos"
+    nombrePlantilla="plantilla_productos.csv" (importacionCompletada)="cargarProductos()" />
 
-<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [style]="{ width: '25rem' }">
+<p-dialog  [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '50rem'   }">
     <ng-template #header>
-        <h2>{{ isEditing() ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+        <h2 class="text-3xl">{{ isEditing() ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
     </ng-template>
-    <form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
-        <div class="p-fluid">
-            <div class="flex flex-col mb-4">
-                <label for="nombre">Nombre</label>
-                <input id="nombre" type="text" pInputText formControlName="nombre" />
+    <form [formGroup]="productoForm" (ngSubmit)="onSubmit()" class="min-h-[27rem]">
+        <div class=" space-y-6">
+            <!-- Sección 1: Nombre (full width) -->
+            <div class="field">
+                <p-floatlabel>
+                    <input id="nombre" pInputText formControlName="nombre" class="w-full" 
+                    [invalid]="productoForm.get('nombre')?.hasError('required')&& productoForm.get('nombre')?.touched"
+                    />
+                    <label for="nombre">Nombre</label>
+                </p-floatlabel>
                 @if (productoForm.get('nombre')?.hasError('required') && productoForm.get('nombre')?.touched) {
-                    <small class="p-error">El nombre es requerido</small>
+                <p-message severity="error" variant="simple" size="small">El nombre es requerido</p-message>
                 }
             </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="categoria">Categoría</label>
-                <p-select 
-                    id="categoria" 
-                    [options]="categorias()" 
-                    optionLabel="nombre"
-                    [showClear]="true" 
-                    placeholder="Seleccionar una categoría" 
-                    formControlName="categoria" />
-                @if (productoForm.get('categoria')?.hasError('required') && productoForm.get('categoria')?.touched) {
-                    <small class="p-error">La categoría es requerida</small>
-                }
+            <!-- Sección 2: Categoría y Unidad de Medida (2 columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-select id="categoria" [options]="categorias()" optionLabel="nombre" [showClear]="true"
+                        placeholder="Seleccionar una categoría" formControlName="categoria" class="w-full"
+                        [invalid]="productoForm.get('categoria')?.hasError('required') && productoForm.get('categoria')?.touched"
+                        />
+                    @if (productoForm.get('categoria')?.hasError('required') && productoForm.get('categoria')?.touched)
+                    {
+                    <p-message severity="error" variant="simple" size="small">La categoría es requerida</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-select id="unidadMedida" [options]="unidadMedidas()" optionLabel="nombre" [showClear]="true"
+                        placeholder="Seleccionar unidad" formControlName="unidadMedida" class="w-full" 
+                        [invalid]="productoForm.get('unidadMedida')?.hasError('required') && productoForm.get('unidadMedida')?.touched"
+                        />
+                    @if (productoForm.get('unidadMedida')?.hasError('required') &&
+                    productoForm.get('unidadMedida')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">La unidad es requerida</p-message>
+                    }
+                </div>
             </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="unidadMedida">Unidad de Medida</label>
-                <p-select 
-                    id="unidadMedida" 
-                    [options]="unidadMedidas()" 
-                    optionLabel="nombre"
-                    [showClear]="true" 
-                    placeholder="Seleccionar unidad de medida"
-                    formControlName="unidadMedida" />
-                @if (productoForm.get('unidadMedida')?.hasError('required') && productoForm.get('unidadMedida')?.touched) {
-                    <small class="p-error">La unidad de medida es requerida</small>
-                }
+            <!-- Sección 3: Proveedor y Lead Time (2 columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-select id="proveedor" [options]="proveedores()" optionLabel="nombreComercial" [filter]="true"
+                        placeholder="Seleccionar un proveedor principal" formControlName="proveedor" class="w-full"
+                        [invalid]="productoForm.get('proveedor')?.hasError('required') && productoForm.get('proveedor')?.touched">
+                    </p-select>
+                    @if (productoForm.get('proveedor')?.hasError('required') && productoForm.get('proveedor')?.touched)
+                    {
+                    <p-message severity="error" variant="simple" size="small">El proveedor es requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="diasLeadTime" formControlName="diasLeadTime" [min]="1" class="w-full" suffix=" días" [max]="30" 
+                        [invalid]="productoForm.get('diasLeadTime')?.hasError('required') && productoForm.get('diasLeadTime')?.touched" />
+                        <label for="diasLeadTime">Días de Lead Time</label>
+                    </p-floatlabel>
+                    @if (productoForm.get('diasLeadTime')?.hasError('required') &&
+                    productoForm.get('diasLeadTime')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Días requerido</p-message>
+                    }
+                </div>
             </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="diasLeadTime">Días de Lead Time</label>
-                <input id="diasLeadTime" type="number" pInputText formControlName="diasLeadTime" />
-                @if (productoForm.get('diasLeadTime')?.hasError('required') && productoForm.get('diasLeadTime')?.touched) {
-                    <small class="p-error">Días de lead time requerido</small>
-                }
-            </div>
+            <!-- Sección 4: Costos (3 columnas en lg, 2 en md, 1 en sm) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="costoAdquisicion" formControlName="costoAdquisicion" [min]="0"
+                            mode="decimal" [minFractionDigits]="2" class="w-full" suffix=" soles "
+                            [invalid]="productoForm.get('costoAdquisicion')?.hasError('required') && productoForm.get('costoAdquisicion')?.touched" />
+                        <label for="costoAdquisicion">Costo Adquisición</label>
+                    </p-floatlabel>
+                    @if (productoForm.get('costoAdquisicion')?.hasError('required') &&
+                    productoForm.get('costoAdquisicion')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Costo requerido</p-message>
+                    }
+                </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="costoAdquisicion">Costo de Adquisición</label>
-                <input id="costoAdquisicion" type="number" pInputText formControlName="costoAdquisicion" />
-                @if (productoForm.get('costoAdquisicion')?.hasError('required') && productoForm.get('costoAdquisicion')?.touched) {
-                    <small class="p-error">Costo de adquisición requerido</small>
-                }
-            </div>
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="costoMantenimiento" formControlName="costoMantenimiento" [min]="0"
+                            mode="decimal" [minFractionDigits]="2" class="w-full" suffix=" soles "
+                            [invalid]="productoForm.get('costoMantenimiento')?.hasError('required') && productoForm.get('costoMantenimiento')?.touched" />
+                        <label for="costoMantenimiento">Costo Mantenimiento</label>
+                    </p-floatlabel>
+                    @if (productoForm.get('costoMantenimiento')?.hasError('required') &&
+                    productoForm.get('costoMantenimiento')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Costo requerido</p-message>
+                    }
+                </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="costoMantenimiento">Costo de Mantenimiento</label>
-                <input id="costoMantenimiento" type="number" pInputText formControlName="costoMantenimiento" />
-                @if (productoForm.get('costoMantenimiento')?.hasError('required') && productoForm.get('costoMantenimiento')?.touched) {
-                    <small class="p-error">Costo de mantenimiento requerido</small>
-                }
-            </div>
-
-            <div class="flex flex-col mb-4">
-                <label for="costoPedido">Costo de Pedido</label>
-                <input id="costoPedido" type="number" pInputText formControlName="costoPedido" />
-                @if (productoForm.get('costoPedido')?.hasError('required') && productoForm.get('costoPedido')?.touched) {
-                    <small class="p-error">Costo de pedido requerido</small>
-                }
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="costoPedido" formControlName="costoPedido" [min]="0" mode="decimal"
+                            [minFractionDigits]="2" class="w-full" suffix=" soles "
+                            [invalid]="productoForm.get('costoPedido')?.hasError('required') && productoForm.get('costoPedido')?.touched" />
+                        <label for="costoPedido">Costo Pedido</label>
+                    </p-floatlabel>
+                    @if (productoForm.get('costoPedido')?.hasError('required') &&
+                    productoForm.get('costoPedido')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Costo requerido</p-message>
+                    }
+                </div>
             </div>
         </div>
     </form>
 
     <ng-template #footer>
-        <p-button 
-            [label]="isEditing() ? 'Actualizar' : 'Guardar'" 
-            icon="pi pi-check" 
-            (onClick)="onSubmit()"
+        <p-button [label]="isEditing() ? 'Actualizar' : 'Guardar'" icon="pi pi-check" (onClick)="onSubmit()"
             [disabled]="productoForm.invalid" />
-        <p-button 
-            label="Cancelar" 
-            icon="pi pi-times" 
-            severity="danger"
-            (click)="closeDialog()" />
+        <p-button label="Cancelar" icon="pi pi-times" severity="danger" (click)="closeDialog()" />
     </ng-template>
 </p-dialog>
 
@@ -112,54 +134,53 @@
         <p-button [outlined]="true" icon="pi pi-filter-slash" label="Limpiar" (click)="clearSearch()" />
         <p-iconField iconPosition="left">
             <p-inputIcon>
+                @if (loading()) {
+                <i class="pi pi-spin pi-spinner"></i>
+                } @else {
                 <i class="pi pi-search"></i>
+                }
             </p-inputIcon>
-            <input 
-                pInputText 
-                type="text"
-                [value]="searchValue()"
-               (input)="onSearchChange($event.target.value)"
+            <input pInputText type="text" [value]="searchValue()" (input)="onSearchChange($event.target.value)"
                 placeholder="Buscar productos..." />
         </p-iconField>
     </div>
 </div>
-<p-table #dt [columns]="cols" [value]="productos()" [scrollable]="true" scrollHeight="400px" [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+<p-table #dt [columns]="cols" [value]="productos()" [scrollable]="true" scrollHeight="400px"
+    [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.field) {
-                <th>{{ col.header }}</th>
+            <th>{{ col.header }}</th>
             }
         </tr>
     </ng-template>
     <ng-template #body let-rowData let-columns="columns">
         <tr>
             @for (col of columns; track col.field) {
-                @if (col.field === 'acciones') {
-                    <td>
-                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info" (onClick)="editar(rowData)" />
-                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger" (onClick)="eliminar(rowData)" />
-                    </td>
-                } @else if (col.field === 'categoria') {
-                    <td>{{ rowData.categoria.nombre }}</td>
-                } @else if (col.field === 'unidadMedida') {
-                    <td>{{ rowData.unidadMedida.nombre }}</td>
-                } @else {
-                    <td>{{ rowData[col.field] }}</td>
-                }
+            @if (col.field === 'acciones') {
+            <td>
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info"
+                    (onClick)="editar(rowData)" />
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger"
+                    (onClick)="eliminar(rowData)" />
+            </td>
+            } @else if (col.field === 'categoria') {
+            <td>{{ rowData.categoria.nombre }}</td>
+            } @else if (col.field === 'unidadMedida') {
+            <td>{{ rowData.unidadMedida.nombre }}</td>
+            } @else {
+            <td>{{ rowData[col.field] }}</td>
+            }
             }@empty {
-                <td [attr.colspan]="cols.length" class="text-center py-4">
-                    <p class="text-gray-500">No hay productos registrados</p>
-                </td>
+            <td [attr.colspan]="cols.length" class="text-center py-4">
+                <p class="text-gray-500">No hay productos registrados</p>
+            </td>
             }
         </tr>
     </ng-template>
 </p-table>
 <div class="card flex justify-center mt-4">
-    <p-paginator 
-        (onPageChange)="onPageChange($event)" 
-        [first]="first()" 
-        [rows]="rows()" 
-        [totalRecords]="totalRecords()" 
+    <p-paginator (onPageChange)="onPageChange($event)" [first]="first()" [rows]="rows()" [totalRecords]="totalRecords()"
         [rowsPerPageOptions]="rowsPerPageOptions" />
 </div>
 <p-confirmDialog />

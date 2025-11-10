@@ -19,6 +19,8 @@ public class ProductoUpdateRequest {
     @NotBlank(message = "El nombre del producto no puede estar vacío")
     private String nombre;
     
+    private Integer proveedorId;
+    
     @Min(value = 1, message = "Los días de lead time deben ser al menos 1")
     private Integer diasLeadTime;
     

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -23,6 +24,13 @@ public interface ICalculoObtimizacionRepositorio extends JpaRepository<CalculoOb
      * @return Optional con el cálculo más reciente si existe
      */
     Optional<CalculoObtimizacion> findFirstByProductoOrderByFechaCalculoDesc(Producto producto);
+
+    /**
+     * Busca todos los cálculos de optimización de un producto por ID ordenados por fecha
+     * @param productoId el ID del producto
+     * @return lista de cálculos ordenados por fecha descendente
+     */
+    List<CalculoObtimizacion> findByProductoProductoIdOrderByFechaCalculoDesc(Integer productoId);
 
     /**
      * Lista todos los cálculos de un producto

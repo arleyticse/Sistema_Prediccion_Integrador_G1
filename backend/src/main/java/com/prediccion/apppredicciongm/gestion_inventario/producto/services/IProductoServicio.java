@@ -82,6 +82,20 @@ public interface IProductoServicio {
     Page<ProductoResponse> buscarPorNombre(String nombre, int pagina, int tamanioPagina);
     
     /**
+     * Busca todos los productos por nombre con paginación (búsqueda global).
+     * 
+     * Realiza una búsqueda case-insensitive en todos los registros de la base de datos,
+     * no solo en la página actual. Mantiene escalabilidad mediante paginación.
+     * Los resultados se ordenan alfabéticamente.
+     * 
+     * @param nombre Texto a buscar en el nombre
+     * @param pagina Número de página (base 0)
+     * @param tamanioPagina Cantidad de registros por página
+     * @return Página con productos que coinciden
+     */
+    Page<ProductoResponse> buscarGlobalPorNombre(String nombre, int pagina, int tamanioPagina);
+    
+    /**
      * Obtiene la lista completa de todos los productos.
      * 
      * @return Lista de todos los productos

@@ -17,15 +17,14 @@
     nombrePlantilla="plantilla_kardex.csv"
     (importacionCompletada)="cargarMovimientos()" />
 
-<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [style]="{ width: '35rem' }">
+<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false" [style]="{ width: '50rem' }">
     <ng-template #header>
-        <h2>Registrar Nuevo Movimiento</h2>
+        <h2 class="text-3xl">Registrar Nuevo Movimiento</h2>
     </ng-template>
-    <form [formGroup]="movimientoForm" (ngSubmit)="onSubmit()">
-        <div class="p-fluid">
+    <form [formGroup]="movimientoForm" (ngSubmit)="onSubmit()" class="min-h-[27rem]">
+        <div class="space-y-6">
             <!-- Producto con búsqueda y virtual scroll -->
-            <div class="flex flex-col mb-4">
-                <label for="producto">Producto *</label>
+            <div class="field">
                 <p-select 
                     id="producto" 
                     [options]="productos()" 
@@ -38,7 +37,9 @@
                     [virtualScroll]="true"
                     [virtualScrollItemSize]="38"
                     [loading]="loadingProductos()"
-                    formControlName="productoId">
+                    formControlName="productoId"
+                    class="w-full"
+                    [invalid]="movimientoForm.get('productoId')?.hasError('required') && movimientoForm.get('productoId')?.touched">
                     <ng-template #selectedItem let-option>
                         @if (option) {
                             <div class="flex flex-col gap-1">
@@ -55,120 +56,162 @@
                     </ng-template>
                 </p-select>
                 @if (movimientoForm.get('productoId')?.hasError('required') && movimientoForm.get('productoId')?.touched) {
-                    <small class="p-error">El producto es requerido</small>
+                    <p-message severity="error" variant="simple" size="small">El producto es requerido</p-message>
                 }
             </div>
 
-            <!-- Proveedor -->
-            <div class="flex flex-col mb-4">
-                <label for="proveedorId">Proveedor</label>
-                <p-select 
-                    id="proveedorId" 
-                    [options]="proveedores()" 
-                    optionLabel="razonSocial"
-                    placeholder="Seleccionar proveedor (opcional)"
-                    [filter]="true"
-                    filterBy="razonSocial"
-                    [loading]="loadingProveedores()"
-                    [showClear]="true"
-                    formControlName="proveedorId">
-                    <ng-template let-option #item>
-                        <div class="flex flex-col gap-1">
-                            <span class="font-semibold">{{ option.razonSocial }}</span>
-                            <span class="text-sm text-gray-500">{{ option.nombreComercial }}</span>
-                        </div>
-                    </ng-template>
-                </p-select>
+            <!-- Tipo de Movimiento y Proveedor (2 columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-select 
+                        id="tipoMovimiento" 
+                        [options]="tiposMovimiento()" 
+                        optionLabel="descripcion"
+                        placeholder="Tipo de movimiento"
+                        [filter]="true"
+                        filterBy="descripcion"
+                        [showClear]="true"
+                        formControlName="tipoMovimiento"
+                        class="w-full"
+                        [invalid]="movimientoForm.get('tipoMovimiento')?.hasError('required') && movimientoForm.get('tipoMovimiento')?.touched">
+                        <ng-template let-tipo #item>
+                            <div class="flex flex-col gap-1">
+                                <span class="font-semibold">{{ tipo.descripcion }}</span>
+                                <span class="text-sm text-gray-400">{{ tipo.valor }}</span>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                    @if (movimientoForm.get('tipoMovimiento')?.hasError('required') && movimientoForm.get('tipoMovimiento')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">El tipo de movimiento es requerido</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-select 
+                        id="proveedorId" 
+                        [options]="proveedores()" 
+                        optionLabel="razonSocial"
+                        placeholder="Proveedor (opcional)"
+                        [filter]="true"
+                        filterBy="razonSocial"
+                        [loading]="loadingProveedores()"
+                        [showClear]="true"
+                        formControlName="proveedorId"
+                        class="w-full">
+                        <ng-template let-option #item>
+                            <div class="flex flex-col gap-1">
+                                <span class="font-semibold">{{ option.razonSocial }}</span>
+                                <span class="text-sm text-gray-500">{{ option.nombreComercial }}</span>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                </div>
             </div>
 
-            <!-- Tipo de Movimiento -->
-            <div class="flex flex-col mb-4">
-                <label for="tipoMovimiento">Tipo de Movimiento *</label>
-                <p-select 
-                    id="tipoMovimiento" 
-                    [options]="tiposMovimiento()" 
-                    optionLabel="descripcion"
-                    placeholder="Seleccionar tipo de movimiento"
-                    [filter]="true"
-                    filterBy="descripcion"
-                    [showClear]="true"
-                    formControlName="tipoMovimiento">
-                    <ng-template let-tipo #item>
-                        <div class="flex flex-col gap-1">
-                            <span class="font-semibold">{{ tipo.descripcion }}</span>
-                            <span class="text-sm text-gray-400">{{ tipo.valor }}</span>
-                        </div>
-                    </ng-template>
-                </p-select>
-                @if (movimientoForm.get('tipoMovimiento')?.hasError('required') && movimientoForm.get('tipoMovimiento')?.touched) {
-                    <small class="p-error">El tipo de movimiento es requerido</small>
-                }
+            <!-- Cantidad y Costo Unitario (2 columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="cantidad" formControlName="cantidad" [min]="1" class="w-full" 
+                            [invalid]="(movimientoForm.get('cantidad')?.hasError('required') || movimientoForm.get('cantidad')?.hasError('min')) && movimientoForm.get('cantidad')?.touched" />
+                        <label for="cantidad">Cantidad</label>
+                    </p-floatlabel>
+                    @if (movimientoForm.get('cantidad')?.hasError('required') && movimientoForm.get('cantidad')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Cantidad requerida</p-message>
+                    }
+                    @if (movimientoForm.get('cantidad')?.hasError('min') && movimientoForm.get('cantidad')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Cantidad debe ser mayor a 0</p-message>
+                    }
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <p-inputNumber inputId="costoUnitario" formControlName="costoUnitario" [min]="0" 
+                            mode="decimal" [minFractionDigits]="2" class="w-full" prefix="S/ "
+                            [invalid]="movimientoForm.get('costoUnitario')?.hasError('required') && movimientoForm.get('costoUnitario')?.touched" />
+                        <label for="costoUnitario">Costo Unitario</label>
+                    </p-floatlabel>
+                    @if (movimientoForm.get('costoUnitario')?.hasError('required') && movimientoForm.get('costoUnitario')?.touched) {
+                        <p-message severity="error" variant="simple" size="small">Costo unitario requerido</p-message>
+                    }
+                </div>
             </div>
 
-            <!-- Cantidad -->
-            <div class="flex flex-col mb-4">
-                <label for="cantidad">Cantidad *</label>
-                <input id="cantidad" type="number" pInputText formControlName="cantidad" />
-                @if (movimientoForm.get('cantidad')?.hasError('required') && movimientoForm.get('cantidad')?.touched) {
-                    <small class="p-error">Cantidad requerida</small>
-                }
-                @if (movimientoForm.get('cantidad')?.hasError('min') && movimientoForm.get('cantidad')?.touched) {
-                    <small class="p-error">Cantidad debe ser mayor a 0</small>
-                }
-            </div>
-
-            <!-- Costo Unitario -->
-            <div class="flex flex-col mb-4">
-                <label for="costoUnitario">Costo Unitario *</label>
-                <input id="costoUnitario" type="number" pInputText formControlName="costoUnitario" />
-                @if (movimientoForm.get('costoUnitario')?.hasError('required') && movimientoForm.get('costoUnitario')?.touched) {
-                    <small class="p-error">Costo unitario requerido</small>
-                }
-            </div>
-
-            <!-- Motivo -->
-            <div class="flex flex-col mb-4">
-                <label for="motivo">Motivo *</label>
-                <input id="motivo" type="text" pInputText formControlName="motivo" />
+            <!-- Motivo (full width) -->
+            <div class="field">
+                <p-floatlabel>
+                    <input id="motivo" pInputText formControlName="motivo" class="w-full" 
+                        [invalid]="movimientoForm.get('motivo')?.hasError('required') && movimientoForm.get('motivo')?.touched" />
+                    <label for="motivo">Motivo</label>
+                </p-floatlabel>
                 @if (movimientoForm.get('motivo')?.hasError('required') && movimientoForm.get('motivo')?.touched) {
-                    <small class="p-error">El motivo es requerido</small>
+                    <p-message severity="error" variant="simple" size="small">El motivo es requerido</p-message>
                 }
             </div>
 
-            <!-- Opcionales -->
-            <div class="flex flex-col mb-4">
-                <label for="tipoDocumento">Tipo de Documento</label>
-                <input id="tipoDocumento" type="text" pInputText formControlName="tipoDocumento" />
+            <!-- Tipo y Número de Documento (2 columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="tipoDocumento" pInputText formControlName="tipoDocumento" class="w-full" />
+                        <label for="tipoDocumento">Tipo de Documento</label>
+                    </p-floatlabel>
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="numeroDocumento" pInputText formControlName="numeroDocumento" class="w-full" />
+                        <label for="numeroDocumento">Número de Documento</label>
+                    </p-floatlabel>
+                </div>
             </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="numeroDocumento">Número de Documento</label>
-                <input id="numeroDocumento" type="text" pInputText formControlName="numeroDocumento" />
+            <!-- Lote y Fecha de Vencimiento (2 columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="lote" pInputText formControlName="lote" class="w-full" />
+                        <label for="lote">Lote</label>
+                    </p-floatlabel>
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <p-datepicker 
+                            inputId="fechaVencimiento" 
+                            formControlName="fechaVencimiento" 
+                            dateFormat="dd/mm/yy"
+                            [showIcon]="true"
+                            iconDisplay="input"
+                            placeholder="Seleccionar fecha"
+                            class="w-full" />
+                        <label for="fechaVencimiento">Fecha de Vencimiento</label>
+                    </p-floatlabel>
+                </div>
             </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="lote">Lote</label>
-                <input id="lote" type="text" pInputText formControlName="lote" />
+            <!-- Referencia y Ubicación (2 columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="referencia" pInputText formControlName="referencia" class="w-full" />
+                        <label for="referencia">Referencia</label>
+                    </p-floatlabel>
+                </div>
+
+                <div class="field">
+                    <p-floatlabel>
+                        <input id="ubicacion" pInputText formControlName="ubicacion" class="w-full" />
+                        <label for="ubicacion">Ubicación</label>
+                    </p-floatlabel>
+                </div>
             </div>
 
-            <div class="flex flex-col mb-4">
-                <label for="fechaVencimiento">Fecha de Vencimiento</label>
-                <input id="fechaVencimiento" type="date" pInputText formControlName="fechaVencimiento" />
-            </div>
-
-            <div class="flex flex-col mb-4">
-                <label for="referencia">Referencia</label>
-                <input id="referencia" type="text" pInputText formControlName="referencia" />
-            </div>
-
-            <div class="flex flex-col mb-4">
-                <label for="observaciones">Observaciones</label>
-                <input id="observaciones" type="text" pInputText formControlName="observaciones" />
-            </div>
-
-            <div class="flex flex-col mb-4">
-                <label for="ubicacion">Ubicación</label>
-                <input id="ubicacion" type="text" pInputText formControlName="ubicacion" />
+            <!-- Observaciones (full width) -->
+            <div class="field">
+                <label for="observaciones" class="block mb-2">Observaciones</label>
+                <textarea id="observaciones" pInputTextarea formControlName="observaciones" [rows]="3" 
+                    class="w-full" placeholder="Notas adicionales..." [autoResize]="true"></textarea>
             </div>
         </div>
     </form>
@@ -187,6 +230,8 @@
     </ng-template>
 </p-dialog>
 
+<p-toast />
+
 <div class="card mb-4">
     <div class="flex justify-between items-center gap-2">
         <p-button [outlined]="true" icon="pi pi-filter-slash" label="Limpiar" (click)="clearSearch()" />
@@ -204,7 +249,8 @@
     </div>
 </div>
 
-<p-table #dt [columns]="cols" [value]="movimientos()" [scrollable]="true" scrollHeight="400px" [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+<p-table #dt [columns]="cols" [value]="movimientos()" [scrollable]="true" scrollHeight="400px" 
+    [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()" [rowTrackBy]="trackByKardexId">
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.field) {
@@ -212,13 +258,19 @@
             }
         </tr>
     </ng-template>
-    <ng-template #body let-rowData let-columns="columns">
+    <ng-template #body let-rowData let-rowIndex="rowIndex" let-columns="columns">
         <tr>
             @for (col of columns; track col.field) {
                 @if (col.field === 'acciones') {
                     <td>
                         <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Anular" severity="danger" (onClick)="eliminar(rowData)" />
                     </td>
+                } @else if (col.field === 'fechaMovimiento') {
+                    <td>{{ rowData[col.field] | date:'dd/MM/yyyy HH:mm':'America/Lima':'es-PE' }}</td>
+                } @else if (col.field === 'valorTotal') {
+                    <td>{{ rowData[col.field] | currency:'PEN':'symbol':'1.2-2':'es-PE' }}</td>
+                } @else if (col.field === 'saldoCantidad') {
+                    <td>{{ rowData[col.field] | number:'1.2-2':'es-PE' }}</td>
                 } @else {
                     <td>{{ rowData[col.field] }}</td>
                 }

@@ -2,8 +2,7 @@ import { inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 /**
- * Servicio base genérico para CRUD operations
- * Todos los servicios deben extender de este
+ * Servicio base genérico para CRUD
  */
 export class BaseService<T> {
   protected http = inject(HttpClient);
