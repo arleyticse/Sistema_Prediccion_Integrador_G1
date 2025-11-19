@@ -33,7 +33,7 @@ import java.io.IOException;
 public class FiltroAutenticacionJwt extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(FiltroAutenticacionJwt.class);
-    
+
     private static final String ENCABEZADO_BEARER = "Bearer ";
     private static final String ENCABEZADO_AUTORIZACION = "Authorization";
 
@@ -46,17 +46,17 @@ public class FiltroAutenticacionJwt extends OncePerRequestFilter {
      * Extrae el token del encabezado Authorization, lo valida y establece
      * el contexto de seguridad si el token es válido.
      * 
-     * @param solicitud Solicitud HTTP entrante
-     * @param respuesta Respuesta HTTP saliente
+     * @param solicitud     Solicitud HTTP entrante
+     * @param respuesta     Respuesta HTTP saliente
      * @param cadenaFiltros Cadena de filtros a ejecutar
      * @throws ServletException Si ocurre un error en el servlet
-     * @throws IOException Si ocurre un error de I/O
+     * @throws IOException      Si ocurre un error de I/O
      */
     @Override
     protected void doFilterInternal(HttpServletRequest solicitud, HttpServletResponse respuesta,
             FilterChain cadenaFiltros)
             throws ServletException, IOException {
-        
+
         final String encabezadoAutorizacion = solicitud.getHeader(ENCABEZADO_AUTORIZACION);
 
         String nombreUsuario = null;
@@ -78,8 +78,8 @@ public class FiltroAutenticacionJwt extends OncePerRequestFilter {
 
                     tokenAutenticacion.setDetails(new WebAuthenticationDetailsSource().buildDetails(solicitud));
                     SecurityContextHolder.getContext().setAuthentication(tokenAutenticacion);
-                    
-                    log.info("Usuario autenticado mediante JWT: {} con autoridades: {}", 
+
+                    log.info("Usuario autenticado mediante JWT: {} con autoridades: {}",
                             nombreUsuario, detallesUsuario.getAuthorities());
                 } else {
                     log.warn("Validación de token fallida para usuario: {}", nombreUsuario);
@@ -104,7 +104,7 @@ public class FiltroAutenticacionJwt extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/api/auth") ||
+                (path.startsWith("/api/auth") && !path.equals("/api/auth/cerrar-sesion")) ||
                 path.startsWith("/api/catalogos");
     }
 }

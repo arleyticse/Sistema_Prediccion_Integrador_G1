@@ -35,6 +35,8 @@ export default class LoginComponent {
   private messageService = inject(MessageService);
   private fb = inject(FormBuilder);
 
+  anio = new Date().getFullYear();
+  
   // Signals
   cargando = signal(false);
   mostrarContrasenia = signal(false);

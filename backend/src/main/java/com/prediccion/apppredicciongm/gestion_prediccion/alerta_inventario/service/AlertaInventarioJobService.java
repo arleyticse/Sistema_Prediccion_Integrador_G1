@@ -7,10 +7,8 @@ import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.enums
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.enums.NivelCriticidad;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.enums.TipoAlerta;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.repository.IAlertaInventarioRepositorio;
-import com.prediccion.apppredicciongm.gestion_prediccion.estacionalidad.repository.IEstacionalidadRepositorio;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.repository.IPrediccionRepositorio;
 import com.prediccion.apppredicciongm.models.AlertaInventario;
-import com.prediccion.apppredicciongm.models.EstacionalidadProducto;
 import com.prediccion.apppredicciongm.models.Inventario.Inventario;
 import com.prediccion.apppredicciongm.models.Prediccion;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +48,6 @@ public class AlertaInventarioJobService {
 
     private final IInventarioRepositorio inventarioRepositorio;
     private final IPrediccionRepositorio prediccionRepositorio;
-    private final IEstacionalidadRepositorio estacionalidadRepositorio;
     private final IAlertaInventarioRepositorio alertaRepositorio;
 
     /**
@@ -254,7 +251,10 @@ public class AlertaInventarioJobService {
                             criticidad,
                             descripcion,
                             cantidadSugerida,
-                            resultado
+                            resultado,
+                            stockActual,
+                            stockMinimo,
+                            puntoReorden
                         );
                     }
 
@@ -302,7 +302,9 @@ public class AlertaInventarioJobService {
             .build();
 
         try {
-            List<Prediccion> predicciones = prediccionRepositorio.findAll();
+            List<Prediccion> predicciones = prediccionRepositorio.findPrediccionesVigentes();
+            // Procesar solo la última predicción por producto para reducir carga
+            java.util.Set<Integer> productosProcesados = new java.util.HashSet<>();
             resultado.setProductosAnalizados(predicciones.size());
 
             LocalDate hoy = LocalDate.now();
@@ -312,6 +314,14 @@ public class AlertaInventarioJobService {
                 try {
                     if (prediccion.getProducto() == null || prediccion.getFechaEjecucion() == null) {
                         continue;
+                    }
+
+                    Integer pid = prediccion.getProducto().getProductoId();
+                    if (pid != null) {
+                        if (productosProcesados.contains(pid)) {
+                            continue;
+                        }
+                        productosProcesados.add(pid);
                     }
 
                     // Calcular fecha esperada de vencimiento (fecha + horizonte)
@@ -362,7 +372,10 @@ public class AlertaInventarioJobService {
                             criticidad,
                             descripcion,
                             null, // No aplica cantidad sugerida
-                            resultado
+                            resultado,
+                            null,
+                            null,
+                            null
                         );
                     }
 
@@ -400,15 +413,36 @@ public class AlertaInventarioJobService {
      * 
      * @return Resultado de la ejecución con métricas
      */
+    /**
+     * MÉTODO OBSOLETO - Desactivado tras eliminación de tabla estacionalidad_producto
+     * 
+     * Este método fue reemplazado por el sistema moderno de análisis de estacionalidad
+     * que utiliza la tabla analisis_estacionalidad con coeficientes mensuales.
+     * 
+     * @deprecated Usar AnalisisEstacionalidadService en su lugar
+     * @see com.prediccion.apppredicciongm.gestion_prediccion.estacionalidad.service.AnalisisEstacionalidadService
+     */
+    @Deprecated
     @Transactional
     public JobExecutionResultDTO detectarEstacionalidadProxima() {
         LocalDateTime inicio = LocalDateTime.now();
         
         JobExecutionResultDTO resultado = JobExecutionResultDTO.builder()
-            .nombreJob("Detección de Estacionalidad Próxima")
+            .nombreJob("Detección de Estacionalidad Próxima (OBSOLETO)")
             .fechaInicio(inicio)
+            .exitoso(false)
             .build();
 
+        resultado.getMensajesError().add(
+            "Este método fue desactivado. Tabla estacionalidad_producto eliminada. " +
+            "Usar AnalisisEstacionalidadService para análisis de estacionalidad moderno."
+        );
+
+        resultado.setFechaFin(LocalDateTime.now());
+        return resultado;
+        
+        /* CÓDIGO ORIGINAL COMENTADO - Usaba tabla eliminada estacionalidad_producto
+        
         try {
             List<EstacionalidadProducto> estacionalidades = estacionalidadRepositorio.findAll();
             resultado.setProductosAnalizados(estacionalidades.size());
@@ -510,6 +544,7 @@ public class AlertaInventarioJobService {
         );
 
         return resultado;
+        */
     }
 
     /**
@@ -522,16 +557,17 @@ public class AlertaInventarioJobService {
         NivelCriticidad criticidad,
         String descripcion,
         Integer cantidadSugerida,
-        JobExecutionResultDTO resultado
+        JobExecutionResultDTO resultado,
+        Integer stockActualOpt,
+        Integer stockMinimoOpt,
+        Integer puntoReordenOpt
     ) {
         try {
-            // Buscar alerta existente del mismo tipo y producto en estado PENDIENTE
-            Optional<AlertaInventario> alertaExistente = alertaRepositorio.findAll()
+            // Buscar alerta existente del mismo tipo y producto en estado PENDIENTE (más eficiente)
+            Optional<AlertaInventario> alertaExistente = alertaRepositorio
+                .findAlertasPendientesByProducto(productoId)
                 .stream()
-                .filter(a -> a.getProducto() != null && 
-                            a.getProducto().getProductoId().equals(productoId) &&
-                            a.getTipoAlerta() == tipoAlerta &&
-                            a.getEstado() == EstadoAlerta.PENDIENTE)
+                .filter(a -> a.getTipoAlerta() == tipoAlerta)
                 .findFirst();
 
             if (alertaExistente.isPresent()) {
@@ -540,14 +576,38 @@ public class AlertaInventarioJobService {
                 alerta.setNivelCriticidad(criticidad);
                 alerta.setMensaje(descripcion);
                 alerta.setCantidadSugerida(cantidadSugerida);
-                
-                // Actualizar datos de inventario si existen
-                Optional<Inventario> inventarioOpt = inventarioRepositorio.findByProducto(productoId);
-                if (inventarioOpt.isPresent()) {
-                    Inventario inv = inventarioOpt.get();
-                    alerta.setStockActual(inv.getStockDisponible());
-                    alerta.setStockMinimo(inv.getStockMinimo());
+
+                // Actualizar datos de inventario si existen y calcular cantidad sugerida si es null
+                Integer stock = stockActualOpt;
+                Integer min = stockMinimoOpt;
+                Integer rop = puntoReordenOpt;
+
+                if (stock == null || min == null || rop == null) {
+                    Optional<Inventario> inventarioOpt = inventarioRepositorio.findByProducto(productoId);
+                    if (inventarioOpt.isPresent()) {
+                        Inventario inv = inventarioOpt.get();
+                        stock = inv.getStockDisponible();
+                        min = inv.getStockMinimo();
+                        rop = inv.getPuntoReorden();
+                    }
                 }
+
+                int stockVal = stock != null ? stock : 0;
+                int minVal = min != null ? min : 0;
+                int ropVal = rop != null ? rop : 0;
+
+                alerta.setStockActual(stockVal);
+                alerta.setStockMinimo(minVal);
+
+                if (alerta.getCantidadSugerida() == null) {
+                    int base = Math.max(ropVal - stockVal, minVal - stockVal);
+                    if (base < 0) base = 0;
+                    if (tipoAlerta == TipoAlerta.DEMANDA_ANOMALA) {
+                        base = Math.max(base, ropVal > 0 ? ropVal : minVal);
+                    }
+                    alerta.setCantidadSugerida(base);
+                }
+                
                 
                 alertaRepositorio.save(alerta);
 
@@ -565,12 +625,35 @@ public class AlertaInventarioJobService {
                 nuevaAlerta.setEstado(EstadoAlerta.PENDIENTE);
                 nuevaAlerta.setFechaGeneracion(LocalDateTime.now());
 
-                // Enriquecer con datos de inventario
-                Optional<Inventario> inventarioOpt = inventarioRepositorio.findByProducto(productoId);
-                if (inventarioOpt.isPresent()) {
-                    Inventario inv = inventarioOpt.get();
-                    nuevaAlerta.setStockActual(inv.getStockDisponible());
-                    nuevaAlerta.setStockMinimo(inv.getStockMinimo());
+                // Enriquecer con datos de inventario y calcular cantidad sugerida si es null
+                Integer stock = stockActualOpt;
+                Integer min = stockMinimoOpt;
+                Integer rop = puntoReordenOpt;
+
+                if (stock == null || min == null || rop == null) {
+                    Optional<Inventario> inventarioOpt = inventarioRepositorio.findByProducto(productoId);
+                    if (inventarioOpt.isPresent()) {
+                        Inventario inv = inventarioOpt.get();
+                        stock = inv.getStockDisponible();
+                        min = inv.getStockMinimo();
+                        rop = inv.getPuntoReorden();
+                    }
+                }
+
+                int stockVal = stock != null ? stock : 0;
+                int minVal = min != null ? min : 0;
+                int ropVal = rop != null ? rop : 0;
+
+                nuevaAlerta.setStockActual(stockVal);
+                nuevaAlerta.setStockMinimo(minVal);
+
+                if (nuevaAlerta.getCantidadSugerida() == null) {
+                    int base = Math.max(ropVal - stockVal, minVal - stockVal);
+                    if (base < 0) base = 0;
+                    if (tipoAlerta == TipoAlerta.DEMANDA_ANOMALA) {
+                        base = Math.max(base, ropVal > 0 ? ropVal : minVal);
+                    }
+                    nuevaAlerta.setCantidadSugerida(base);
                 }
 
                 AlertaInventario guardada = alertaRepositorio.save(nuevaAlerta);

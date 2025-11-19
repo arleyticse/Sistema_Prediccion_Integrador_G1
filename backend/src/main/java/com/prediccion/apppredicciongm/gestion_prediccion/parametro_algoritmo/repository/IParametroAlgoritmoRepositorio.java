@@ -31,6 +31,11 @@ public interface IParametroAlgoritmoRepositorio extends JpaRepository<ParametroA
     List<ParametroAlgoritmo> findByActivo(Boolean activo);
 
     /**
+     * Busca parámetros activos por tipo de algoritmo
+     */
+    List<ParametroAlgoritmo> findByTipoAlgoritmoAndActivo(String tipoAlgoritmo, Boolean activo);
+
+    /**
      * Busca todos los parámetros paginados
      */
     Page<ParametroAlgoritmo> findAll(Pageable pageable);

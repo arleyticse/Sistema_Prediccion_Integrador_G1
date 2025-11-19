@@ -3,6 +3,7 @@ package com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.serv
 import com.prediccion.apppredicciongm.auth.repository.IUsuarioRepository;
 import com.prediccion.apppredicciongm.enums.EstadoOrdenCompra;
 import com.prediccion.apppredicciongm.gestion_inventario.producto.repository.IProductoRepositorio;
+import com.prediccion.apppredicciongm.gestion_inventario.producto.utils.SKUGenerator;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ProcesamientoBatchResponse;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ProveedorBasicoDTO;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ResumenOrdenDTO;
@@ -442,7 +443,7 @@ public class OrdenCompraBatchService implements IOrdenCompraBatchService {
             .map(detalle -> ResumenOrdenDTO.ProductoResumenDTO.builder()
                 .productoId(detalle.getProducto().getProductoId())
                 .nombre(detalle.getProducto().getNombre())
-                .codigoSKU(null) // Campo no existe en Producto
+                .codigoSKU(SKUGenerator.generarSKU(detalle.getProducto())) // Generar SKU dinámicamente
                 .cantidadSolicitada(detalle.getCantidadSolicitada())
                 .precioUnitario(detalle.getPrecioUnitario())
                 .subtotal(detalle.getSubtotal())

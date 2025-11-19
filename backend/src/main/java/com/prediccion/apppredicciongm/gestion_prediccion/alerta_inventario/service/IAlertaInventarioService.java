@@ -77,6 +77,14 @@ public interface IAlertaInventarioService {
     AlertaInventarioResponse actualizarEstado(Long alertaId, ActualizarEstadoRequest request);
 
     /**
+     * Marca una alerta individual como resuelta.
+     * 
+     * @param alertaId ID de la alerta
+     * @param accionTomada Descripcion de la accion tomada
+     */
+    void marcarComoResuelta(Long alertaId, String accionTomada);
+
+    /**
      * Marca multiples alertas como resueltas despues de procesar.
      * 
      * @param alertaIds Lista de IDs de alertas

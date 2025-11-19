@@ -27,13 +27,16 @@
 
                 <div class="field">
                     <p-floatlabel>
-                        <input pInputText id="abreviatura" formControlName="abreviatura" pKeyFilter="alphanum" class="w-full" />
+                        <input pInputText id="abreviatura" formControlName="abreviatura" pKeyFilter="alphanum"
+                            class="w-full" />
                         <label for="abreviatura">Abreviatura</label>
                     </p-floatlabel>
-                    @if (unidadForm.get('abreviatura')?.hasError('required') && unidadForm.get('abreviatura')?.touched) {
+                    @if (unidadForm.get('abreviatura')?.hasError('required') && unidadForm.get('abreviatura')?.touched)
+                    {
                     <p-message severity="error" variant="simple" size="small">La abreviatura es requerida</p-message>
                     }
-                    @if (unidadForm.get('abreviatura')?.hasError('maxlength') && unidadForm.get('abreviatura')?.touched) {
+                    @if (unidadForm.get('abreviatura')?.hasError('maxlength') && unidadForm.get('abreviatura')?.touched)
+                    {
                     <p-message severity="error" variant="simple" size="small">Máximo 5 caracteres</p-message>
                     }
                 </div>
@@ -51,8 +54,22 @@
 <p-toast />
 <!-- Tabla de Unidades de Medida -->
 <div class="card">
+    @if (loading()) {
+    <!-- Skeleton Loading State -->
+    <div class="space-y-3">
+        <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+        @for (item of [1,2,3,4,5]; track item) {
+        <div class="flex gap-3">
+            <p-skeleton width="10%" height="2.5rem"></p-skeleton>
+            <p-skeleton width="40%" height="2.5rem"></p-skeleton>
+            <p-skeleton width="30%" height="2.5rem"></p-skeleton>
+            <p-skeleton width="20%" height="2.5rem"></p-skeleton>
+        </div>
+        }
+    </div>
+    } @else {
     <p-table [columns]="cols" [value]="unidadMedidas()" [scrollable]="true" scrollHeight="400px"
-        [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+        [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template #header let-columns>
             <tr>
                 @for (col of columns; track col.field) {
@@ -81,5 +98,6 @@
             </tr>
         </ng-template>
     </p-table>
+    }
 </div>
 <p-confirmDialog />

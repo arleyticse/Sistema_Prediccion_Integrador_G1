@@ -43,4 +43,8 @@ public class Usuario implements Serializable {
 
     /** Email único del usuario (usado para autenticación) */
     private String email;
+
+    /** Indica si el usuario tiene una sesión activa */
+    @Column(columnDefinition = "boolean default false")
+    private Boolean activo = false;
 }

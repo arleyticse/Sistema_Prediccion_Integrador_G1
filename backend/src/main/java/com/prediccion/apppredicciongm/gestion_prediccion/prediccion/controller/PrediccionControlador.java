@@ -35,6 +35,10 @@ import java.util.stream.Collectors;
 /**
  * Controlador REST para gestionar las predicciones de demanda.
  * 
+ * @deprecated Este controlador usa algoritmos básicos (SMA, SES, Holt-Winters).
+ *             Usar en su lugar {@link SmartPrediccionController} que implementa
+ *             algoritmos avanzados de Machine Learning con Smile (ARIMA, RandomForest, GradientBoosting).
+ * 
  * <p>Proporciona endpoints para generar predicciones usando diferentes algoritmos
  * (SMA, SES, Holt-Winters), consultar predicciones existentes y obtener información
  * sobre los algoritmos disponibles.</p>
@@ -44,9 +48,10 @@ import java.util.stream.Collectors;
  * @author Sistema de Predicción
  * @version 1.0
  */
+@Deprecated(since = "2.0", forRemoval = true)
 @RestController
 @RequestMapping("/api/predicciones")
-@Tag(name = "Predicciones", description = "Endpoints para gestión de predicciones de demanda")
+@Tag(name = "Predicciones (DEPRECATED)", description = "DEPRECADO: Usar /api/v2/predicciones con algoritmos SMILE ML")
 public class PrediccionControlador {
 
     private static final Logger logger = LoggerFactory.getLogger(PrediccionControlador.class);

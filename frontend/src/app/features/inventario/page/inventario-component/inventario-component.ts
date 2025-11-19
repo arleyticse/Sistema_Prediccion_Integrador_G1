@@ -20,6 +20,7 @@ import { ImportacionCsvComponent } from '../../../../shared/components/importaci
 import { TextareaModule } from 'primeng/textarea';
 import { Toast } from 'primeng/toast';
 import { Message } from 'primeng/message';
+import { SkeletonModule } from 'primeng/skeleton';
 
 interface Column {
   field: keyof InventarioResponse | 'acciones' | 'producto';
@@ -42,7 +43,8 @@ interface Column {
     ImportacionCsvComponent,
     TextareaModule,
     Toast,
-    Message
+    Message,
+    SkeletonModule
   ],
   templateUrl: './inventario-component.html',
   styleUrl: './inventario-component.css',

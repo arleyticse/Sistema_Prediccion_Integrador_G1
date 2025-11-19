@@ -57,13 +57,13 @@ public class ReporteDemandaService implements IReporteDemandaService {
      */
     @Scheduled(cron = "0 23 * * * *")
     public void normalizarDemandaAutomatico() {
-        log.info("🔔 [NORMALIZACION] Iniciando normalización automática de demanda...");
+        log.info("[NORMALIZACION] Iniciando normalización automática de demanda...");
         try {
             int registrosProcessados = normalizarDemandaTodos(30);
-            log.info("✅ [NORMALIZACION] Normalización automática completada. Registros procesados: {}", 
+            log.info("[NORMALIZACION] Normalización automática completada. Registros procesados: {}", 
                     registrosProcessados);
         } catch (Exception e) {
-            log.error("❌ [NORMALIZACION] Error en normalización automática: {}", e.getMessage(), e);
+            log.error("[NORMALIZACION] Error en normalización automática: {}", e.getMessage(), e);
         }
     }
 
@@ -141,7 +141,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
                 registroDemandaRepositorio.save(registro);
             }
 
-            log.info("✅ Normalizados {} registros para producto: {} ({} registros nuevos)", 
+                log.info("[NORMALIZACION] Normalizados {} registros para producto: {} ({} registros nuevos)", 
                     demandaPorFecha.size(), producto.getNombre(), registrosCreados);
 
             return demandaPorFecha.size();
@@ -156,33 +156,107 @@ public class ReporteDemandaService implements IReporteDemandaService {
 
     /**
      * {@inheritDoc}
+     * Optimizado para procesamiento masivo usando consulta SQL nativa
      */
     @Override
     @Transactional
     public int normalizarDemandaTodos(int diasProcesar) {
-        log.info("Normalizando demanda para TODOS los productos. Días: {}", diasProcesar);
+        log.info("[OPTIMIZADO] Normalizando demanda para TODOS los productos. Días: {}", diasProcesar);
+        
+        LocalDateTime fechaInicio = LocalDateTime.now().minusDays(diasProcesar);
+        long inicio = System.currentTimeMillis();
 
         try {
-            List<Producto> productos = productoRepositorio.findAll();
-            log.info("Total de productos a procesar: {}", productos.size());
-
-            int totalRegistros = 0;
-            for (Producto producto : productos) {
-                try {
-                    int registros = normalizarDemandaProducto(producto, diasProcesar);
-                    totalRegistros += registros;
-                } catch (NormalizacionException e) {
-                    log.warn("⚠️  Error procesando producto {}: {}", 
-                            producto.getNombre(), e.getMessage());
-                }
-            }
-
-            log.info("✅ Normalización completa. Total de registros procesados: {}", totalRegistros);
-            return totalRegistros;
+            // Ejecutar normalización optimizada por lotes usando SQL nativo
+            int registrosInsertados = normalizarDemandaMasivaOptimizada(fechaInicio);
+            
+            long fin = System.currentTimeMillis();
+            long duracion = fin - inicio;
+            
+            log.info("[OPTIMIZADO] Normalización masiva completada en {}ms. Registros procesados: {}", 
+                    duracion, registrosInsertados);
+            
+            return registrosInsertados;
 
         } catch (Exception e) {
-            log.error("Error crítico en normalizarDemandaTodos: {}", e.getMessage(), e);
+            log.error("[OPTIMIZADO] Error crítico en normalizarDemandaTodos: {}", e.getMessage(), e);
             throw new NormalizacionException("Error en normalización masiva de demanda", e);
+        }
+    }
+    
+    /**
+     * Normalización masiva optimizada usando SQL nativo.
+     * Procesa todos los productos en una sola operación batch.
+     */
+    @Transactional
+    private int normalizarDemandaMasivaOptimizada(LocalDateTime fechaInicio) {
+        log.debug("[NORMALIZACION] Ejecutando normalización masiva optimizada desde: {}", fechaInicio);
+        
+        try {
+            // Obtener todos los movimientos de venta agrupados por producto y fecha
+            List<Object[]> demandaAgrupada = kardexRepositorio.findDemandaAgrupadaPorProductoYFecha(fechaInicio);
+            
+            log.info("[NORMALIZACION] Obtenidos {} registros agrupados de kardex", demandaAgrupada.size());
+            
+            int registrosNuevos = 0;
+            int registrosActualizados = 0;
+            int batchSize = 100;
+            int contador = 0;
+            
+            for (Object[] fila : demandaAgrupada) {
+                Integer productoId = (Integer) fila[0];
+                LocalDate fecha = ((java.sql.Date) fila[1]).toLocalDate();
+                Long cantidad = ((Number) fila[2]).longValue();
+                
+                // Buscar producto
+                Optional<Producto> productoOpt = productoRepositorio.findById(productoId);
+                if (productoOpt.isEmpty()) {
+                    log.warn("[NORMALIZACION] Advertencia: Producto no encontrado: {}", productoId);
+                    continue;
+                }
+                
+                Producto producto = productoOpt.get();
+                
+                // Buscar registro existente
+                Optional<RegistroDemanda> existente = registroDemandaRepositorio
+                        .findByProductoAndFecha(producto, fecha);
+                
+                RegistroDemanda registro;
+                if (existente.isPresent()) {
+                    registro = existente.get();
+                    registro.setCantidadHistorica(cantidad.intValue());
+                    registrosActualizados++;
+                } else {
+                    registro = new RegistroDemanda();
+                    registro.setProducto(producto);
+                    registro.setFechaRegistro(fecha.atStartOfDay());
+                    registro.setCantidadHistorica(cantidad.intValue());
+                    registro.setPeriodoRegistro(fecha.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+                    registrosNuevos++;
+                }
+                
+                registroDemandaRepositorio.save(registro);
+                
+                contador++;
+                
+                // Flush cada batch para liberar memoria
+                if (contador % batchSize == 0) {
+                    registroDemandaRepositorio.flush();
+                    log.debug("💾 Batch procesado: {} registros", contador);
+                }
+            }
+            
+            // Flush final
+            registroDemandaRepositorio.flush();
+            
+                log.info("[NORMALIZACION] Normalización masiva completada: {} nuevos, {} actualizados", 
+                    registrosNuevos, registrosActualizados);
+            
+            return registrosNuevos + registrosActualizados;
+            
+        } catch (Exception e) {
+            log.error("[NORMALIZACION] Error en normalización masiva optimizada: {}", e.getMessage(), e);
+            throw new NormalizacionException("Error en normalización masiva", e);
         }
     }
 
@@ -210,8 +284,8 @@ public class ReporteDemandaService implements IReporteDemandaService {
                     // Limpiar y recalcular
                     limpiarDemandaProducto(producto.get());
                     if (request.isNotificaciones()) {
-                        log.info("🔄 Registros de demanda limpiados para producto: {}", 
-                                producto.get().getNombre());
+                    log.info("[NORMALIZACION] Registros de demanda limpiados para producto: {}", 
+                        producto.get().getNombre());
                     }
                 }
 
@@ -226,7 +300,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
                         totalLimpiados += limpiarDemandaProducto(p);
                     }
                     if (request.isNotificaciones()) {
-                        log.info("🔄 Todos los registros de demanda limpiados. Total: {}", totalLimpiados);
+                        log.info("[NORMALIZACION] Todos los registros de demanda limpiados. Total: {}", totalLimpiados);
                     }
                 }
 
@@ -281,7 +355,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
         try {
             long cantidadAntes = registroDemandaRepositorio.countByProducto(producto);
             registroDemandaRepositorio.deleteByProducto(producto);
-            log.warn("🗑️  Demanda limpiada para {}: {} registros eliminados", 
+                log.warn("[NORMALIZACION] Demanda limpiada para {}: {} registros eliminados", 
                     producto.getNombre(), cantidadAntes);
             return (int) cantidadAntes;
 

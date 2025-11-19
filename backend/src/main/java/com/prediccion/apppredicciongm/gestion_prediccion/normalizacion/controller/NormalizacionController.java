@@ -41,7 +41,7 @@ public class NormalizacionController {
     public ResponseEntity<Map<String, Object>> normalizarHistorico(
             @RequestParam(defaultValue = "365") int dias) {
         
-        log.info("🔄 [API] Iniciando normalización histórica masiva. Días: {}", dias);
+        log.info("[NORMALIZACION/API] Iniciando normalización histórica masiva. Días: {}", dias);
         
         try {
             long inicio = System.currentTimeMillis();
@@ -62,13 +62,13 @@ public class NormalizacionController {
                 registrosProcesados, tiempoEjecucion
             ));
             
-            log.info("✅ [API] Normalización histórica completada. Registros: {} Tiempo: {}ms", 
+                log.info("[NORMALIZACION/API] Normalización histórica completada. Registros: {} Tiempo: {}ms", 
                     registrosProcesados, tiempoEjecucion);
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            log.error("❌ [API] Error en normalización histórica: {}", e.getMessage(), e);
+            log.error("[NORMALIZACION/API] Error en normalización histórica: {}", e.getMessage(), e);
             
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);
@@ -85,7 +85,7 @@ public class NormalizacionController {
      */
     @GetMapping("/estadisticas")
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
-        log.info("📊 [API] Obteniendo estadísticas de normalización");
+        log.info("[NORMALIZACION/API] Obteniendo estadísticas de normalización");
         
         try {
             // Aquí podrías agregar consultas para obtener estadísticas
@@ -96,7 +96,7 @@ public class NormalizacionController {
             return ResponseEntity.ok(stats);
             
         } catch (Exception e) {
-            log.error("❌ [API] Error obteniendo estadísticas: {}", e.getMessage(), e);
+            log.error("[NORMALIZACION/API] Error obteniendo estadísticas: {}", e.getMessage(), e);
             
             Map<String, Object> error = new HashMap<>();
             error.put("success", false);

@@ -80,4 +80,54 @@ public interface IPrediccionRepositorio extends JpaRepository<Prediccion, Intege
      * @param producto el producto
      */
     void deleteByProducto(Producto producto);
+
+    /**
+     * Busca predicción existente por configuración (para evitar duplicados).
+     * 
+     * @param producto el producto
+     * @param algoritmo algoritmo usado
+     * @param horizonte horizonte de tiempo
+     * @return Optional con predicción si existe
+     */
+    Optional<Prediccion> findByProductoAndAlgoritmoUsadoAndHorizonteTiempo(
+        Producto producto,
+        String algoritmo,
+        Integer horizonte
+    );
+
+    /**
+     * Obtiene predicciones antiguas de un producto (más allá del límite de historial).
+     * Usado para limpieza automática manteniendo solo las N más recientes.
+     * 
+     * @param producto el producto
+     * @param algoritmo algoritmo usado
+     * @param horizonte horizonte de tiempo
+     * @return lista de predicciones ordenadas por fecha descendente
+     */
+    @Query("""
+        SELECT p FROM Prediccion p 
+        WHERE p.producto = :producto 
+          AND p.algoritmoUsado = :algoritmo
+          AND p.horizonteTiempo = :horizonte
+        ORDER BY p.fechaEjecucion DESC
+        """)
+    List<Prediccion> findPrediccionesAntiguasParaLimpieza(
+        @Param("producto") Producto producto,
+        @Param("algoritmo") String algoritmo,
+        @Param("horizonte") Integer horizonte
+    );
+
+    /**
+     * Cuenta predicciones por configuración específica.
+     * 
+     * @param producto el producto
+     * @param algoritmo algoritmo usado
+     * @param horizonte horizonte de tiempo
+     * @return número de predicciones con esa configuración
+     */
+    long countByProductoAndAlgoritmoUsadoAndHorizonteTiempo(
+        Producto producto,
+        String algoritmo,
+        Integer horizonte
+    );
 }

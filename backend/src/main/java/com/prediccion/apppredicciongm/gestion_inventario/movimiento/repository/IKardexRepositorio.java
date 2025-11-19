@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.prediccion.apppredicciongm.enums.TipoMovimiento;
 import com.prediccion.apppredicciongm.models.Inventario.Kardex;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -105,4 +106,34 @@ public interface IKardexRepositorio extends JpaRepository<Kardex, Long> {
     // Obtener historial de precios de un producto
     @Query("SELECT k FROM Kardex k WHERE k.producto.productoId = :productoId AND k.costoUnitario IS NOT NULL ORDER BY k.fechaMovimiento DESC")
     List<Kardex> findHistorialPreciosByProducto(@Param("productoId") Integer productoId);
+    
+    // Métodos adicionales para análisis de estacionalidad
+    @Query("SELECT DISTINCT k.producto.productoId FROM Kardex k")
+    List<Long> findDistinctProductIds();
+    
+    @Query("SELECT k FROM Kardex k WHERE k.producto.productoId = :productoId AND DATE(k.fechaMovimiento) BETWEEN :fechaInicio AND :fechaFin ORDER BY k.fechaMovimiento")
+    List<Kardex> findByProductoIdAndFechaMovimientoBetweenOrderByFechaMovimiento(
+        @Param("productoId") Long productoId, 
+        @Param("fechaInicio") LocalDate fechaInicio, 
+        @Param("fechaFin") LocalDate fechaFin
+    );
+    
+    /**
+     * Query optimizada para normalización masiva.
+     * Agrupa movimientos de venta por producto y fecha en una sola consulta SQL.
+     * Retorna: [producto_id, fecha, sum(cantidad)]
+     */
+    @Query(value = """
+        SELECT 
+            k.id_producto as producto_id,
+            DATE(k.fecha_movimiento) as fecha,
+            SUM(k.cantidad) as cantidad_total
+        FROM kardex k
+        WHERE k.tipo_movimiento = 'SALIDA_VENTA'
+            AND k.anulado = false
+            AND k.fecha_movimiento >= :fechaInicio
+        GROUP BY k.id_producto, DATE(k.fecha_movimiento)
+        ORDER BY k.id_producto, DATE(k.fecha_movimiento)
+        """, nativeQuery = true)
+    List<Object[]> findDemandaAgrupadaPorProductoYFecha(@Param("fechaInicio") LocalDateTime fechaInicio);
 }

@@ -2,6 +2,7 @@ package com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.serv
 
 import com.prediccion.apppredicciongm.gestion_inventario.inventario.repository.IInventarioRepositorio;
 import com.prediccion.apppredicciongm.gestion_inventario.producto.repository.IProductoRepositorio;
+import com.prediccion.apppredicciongm.gestion_inventario.producto.utils.SKUGenerator;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.request.ActualizarEstadoRequest;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.request.CrearAlertaRequest;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.AlertaDashboardDTO;
@@ -57,7 +58,25 @@ public class AlertaInventarioService implements IAlertaInventarioService {
         List<AlertaInventario> alertas = alertaRepositorio.findAlertasPendientes();
         log.debug("Se encontraron {} alertas pendientes", alertas.size());
         
-        return alertaMapper.toResponseList(alertas);
+        List<AlertaInventarioResponse> respuestas = alertaMapper.toResponseList(alertas);
+        
+        // Añadir SKU a cada producto
+        respuestas.forEach(response -> {
+            if (response.getProducto() != null) {
+                // Buscar el producto original para generar SKU
+                alertas.stream()
+                    .filter(a -> a.getAlertaId().equals(response.getAlertaId()))
+                    .findFirst()
+                    .ifPresent(alerta -> {
+                        if (alerta.getProducto() != null) {
+                            String sku = SKUGenerator.generarSKU(alerta.getProducto());
+                            response.getProducto().setCodigoSKU(sku);
+                        }
+                    });
+            }
+        });
+        
+        return respuestas;
     }
 
     @Override
@@ -231,6 +250,22 @@ public class AlertaInventarioService implements IAlertaInventarioService {
     }
 
     @Override
+    public void marcarComoResuelta(Long alertaId, String accionTomada) {
+        log.info("Marcando alerta {} como resuelta: {}", alertaId, accionTomada);
+        
+        AlertaInventario alerta = alertaRepositorio.findById(alertaId)
+            .orElseThrow(() -> new AlertaInventarioNoEncontradaException(
+                "Alerta no encontrada con ID: " + alertaId
+            ));
+        
+        if (alerta.getEstado() != EstadoAlerta.RESUELTA) {
+            alerta.resolver(accionTomada);
+            alertaRepositorio.save(alerta);
+            log.info("Alerta {} marcada como resuelta", alertaId);
+        }
+    }
+
+    @Override
     public void marcarAlertasComoResueltas(List<Long> alertaIds, String accionTomada) {
         log.info("Marcando {} alertas como resueltas", alertaIds.size());
         
@@ -288,7 +323,23 @@ public class AlertaInventarioService implements IAlertaInventarioService {
     public List<AlertaInventarioResponse> listarAlertas() {
         log.info("Listando todas las alertas");
         List<AlertaInventario> alertas = alertaRepositorio.findAll();
-        return alertaMapper.toResponseList(alertas);
+        List<AlertaInventarioResponse> respuestas = alertaMapper.toResponseList(alertas);
+        
+        respuestas.forEach(response -> {
+            if (response.getProducto() != null) {
+                alertas.stream()
+                    .filter(a -> a.getAlertaId().equals(response.getAlertaId()))
+                    .findFirst()
+                    .ifPresent(alerta -> {
+                        if (alerta.getProducto() != null) {
+                            String sku = SKUGenerator.generarSKU(alerta.getProducto());
+                            response.getProducto().setCodigoSKU(sku);
+                        }
+                    });
+            }
+        });
+        
+        return respuestas;
     }
 
     @Override

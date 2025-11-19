@@ -1,7 +1,7 @@
 package com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.service;
 
 import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.request.CalculoObtimizacionCreateRequest;
-import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoObtimizacionResponse;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoOptimizacionResponse;
 import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.errors.CalculoObtimizacionNoEncontradoException;
 import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.mapper.CalculoObtimizacionMapper;
 import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.repository.ICalculoObtimizacionRepositorio;
@@ -44,7 +44,7 @@ public class CalculoObtimizacionService implements ICalculoObtimizacionServicio 
      * - ROP = L × D / 365 donde L=lead time, D=demanda anual
      */
     @Override
-    public CalculoObtimizacionResponse calcularObtimizacion(Integer productoId, CalculoObtimizacionCreateRequest request) {
+    public CalculoOptimizacionResponse calcularObtimizacion(Integer productoId, CalculoObtimizacionCreateRequest request) {
         log.info("Calculando optimización para producto: {}", productoId);
 
         Producto producto = productoRepositorio.findById(productoId)
@@ -112,7 +112,7 @@ public class CalculoObtimizacionService implements ICalculoObtimizacionServicio 
      */
     @Override
     @Transactional(readOnly = true)
-    public CalculoObtimizacionResponse obtenerCalculoPorId(Integer calculoId) {
+    public CalculoOptimizacionResponse obtenerCalculoPorId(Integer calculoId) {
         log.debug("Obteniendo cálculo ID: {}", calculoId);
 
         CalculoObtimizacion calculo = calculoRepositorio.findById(calculoId)
@@ -127,7 +127,7 @@ public class CalculoObtimizacionService implements ICalculoObtimizacionServicio 
      */
     @Override
     @Transactional(readOnly = true)
-    public CalculoObtimizacionResponse obtenerUltimoCalculoPorProducto(Integer productoId) {
+    public CalculoOptimizacionResponse obtenerUltimoCalculoPorProducto(Integer productoId) {
         log.debug("Obteniendo último cálculo para producto: {}", productoId);
 
         Producto producto = productoRepositorio.findById(productoId)
@@ -145,7 +145,7 @@ public class CalculoObtimizacionService implements ICalculoObtimizacionServicio 
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<CalculoObtimizacionResponse> listarCalculosPorProducto(Integer productoId, Pageable pageable) {
+    public Page<CalculoOptimizacionResponse> listarCalculosPorProducto(Integer productoId, Pageable pageable) {
         log.debug("Listando cálculos para producto: {}", productoId);
 
         Producto producto = productoRepositorio.findById(productoId)
@@ -160,7 +160,7 @@ public class CalculoObtimizacionService implements ICalculoObtimizacionServicio 
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<CalculoObtimizacionResponse> listarTodosLosCalculos(Pageable pageable) {
+    public Page<CalculoOptimizacionResponse> listarTodosLosCalculos(Pageable pageable) {
         log.debug("Listando todos los cálculos");
 
         return calculoRepositorio.findAll(pageable)
@@ -171,7 +171,7 @@ public class CalculoObtimizacionService implements ICalculoObtimizacionServicio 
      * Actualiza un cálculo existente
      */
     @Override
-    public CalculoObtimizacionResponse actualizarCalculo(Integer calculoId, CalculoObtimizacionCreateRequest request) {
+    public CalculoOptimizacionResponse actualizarCalculo(Integer calculoId, CalculoObtimizacionCreateRequest request) {
         log.info("Actualizando cálculo ID: {}", calculoId);
 
         CalculoObtimizacion calculo = calculoRepositorio.findById(calculoId)

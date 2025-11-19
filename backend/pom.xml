@@ -69,6 +69,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Dependencia para Swagger UI -->
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -132,6 +137,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
+
+        <!-- Smile ML - Statistical Machine Intelligence and Learning Engine -->
+        <!-- Smile ML - v3.1.1 compatible con Java 21 (bytecode 65.0) -->
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-core</artifactId>
+            <version>3.1.1</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -140,15 +153,23 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <annotationProcessorPaths>
+                        <!-- Lombok DEBE procesarse PRIMERO -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>1.18.36</version>
                         </path>
-                        <!-- MapStruct processor -->
+                        <!-- Después MapStruct puede usar los getters/setters generados por Lombok -->
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>1.5.5.Final</version>
+                        </path>
+                        <!-- Binding entre Lombok y MapStruct -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
 import { ManagementLayouts } from './layouts/management-layouts/management-layouts';
 import { authGuard } from './core/guards/auth';
+import { adminGuard, roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/administracion/dashboard', pathMatch: 'full' },
+    { path: '', redirectTo: '/administracion/alertas-inventario', pathMatch: 'full' },
     {
         path: 'login',
         loadComponent: () =>
@@ -63,21 +64,47 @@ export const routes: Routes = [
             },
             {
                 path: 'predicciones',
+                canActivate: [roleGuard],
+                data: { rol: 'GERENTE' },
                 loadComponent: () =>
                     import('./features/predicciones/page/predicciones/predicciones')
                         .then(m => m.PrediccionesComponent)
             },
             {
                 path: 'ordenes-compra',
+                canActivate: [roleGuard],
+                data: { rol: 'GERENTE' },
                 loadComponent: () =>
                     import('./features/ordenes-compra/page/ordenes-compra/ordenes-compra')
                         .then(m => m.OrdenesCompraComponent)
             },
             {
                 path: 'alertas-inventario',
-                loadComponent: () =>
-                    import('./features/alertas-inventario/page/dashboard-alertas/dashboard-alertas')
-                        .then(m => m.default)
+                children: [
+                    {
+                        path: 'flujo-procesamiento',
+                        loadComponent: () =>
+                            import('./features/alertas-inventario/page/flujo-procesamiento/flujo-procesamiento')
+                                .then(m => m.FlujoProcesamientoComponent)
+                    }
+                ]
+            },
+            {
+                path: 'admin',
+                canActivate: [adminGuard],
+                children: [
+                    {
+                        path: 'usuarios',
+                        loadComponent: () =>
+                            import('./features/usuarios-admin/gestion-usuarios.component')
+                                .then(m => m.GestionUsuariosComponent)
+                    },
+                    {
+                        path: '',
+                        redirectTo: 'usuarios',
+                        pathMatch: 'full'
+                    }
+                ]
             }
         ]
     },

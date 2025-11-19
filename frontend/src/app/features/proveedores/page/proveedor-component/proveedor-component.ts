@@ -17,6 +17,7 @@ import { KeyFilterModule } from 'primeng/keyfilter';
 import { MessageModule } from 'primeng/message';
 import { FloatLabel } from 'primeng/floatlabel';
 import { Toast } from 'primeng/toast';
+import { SkeletonModule } from 'primeng/skeleton';
 
 interface Column {
   field: keyof Proveedor | 'acciones';
@@ -40,7 +41,8 @@ interface Column {
     KeyFilterModule,
     MessageModule,
     FloatLabel,
-    Toast
+    Toast,
+    SkeletonModule
   ],
   templateUrl: './proveedor-component.html',
   styleUrl: './proveedor-component.css',

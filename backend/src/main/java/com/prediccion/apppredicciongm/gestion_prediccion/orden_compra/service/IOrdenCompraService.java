@@ -1,6 +1,7 @@
 package com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.service;
 
 import com.prediccion.apppredicciongm.models.OrdenCompra;
+import com.prediccion.apppredicciongm.models.Prediccion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -38,6 +39,17 @@ public interface IOrdenCompraService {
      * @return true si se debe generar orden, false en caso contrario
      */
     boolean validarOrdenCompra(Integer productoId);
+    
+    /**
+     * Obtiene el resumen completo de una orden de compra para generar PDF.
+     * Incluye datos de empresa, proveedor, detalles de productos y totales.
+     *
+     * @param ordenId ID de la orden de compra
+     * @return ResumenOrdenCompraDTO con toda la información
+     * @throws com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.OrdenCompraNoEncontradaException
+     *         si la orden no existe
+     */
+    com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.response.ResumenOrdenCompraDTO obtenerResumenOrdenCompra(Long ordenId);
 
     /**
      * Obtiene las órdenes de compra para un producto específico.
@@ -90,4 +102,31 @@ public interface IOrdenCompraService {
      *         si la orden ya ha sido confirmada o recibida
      */
     void cancelarOrden(Long ordenId);
+
+    /**
+     * Genera automáticamente una orden de compra basada en una predicción.
+     * Utiliza la demanda predicha y factores de seguridad para calcular cantidades.
+     *
+     * @param prediccionId ID de la predicción base para generar la orden
+     * @return OrdenCompra generada automáticamente
+     * @throws RuntimeException si el predicción no existe o no se puede generar la orden
+     */
+    OrdenCompra generarOrdenDesdePredicion(Integer prediccionId);
+
+    /**
+     * Obtiene todas las órdenes de compra en estado BORRADOR.
+     * Estas órdenes requieren revisión y aprobación del usuario antes de ser procesadas.
+     *
+     * @return lista de órdenes en estado BORRADOR
+     */
+    List<OrdenCompra> obtenerOrdenesBorrador();
+
+    /**
+     * Aprueba múltiples órdenes BORRADOR, cambiando su estado a PENDIENTE.
+     * Solo procesa órdenes que estén efectivamente en estado BORRADOR.
+     * Omite órdenes no encontradas o que no estén en BORRADOR.
+     *
+     * @param ordenIds lista de IDs de órdenes a aprobar
+     */
+    void aprobarOrdenesBorrador(List<Long> ordenIds);
 }

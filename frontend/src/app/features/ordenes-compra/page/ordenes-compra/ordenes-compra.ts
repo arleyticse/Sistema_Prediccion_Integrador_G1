@@ -17,6 +17,7 @@ import { OrdenesCompraService } from '../../service/ordenes-compra.service';
 import { OrdenCompraResponse } from '../../models/OrdenCompraResponse';
 import { GenerarOrdenRequest } from '../../models/GenerarOrdenRequest';
 import { PrediccionResponse } from '../../models/PrediccionResponse';
+import { OrdenPdfService } from '../../../../core/services/orden-pdf.service';
 
 interface Column {
   field: keyof OrdenCompraResponse | 'acciones';
@@ -82,6 +83,7 @@ export class OrdenesCompraComponent {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly ordenesService = inject(OrdenesCompraService);
+  private readonly ordenPdfService = inject(OrdenPdfService);
 
   prediccionesDisponibles = computed(() => 
     this.predicciones().filter(p => p.demandaPredichaTotal > 0)
@@ -270,5 +272,19 @@ export class OrdenesCompraComponent {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
+  }
+
+  /**
+   * Genera y descarga el PDF de una orden de compra
+   */
+  descargarPDF(ordenId: number): void {
+    this.ordenPdfService.generarPDFOrdenCompra(ordenId);
+  }
+
+  /**
+   * Abre el PDF de una orden en una nueva pestaña
+   */
+  verPDF(ordenId: number): void {
+    this.ordenPdfService.abrirPDFOrdenCompra(ordenId);
   }
 }

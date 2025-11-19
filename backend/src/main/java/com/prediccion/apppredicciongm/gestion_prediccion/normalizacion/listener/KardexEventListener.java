@@ -41,7 +41,7 @@ public class KardexEventListener {
 
         // Solo procesar SALIDA_VENTA (demanda de cliente)
         if (kardex.getTipoMovimiento() == TipoMovimiento.SALIDA_VENTA && !kardex.isAnulado()) {
-            log.debug("📦 [LISTENER] SALIDA_VENTA detectada. Producto: {} Cantidad: {}",
+                log.debug("[LISTENER] SALIDA_VENTA detectada. Producto: {} Cantidad: {}",
                     kardex.getProducto().getNombre(), kardex.getCantidad());
 
             try {
@@ -49,11 +49,11 @@ public class KardexEventListener {
                 int registrosActualizados = reporteDemandaService
                         .normalizarDemandaProducto(kardex.getProducto(), 1);
 
-                log.info("✅ [LISTENER] Registro de demanda actualizado. Registros: {}",
+                log.info("[LISTENER] Registro de demanda actualizado. Registros: {}",
                         registrosActualizados);
 
             } catch (Exception e) {
-                log.warn("⚠️  [LISTENER] Error actualizando demanda para {}: {}",
+                log.warn("[LISTENER] Advertencia: Error actualizando demanda para {}: {}",
                         kardex.getProducto().getNombre(), e.getMessage());
             }
         }
@@ -72,7 +72,7 @@ public class KardexEventListener {
         }
 
         if (kardex.getTipoMovimiento() == TipoMovimiento.SALIDA_VENTA && kardex.isAnulado()) {
-            log.debug("❌ [LISTENER] SALIDA_VENTA anulada. Producto: {} Cantidad: {}",
+                log.debug("[LISTENER] SALIDA_VENTA anulada. Producto: {} Cantidad: {}",
                     kardex.getProducto().getNombre(), kardex.getCantidad());
 
             try {
@@ -80,11 +80,11 @@ public class KardexEventListener {
                 int registrosActualizados = reporteDemandaService
                         .normalizarDemandaProducto(kardex.getProducto(), 1);
 
-                log.info("✅ [LISTENER] Registro de demanda recalculado tras anulación. Registros: {}",
+                log.info("[LISTENER] Registro de demanda recalculado tras anulación. Registros: {}",
                         registrosActualizados);
 
             } catch (Exception e) {
-                log.warn("⚠️  [LISTENER] Error actualizando demanda tras anulación para {}: {}",
+                log.warn("[LISTENER] Advertencia: Error actualizando demanda tras anulación para {}: {}",
                         kardex.getProducto().getNombre(), e.getMessage());
             }
         }

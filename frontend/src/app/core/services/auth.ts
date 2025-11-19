@@ -30,12 +30,18 @@ export class AuthService {
     // Sincronizar con localStorage cuando cambien los signals
     effect(() => {
       const token = this.tokenSignal();
-      if (token) {
+      const usuario = this.usuarioSignal();
+      
+      if (token && usuario) {
         localStorage.setItem('authToken', token);
-        localStorage.setItem('usuario', JSON.stringify(this.usuarioSignal()));
+        if (usuario.refreshToken) {
+          localStorage.setItem('refreshToken', usuario.refreshToken);
+        }
+        localStorage.setItem('usuario', JSON.stringify(usuario));
         console.log('✅ Token guardado en localStorage');
       } else {
         localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('usuario');
         console.log('🗑️ Token eliminado de localStorage');
       }
@@ -64,6 +70,7 @@ export class AuthService {
     this.tokenSignal.set(response.token);
     this.usuarioSignal.set({
       token: response.token,
+      refreshToken: response.refreshToken,
       nombreCompleto: response.nombreCompleto,
       email: response.email,
       rol: response.rol
@@ -71,13 +78,42 @@ export class AuthService {
   }
 
   /**
-   * Logout: limpiar token y usuario
+   * Logout: limpiar token y usuario y notificar al backend
    */
   logout() {
     console.log('👋 Cerrando sesión');
-    this.tokenSignal.set(null);
-    this.usuarioSignal.set(null);
-    this.router.navigate(['/login']);
+    
+    this.http.post(`${this.apiUrl}/cerrar-sesion`, {}).subscribe({
+      next: () => console.log('Sesión cerrada en backend'),
+      error: (err) => console.warn('Error al cerrar sesión en backend', err),
+      complete: () => {
+        this.tokenSignal.set(null);
+        this.usuarioSignal.set(null);
+        this.router.navigate(['/login']);
+      }
+    });
+    
+    // Fallback por si la petición tarda mucho o falla
+    setTimeout(() => {
+      if (this.tokenSignal()) {
+        this.tokenSignal.set(null);
+        this.usuarioSignal.set(null);
+        this.router.navigate(['/login']);
+      }
+    }, 1000);
+  }
+
+  /**
+   * Refrescar token
+   */
+  refreshToken() {
+    const refreshToken = this.usuarioSignal()?.refreshToken || localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      this.logout();
+      throw new Error('No refresh token available');
+    }
+
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken });
   }
 
   /**
@@ -111,7 +147,15 @@ export class AuthService {
   private getUsuarioFromStorage(): UsuarioInfo | null {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       const usuario = localStorage.getItem('usuario');
-      return usuario ? JSON.parse(usuario) : null;
+      if (usuario) {
+        const parsedUsuario = JSON.parse(usuario);
+        // Asegurar que refreshToken se recupere si está guardado aparte o en el objeto usuario
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken && !parsedUsuario.refreshToken) {
+          parsedUsuario.refreshToken = refreshToken;
+        }
+        return parsedUsuario;
+      }
     }
     return null;
   }

@@ -17,6 +17,9 @@ import com.prediccion.apppredicciongm.auth.models.SeguridadUsuario;
 import com.prediccion.apppredicciongm.auth.service.IUsuarioService;
 import com.prediccion.apppredicciongm.models.Usuario;
 import com.prediccion.apppredicciongm.security.jwt.JwtTokenUtil;
+import com.prediccion.apppredicciongm.auth.service.RefreshTokenService;
+import com.prediccion.apppredicciongm.auth.models.RefreshToken;
+import com.prediccion.apppredicciongm.auth.dto.TokenRefreshRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,12 +42,13 @@ import lombok.RequiredArgsConstructor;
 public class AutentificacionControlador {
 
     private static final Logger log = LoggerFactory.getLogger(AutentificacionControlador.class);
-    
+
     private final AuthenticationManager manejadorAutenticacion;
     private final JwtTokenUtil utilitarioJwt;
     private final IUsuarioService usuarioServicio;
     private final PasswordEncoder codificadorContrasena;
-    
+    private final RefreshTokenService refreshTokenService;
+
     /**
      * Inicia sesión de un usuario.
      * 
@@ -56,36 +60,76 @@ public class AutentificacionControlador {
      */
     @PostMapping("/iniciar-sesion")
     @Operation(summary = "Iniciar sesión", description = "Autentica al usuario y devuelve un token JWT junto con sus datos")
+    @jakarta.transaction.Transactional
     public ResponseEntity<?> iniciarSesion(@RequestBody AuthRequest solicitud) {
         try {
             log.info("Intento de autenticación para usuario: {}", solicitud.getEmail());
-            
+
             Authentication autenticacion = manejadorAutenticacion.authenticate(
                     new UsernamePasswordAuthenticationToken(solicitud.getEmail(), solicitud.getClave()));
 
             SecurityContextHolder.getContext().setAuthentication(autenticacion);
 
             SeguridadUsuario detallesUsuario = (SeguridadUsuario) autenticacion.getPrincipal();
-            String tokenJwt = utilitarioJwt.generarToken(detallesUsuario);
 
             Usuario usuario = usuarioServicio.obtenerUsuarioPorCorreo(detallesUsuario.getUsername())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+            // Verificar si ya tiene sesión activa
+            if (Boolean.TRUE.equals(usuario.getActivo())) {
+                log.warn("Intento de inicio de sesión duplicado para usuario: {}", usuario.getEmail());
+                return ResponseEntity.status(409).body("El usuario ya tiene una sesión activa.");
+            }
+
+            // Marcar usuario como activo
+            usuarioServicio.actualizarEstadoActivo(usuario.getEmail(), true);
+
+            String tokenJwt = utilitarioJwt.generarToken(detallesUsuario);
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(usuario.getEmail());
+
             log.info("Usuario autenticado exitosamente: {} (ID: {})", usuario.getEmail(), usuario.getUsuarioId());
-            
+
             return ResponseEntity.ok(AuthResponse.builder()
                     .token(tokenJwt)
+                    .refreshToken(refreshToken.getToken())
                     .nombreCompleto(usuario.getNombre())
                     .email(usuario.getEmail())
                     .rol(usuario.getRol())
                     .build());
 
         } catch (Exception e) {
-            log.warn("Error de autenticación para usuario {}: {}", solicitud.getEmail(), e.getMessage());
-            return ResponseEntity.badRequest().body("Credenciales inválidas");
+            log.error("Error de autenticación para usuario {}: {}", solicitud.getEmail(), e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Error de autenticación: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Cierra la sesión de un usuario.
+     * 
+     * Marca al usuario como inactivo en la base de datos.
+     * 
+     * @return Mensaje de confirmación
+     */
+    @PostMapping("/cerrar-sesion")
+    @Operation(summary = "Cerrar sesión", description = "Marca al usuario como inactivo")
+    public ResponseEntity<?> cerrarSesion() {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            log.info("Cerrando sesión para usuario: {}", email);
+
+            usuarioServicio.actualizarEstadoActivo(email, false);
+
+            Usuario usuario = usuarioServicio.obtenerUsuarioPorCorreo(email)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            refreshTokenService.deleteByUserId(Long.valueOf(usuario.getUsuarioId()));
+
+            return ResponseEntity.ok("Sesión cerrada exitosamente");
+        } catch (Exception e) {
+            log.error("Error al cerrar sesión: {}", e.getMessage());
+            return ResponseEntity.badRequest().body("Error al cerrar sesión");
+        }
+    }
+
     /**
      * Registra un nuevo usuario en el sistema.
      * 
@@ -100,22 +144,25 @@ public class AutentificacionControlador {
     public ResponseEntity<?> registrar(@RequestBody UsuarioCreateRequest usuario) {
         try {
             log.info("Intento de registro para email: {}", usuario.getEmail());
-            
+
             if (usuarioServicio.obtenerUsuarioPorCorreo(usuario.getEmail()).isPresent()) {
                 log.warn("Intento de registro con email ya existente: {}", usuario.getEmail());
                 return ResponseEntity.badRequest().body("El correo ya está registrado");
             }
-            
+
             usuario.setClaveHash(codificadorContrasena.encode(usuario.getClaveHash()));
             Usuario nuevoUsuario = usuarioServicio.crearUsuario(usuario);
-            
+
             SeguridadUsuario detallesUsuario = new SeguridadUsuario(nuevoUsuario);
             String tokenJwt = utilitarioJwt.generarToken(detallesUsuario);
-            
-            log.info("Nuevo usuario registrado exitosamente: {} (ID: {})", nuevoUsuario.getEmail(), nuevoUsuario.getUsuarioId());
-            
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(nuevoUsuario.getEmail());
+
+            log.info("Nuevo usuario registrado exitosamente: {} (ID: {})", nuevoUsuario.getEmail(),
+                    nuevoUsuario.getUsuarioId());
+
             return ResponseEntity.ok(AuthResponse.builder()
                     .token(tokenJwt)
+                    .refreshToken(refreshToken.getToken())
                     .nombreCompleto(nuevoUsuario.getNombre())
                     .email(nuevoUsuario.getEmail())
                     .rol(nuevoUsuario.getRol())
@@ -125,14 +172,14 @@ public class AutentificacionControlador {
             return ResponseEntity.badRequest().body("Error al registrar usuario: " + e.getMessage());
         }
     }
-    
+
     /**
      * Actualiza la contraseña de un usuario.
      * 
      * Cambia la contraseña del usuario identificado por su correo electrónico.
      * La nueva contraseña se encripta antes de almacenarse.
      * 
-     * @param email Email del usuario cuya contraseña se actualizará
+     * @param email            Email del usuario cuya contraseña se actualizará
      * @param nuevaContrasenia Nueva contraseña en texto plano
      * @return Mensaje de confirmación
      */
@@ -141,14 +188,36 @@ public class AutentificacionControlador {
     public ResponseEntity<?> actualizarContrasenia(@RequestParam String email, @RequestParam String nuevaContrasenia) {
         try {
             log.info("Solicitud de actualización de contraseña para: {}", email);
-            
+
             Usuario usuarioActualizado = usuarioServicio.actualizarContrasenia(email, nuevaContrasenia);
             log.info("Contraseña actualizada exitosamente para usuario: {}", email);
-            
-            return ResponseEntity.ok("Contraseña actualizada exitosamente para el usuario: " + usuarioActualizado.getEmail());
+
+            return ResponseEntity
+                    .ok("Contraseña actualizada exitosamente para el usuario: " + usuarioActualizado.getEmail());
         } catch (Exception e) {
             log.error("Error al actualizar contraseña para {}: {}", email, e.getMessage());
             return ResponseEntity.badRequest().body("Error al actualizar la contraseña: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/refresh-token")
+    @Operation(summary = "Refrescar token", description = "Obtiene un nuevo token JWT usando un refresh token válido")
+    public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUsuario)
+                .map(usuario -> {
+                    String token = utilitarioJwt.generarToken(new SeguridadUsuario(usuario));
+                    return ResponseEntity.ok(AuthResponse.builder()
+                            .token(token)
+                            .refreshToken(requestRefreshToken)
+                            .nombreCompleto(usuario.getNombre())
+                            .email(usuario.getEmail())
+                            .rol(usuario.getRol())
+                            .build());
+                })
+                .orElseThrow(() -> new RuntimeException("Refresh token no está en la base de datos!"));
     }
 }

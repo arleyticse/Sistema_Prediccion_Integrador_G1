@@ -4,12 +4,8 @@
     <p-button (click)="showDialog()" label="Nuevo Proveedor" icon="pi pi-plus" />
 </div>
 
-<app-importacion-csv
-    #importacionCsv
-    endpoint="/importacion/proveedores"
-    tipoImportacion="Proveedores"
-    nombrePlantilla="plantilla_proveedores.csv"
-    (importacionCompletada)="cargarProveedores()" />
+<app-importacion-csv #importacionCsv endpoint="/importacion/proveedores" tipoImportacion="Proveedores"
+    nombrePlantilla="plantilla_proveedores.csv" (importacionCompletada)="cargarProveedores()" />
 
 <!-- Dialog modal no draggable -->
 <p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
@@ -24,23 +20,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field">
                     <p-floatlabel>
-                        <input id="razonSocial" pInputText formControlName="razonSocial" pKeyFilter="alpha" class="w-full"
+                        <input id="razonSocial" pInputText formControlName="razonSocial" pKeyFilter="alpha"
+                            class="w-full"
                             [invalid]="proveedorForm.get('razonSocial')?.hasError('required') && proveedorForm.get('razonSocial')?.touched" />
                         <label for="razonSocial">Razón Social</label>
                     </p-floatlabel>
-                    @if (proveedorForm.get('razonSocial')?.hasError('required') && proveedorForm.get('razonSocial')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Razón social requerida</p-message>
+                    @if (proveedorForm.get('razonSocial')?.hasError('required') &&
+                    proveedorForm.get('razonSocial')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Razón social requerida</p-message>
                     }
                 </div>
 
                 <div class="field">
                     <p-floatlabel>
-                        <input id="nombreComercial" pInputText formControlName="nombreComercial" pKeyFilter="alphanum" class="w-full"
+                        <input id="nombreComercial" pInputText formControlName="nombreComercial" pKeyFilter="alphanum"
+                            class="w-full"
                             [invalid]="proveedorForm.get('nombreComercial')?.hasError('required') && proveedorForm.get('nombreComercial')?.touched" />
                         <label for="nombreComercial">Nombre Comercial</label>
                     </p-floatlabel>
-                    @if (proveedorForm.get('nombreComercial')?.hasError('required') && proveedorForm.get('nombreComercial')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Nombre comercial requerido</p-message>
+                    @if (proveedorForm.get('nombreComercial')?.hasError('required') &&
+                    proveedorForm.get('nombreComercial')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Nombre comercial requerido</p-message>
                     }
                 </div>
             </div>
@@ -54,7 +54,7 @@
                         <label for="rucNit">RUC/NIT</label>
                     </p-floatlabel>
                     @if (proveedorForm.get('rucNit')?.hasError('required') && proveedorForm.get('rucNit')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">RUC/NIT requerido</p-message>
+                    <p-message severity="error" variant="simple" size="small">RUC/NIT requerido</p-message>
                     }
                 </div>
 
@@ -64,8 +64,9 @@
                             [invalid]="proveedorForm.get('telefono')?.hasError('required') && proveedorForm.get('telefono')?.touched" />
                         <label for="telefono">Teléfono</label>
                     </p-floatlabel>
-                    @if (proveedorForm.get('telefono')?.hasError('required') && proveedorForm.get('telefono')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Teléfono requerido</p-message>
+                    @if (proveedorForm.get('telefono')?.hasError('required') && proveedorForm.get('telefono')?.touched)
+                    {
+                    <p-message severity="error" variant="simple" size="small">Teléfono requerido</p-message>
                     }
                 </div>
             </div>
@@ -78,10 +79,10 @@
                     <label for="email">Email</label>
                 </p-floatlabel>
                 @if (proveedorForm.get('email')?.hasError('required') && proveedorForm.get('email')?.touched) {
-                    <p-message severity="error" variant="simple" size="small">Email requerido</p-message>
+                <p-message severity="error" variant="simple" size="small">Email requerido</p-message>
                 }
                 @if (proveedorForm.get('email')?.hasError('email') && proveedorForm.get('email')?.touched) {
-                    <p-message severity="error" variant="simple" size="small">Email no válido</p-message>
+                <p-message severity="error" variant="simple" size="small">Email no válido</p-message>
                 }
             </div>
 
@@ -89,12 +90,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="field">
                     <p-floatlabel>
-                        <input id="direccion" pInputText formControlName="direccion" pKeyFilter="alphanum" class="w-full"
+                        <input id="direccion" pInputText formControlName="direccion" pKeyFilter="alphanum"
+                            class="w-full"
                             [invalid]="proveedorForm.get('direccion')?.hasError('required') && proveedorForm.get('direccion')?.touched" />
                         <label for="direccion">Dirección</label>
                     </p-floatlabel>
-                    @if (proveedorForm.get('direccion')?.hasError('required') && proveedorForm.get('direccion')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Dirección requerida</p-message>
+                    @if (proveedorForm.get('direccion')?.hasError('required') &&
+                    proveedorForm.get('direccion')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Dirección requerida</p-message>
                     }
                 </div>
 
@@ -105,7 +108,7 @@
                         <label for="ciudad">Ciudad</label>
                     </p-floatlabel>
                     @if (proveedorForm.get('ciudad')?.hasError('required') && proveedorForm.get('ciudad')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Ciudad requerida</p-message>
+                    <p-message severity="error" variant="simple" size="small">Ciudad requerida</p-message>
                     }
                 </div>
 
@@ -116,7 +119,7 @@
                         <label for="pais">País</label>
                     </p-floatlabel>
                     @if (proveedorForm.get('pais')?.hasError('required') && proveedorForm.get('pais')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">País requerido</p-message>
+                    <p-message severity="error" variant="simple" size="small">País requerido</p-message>
                     }
                 </div>
             </div>
@@ -124,12 +127,14 @@
             <!-- Sección 5: Persona de Contacto -->
             <div class="field">
                 <p-floatlabel>
-                    <input id="personaContacto" pInputText formControlName="personaContacto" pKeyFilter="alpha" class="w-full"
+                    <input id="personaContacto" pInputText formControlName="personaContacto" pKeyFilter="alpha"
+                        class="w-full"
                         [invalid]="proveedorForm.get('personaContacto')?.hasError('required') && proveedorForm.get('personaContacto')?.touched" />
                     <label for="personaContacto">Persona de Contacto</label>
                 </p-floatlabel>
-                @if (proveedorForm.get('personaContacto')?.hasError('required') && proveedorForm.get('personaContacto')?.touched) {
-                    <p-message severity="error" variant="simple" size="small">Persona de contacto requerida</p-message>
+                @if (proveedorForm.get('personaContacto')?.hasError('required') &&
+                proveedorForm.get('personaContacto')?.touched) {
+                <p-message severity="error" variant="simple" size="small">Persona de contacto requerida</p-message>
                 }
             </div>
 
@@ -137,31 +142,37 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="field">
                     <p-floatlabel>
-                        <p-inputNumber inputId="tiempoEntregaDias" formControlName="tiempoEntregaDias" [min]="1" class="w-full" suffix=" días" />
+                        <p-inputNumber inputId="tiempoEntregaDias" formControlName="tiempoEntregaDias" [min]="1"
+                            class="w-full" suffix=" días" />
                         <label for="tiempoEntregaDias">Tiempo de Entrega (días)</label>
                     </p-floatlabel>
-                    @if (proveedorForm.get('tiempoEntregaDias')?.hasError('required') && proveedorForm.get('tiempoEntregaDias')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Tiempo de entrega requerido</p-message>
+                    @if (proveedorForm.get('tiempoEntregaDias')?.hasError('required') &&
+                    proveedorForm.get('tiempoEntregaDias')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Tiempo de entrega requerido</p-message>
                     }
                 </div>
 
                 <div class="field">
                     <p-floatlabel>
-                        <p-inputNumber inputId="diasCredito" formControlName="diasCredito" [min]="0" class="w-full" suffix=" días" />
+                        <p-inputNumber inputId="diasCredito" formControlName="diasCredito" [min]="0" class="w-full"
+                            suffix=" días" />
                         <label for="diasCredito">Días de Crédito</label>
                     </p-floatlabel>
-                    @if (proveedorForm.get('diasCredito')?.hasError('required') && proveedorForm.get('diasCredito')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Días de crédito requerido</p-message>
+                    @if (proveedorForm.get('diasCredito')?.hasError('required') &&
+                    proveedorForm.get('diasCredito')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Días de crédito requerido</p-message>
                     }
                 </div>
 
                 <div class="field">
                     <p-floatlabel>
-                        <p-inputNumber inputId="calificacion" formControlName="calificacion" [min]="0" [max]="10" class="w-full" suffix="/10" />
+                        <p-inputNumber inputId="calificacion" formControlName="calificacion" [min]="0" [max]="10"
+                            class="w-full" suffix="/10" />
                         <label for="calificacion">Calificación (0-10)</label>
                     </p-floatlabel>
-                    @if (proveedorForm.get('calificacion')?.hasError('required') && proveedorForm.get('calificacion')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Calificación requerida</p-message>
+                    @if (proveedorForm.get('calificacion')?.hasError('required') &&
+                    proveedorForm.get('calificacion')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Calificación requerida</p-message>
                     }
                 </div>
             </div>
@@ -169,71 +180,74 @@
             <!-- Sección 7: Observaciones -->
             <div class="field">
                 <label for="observaciones" class="block mb-2">Observaciones</label>
-                <textarea 
-                    id="observaciones"
-                    pInputTextarea
-                    formControlName="observaciones"
-                    rows="3"
-                    class="w-full"
-                    placeholder="Notas adicionales..."
-                    [autoResize]="true"></textarea>
+                <textarea id="observaciones" pInputTextarea formControlName="observaciones" rows="3" class="w-full"
+                    placeholder="Notas adicionales..." [autoResize]="true"></textarea>
             </div>
         </div>
     </form>
 
     <ng-template #footer>
-        <p-button 
-            [label]="isEditing() ? 'Actualizar' : 'Guardar'" 
-            icon="pi pi-check" 
-            (onClick)="onSubmit()"
+        <p-button [label]="isEditing() ? 'Actualizar' : 'Guardar'" icon="pi pi-check" (onClick)="onSubmit()"
             [disabled]="proveedorForm.invalid" />
-        <p-button 
-            label="Cancelar" 
-            icon="pi pi-times" 
-            severity="danger"
-            (click)="closeDialog()" />
+        <p-button label="Cancelar" icon="pi pi-times" severity="danger" (click)="closeDialog()" />
     </ng-template>
 </p-dialog>
 
 <p-toast />
 
 <!-- Tabla de Proveedores -->
-<p-table 
-    [columns]="cols" 
-    [value]="proveedores()" 
-    [scrollable]="true"
-    scrollHeight="400px"
-    [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+@if (loading()) {
+<!-- Skeleton Loading State -->
+<div class="space-y-3">
+    <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+    @for (item of [1,2,3,4,5,6]; track item) {
+    <div class="flex gap-3">
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="20%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="12%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="8%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+    </div>
+    }
+</div>
+} @else {
+<p-table [columns]="cols" [value]="proveedores()" [scrollable]="true" scrollHeight="400px"
+    [tableStyle]="{ 'min-width': '50rem' }">
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.field) {
-                <th>{{ col.header }}</th>
+            <th>{{ col.header }}</th>
             }
         </tr>
     </ng-template>
     <ng-template #body let-proveedor let-columns="columns">
         <tr>
             @for (col of columns; track col.field) {
-                @if (col.field === 'acciones') {
-                    <td>
-                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info" (onClick)="editar(proveedor)" />
-                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger" (onClick)="eliminar(proveedor)" />
-                    </td>
-                } @else if (col.field === 'estado') {
-                    <td>
-                        <p-checkbox [ngModel]="proveedor[col.field]" [disabled]="true" [binary]="true" />
-                    </td>
-                } @else {
-                    <td>{{ proveedor[col.field] }}</td>
-                }
+            @if (col.field === 'acciones') {
+            <td>
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info"
+                    (onClick)="editar(proveedor)" />
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger"
+                    (onClick)="eliminar(proveedor)" />
+            </td>
+            } @else if (col.field === 'estado') {
+            <td>
+                <p-checkbox [ngModel]="proveedor[col.field]" [disabled]="true" [binary]="true" />
+            </td>
+            } @else {
+            <td>{{ proveedor[col.field] }}</td>
+            }
             }
             @empty {
-                <td [attr.colspan]="cols.length" class="text-center py-4">
-                    <p class="text-gray-500">No hay proveedores registrados</p>
-                </td>
+            <td [attr.colspan]="cols.length" class="text-center py-4">
+                <p class="text-gray-500">No hay proveedores registrados</p>
+            </td>
             }
         </tr>
     </ng-template>
 </p-table>
+}
 
 <p-confirmDialog />

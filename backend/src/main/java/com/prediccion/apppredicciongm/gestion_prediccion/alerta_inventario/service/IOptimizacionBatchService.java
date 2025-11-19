@@ -1,8 +1,7 @@
 package com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.service;
 
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ProcesamientoBatchResponse;
-import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.request.CalcularOptimizacionRequest;
-import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.OptimizacionResponse;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoOptimizacionResponse;
 
 import java.util.List;
 
@@ -44,7 +43,7 @@ public interface IOptimizacionBatchService {
      * @param nivelServicio Nivel de servicio deseado
      * @return Resultado de la optimizacion
      */
-    OptimizacionResponse ejecutarOptimizacionIndividual(
+    CalculoOptimizacionResponse ejecutarOptimizacionIndividual(
         Integer prediccionId, 
         Double nivelServicio
     );

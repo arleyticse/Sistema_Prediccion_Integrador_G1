@@ -2,14 +2,12 @@ package com.prediccion.apppredicciongm.gestion_prediccion.prediccion.service;
 
 import com.prediccion.apppredicciongm.models.RegistroDemanda;
 import com.prediccion.apppredicciongm.models.Prediccion;
-import com.prediccion.apppredicciongm.models.EstacionalidadProducto;
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
 import com.prediccion.apppredicciongm.gestion_prediccion.normalizacion.repository.IRegistroDemandaRepositorio;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.repository.IPrediccionRepositorio;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.errors.DatosInsuficientesException;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.errors.ProductoNoEncontradoException;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.errors.PrediccionNoEncontradaException;
-import com.prediccion.apppredicciongm.gestion_prediccion.estacionalidad.repository.IEstacionalidadRepositorio;
 import com.prediccion.apppredicciongm.gestion_inventario.producto.repository.IProductoRepositorio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,13 +40,15 @@ public class PrediccionService implements IPrediccionService {
     private final IPrediccionRepositorio prediccionRepositorio;
     private final IRegistroDemandaRepositorio registroDemandaRepositorio;
     private final IProductoRepositorio productoRepositorio;
-    private final IEstacionalidadRepositorio estacionalidadRepositorio;
     
     // Constantes para ARIMA
     private static final int MINIMO_REGISTROS_HISTORICOS = 12;
     private static final double FACTOR_TENDENCIA = 0.05;
     private static final double FACTOR_ESTACIONAL = 1.1;
     private static final double FACTOR_SUAVIZADO = 0.3;
+    
+    // Constante para limpieza automática de historial (mantener últimas N predicciones)
+    private static final int MAX_PREDICCIONES_POR_CONFIGURACION = 5;
 
     /**
      * Genera una predicción ARIMA mejorada para un producto integrando estacionalidad.
@@ -83,25 +83,39 @@ public class PrediccionService implements IPrediccionService {
             );
         }
 
-        // 4. Obtener estacionalidades del producto
-        List<EstacionalidadProducto> estacionalidades = estacionalidadRepositorio.findByProductoId(productoId);
-        log.debug("Patrones de estacionalidad encontrados: {}", estacionalidades.size());
-
-        // 5. Aplicar algoritmo ARIMA mejorado con estacionalidad
-        Integer demandaPredicha = calcularPrediccionARIMAMejorada(historial, estacionalidades, diasProcesar);
+        // 4. Aplicar algoritmo ARIMA básico (estacionalidad manejada por AnalisisEstacionalidad)
+        Integer demandaPredicha = calcularPrediccionARIMA(historial, diasProcesar);
         BigDecimal metricasError = calcularPrecision(historial, demandaPredicha);
 
-        // 6. Crear y guardar predicción
-        Prediccion prediccion = new Prediccion();
-        prediccion.setProducto(producto);
+        // 5. Buscar si existe predicción reciente para reutilizar o actualizar
+        Optional<Prediccion> prediccionExistente = prediccionRepositorio
+            .findByProductoAndAlgoritmoUsadoAndHorizonteTiempo(producto, "ARIMA", diasProcesar);
+        
+        Prediccion prediccion;
+        if (prediccionExistente.isPresent()) {
+            // Actualizar predicción existente
+            prediccion = prediccionExistente.get();
+            log.info("[PREDICCION] Actualizando predicción existente ID: {}", prediccion.getPrediccionId());
+        } else {
+            // Crear nueva predicción
+            prediccion = new Prediccion();
+            prediccion.setProducto(producto);
+            prediccion.setAlgoritmoUsado("ARIMA");
+            prediccion.setHorizonteTiempo(diasProcesar);
+            log.info("[PREDICCION] Creando nueva predicción");
+        }
+        
+        // Actualizar valores calculados
         prediccion.setDemandaPredichaTotal(demandaPredicha);
         prediccion.setMetricasError(metricasError);
-        prediccion.setAlgoritmoUsado("ARIMA-ESTACIONAL-MEJORADO");
-        prediccion.setHorizonteTiempo(diasProcesar);
         prediccion.setFechaEjecucion(LocalDateTime.now());
 
         Prediccion prediccionGuardada = prediccionRepositorio.save(prediccion);
-        log.info("Prediccion generada exitosamente: ID {}, Demanda: {}, Precision: {}, Integracion: Estacionalidad", 
+        
+        // 6. Limpieza automática: mantener solo las últimas N predicciones
+        limpiarPrediccionesAntiguas(producto, "ARIMA", diasProcesar);
+        
+        log.info("[PREDICCION] Prediccion procesada exitosamente: ID {}, Demanda: {}, Precision: {}", 
                 prediccionGuardada.getPrediccionId(), demandaPredicha, metricasError);
 
         return prediccionGuardada;
@@ -218,87 +232,9 @@ public class PrediccionService implements IPrediccionService {
     }
 
     /**
-     * Calcula la predicción ARIMA mejorada integrando datos de estacionalidad.
-     * Este método combina:
-     * - Análisis histórico (media, tendencia)
-     * - Patrones estacionales almacenados en BD
-     * - Suavizado exponencial
-     * - Factor de precisión
-     *
-     * @param historial datos históricos de demanda
-     * @param estacionalidades patrones estacionales del producto
-     * @param diasProcesar días a predecir
-     * @return demanda predicha mejorada
-     */
-    private Integer calcularPrediccionARIMAMejorada(List<RegistroDemanda> historial, 
-                                                     List<EstacionalidadProducto> estacionalidades, 
-                                                     int diasProcesar) {
-        log.debug("Calculando prediccion ARIMA mejorada con {} patrones estacionales", estacionalidades.size());
-
-        // 1. Extraer valores de demanda histórica
-        double[] demandas = historial.stream()
-                .mapToDouble(r -> r.getCantidadHistorica() != null ? r.getCantidadHistorica().doubleValue() : 0.0)
-                .toArray();
-
-        // 2. Crear estadísticas
-        DescriptiveStatistics stats = new DescriptiveStatistics(demandas);
-        double media = stats.getMean();
-        log.debug("Media historica: {}", media);
-
-        // 3. Componentes ARIMA básicos
-        double baseline = media;
-        double tendencia = calcularTendencia(demandas);
-
-        // 4. MEJORADO: Calcular estacionalidad desde BD
-        double estacionalidadBD = calcularEstacionalidadDesdeDB(estacionalidades);
-        double suavizado = baseline * (1 + FACTOR_SUAVIZADO);
-
-        // 5. Combinar componentes ARIMA MEJORADO
-        // Pesos aumentados para estacionalidad de BD: 35% (vs 20% anterior)
-        double prediccion = (baseline * 0.35) +          // Base histórica
-                           (tendencia * 0.25) +          // Tendencia
-                           (estacionalidadBD * 0.30) +   // Estacionalidad de BD (MEJORADO)
-                           (suavizado * 0.10);           // Suavizado exponencial
-
-        // 6. Aplicar factor de seguridad ajustado
-        double factorSeguridad = estacionalidades.isEmpty() ? 1.2 : 1.15;
-        double prediccionFinal = prediccion * factorSeguridad;
-
-        log.debug("Componentes ARIMA Mejorados - Base: {}, Tendencia: {}, Estacional(BD): {}, Suavizado: {}, Final: {}", 
-                baseline, tendencia, estacionalidadBD, suavizado, prediccionFinal);
-        log.info("Integracion Estacionalidad: {} patrones de BD utilizados para mejorar prediccion", 
-                estacionalidades.size());
-
-        return Math.round((float) prediccionFinal);
-    }
-
-    /**
-     * Calcula el factor estacional promedio desde los datos de la BD.
-     * Utiliza los factores estacionales almacenados para mejorar la predicción.
-     *
-     * @param estacionalidades lista de patrones estacionales del producto
-     * @return factor estacional promedio ponderado
-     */
-    private double calcularEstacionalidadDesdeDB(List<EstacionalidadProducto> estacionalidades) {
-        if (estacionalidades == null || estacionalidades.isEmpty()) {
-            log.debug("No hay datos de estacionalidad en BD, usando factor por defecto: 1.0");
-            return 1.0;
-        }
-
-        // Calcular promedio ponderado de factores estacionales
-        double sumaFactores = estacionalidades.stream()
-                .mapToDouble(e -> e.getFactorEstacional() != null ? e.getFactorEstacional().doubleValue() : 1.0)
-                .sum();
-
-        double promedioFactores = sumaFactores / estacionalidades.size();
-        log.debug("Factor estacional promedio desde BD: {} (basado en {} registros)", 
-                promedioFactores, estacionalidades.size());
-
-        return promedioFactores * FACTOR_ESTACIONAL;
-    }
-
-    /**
-     * Calcula la predicción ARIMA usando Apache Commons Math (método original).
+     * Calcula la predicción ARIMA usando Apache Commons Math.
+     * NOTA: La estacionalidad ahora se maneja en AnalisisEstacionalidad con coeficientes mensuales.
+     * Este servicio usa ARIMA básico, la integración completa se hace en SmartPrediccionService.
      *
      * @param historial datos históricos de demanda
      * @param diasProcesar días a predecir
@@ -414,5 +350,36 @@ public class PrediccionService implements IPrediccionService {
 
         log.debug("Precisión MAPE: {}%", precision);
         return BigDecimal.valueOf(Math.round(precision * 100.0) / 100.0);
+    }
+
+    /**
+     * Limpia predicciones antiguas manteniendo solo las últimas N por configuración.
+     * Estrategia intermedia: conserva historial reciente pero evita acumulación infinita.
+     * 
+     * @param producto el producto
+     * @param algoritmo algoritmo usado
+     * @param horizonte horizonte de tiempo
+     */
+    private void limpiarPrediccionesAntiguas(Producto producto, String algoritmo, Integer horizonte) {
+        try {
+            // Obtener todas las predicciones de esta configuración ordenadas por fecha DESC
+            List<Prediccion> todasLasPredicciones = prediccionRepositorio
+                .findPrediccionesAntiguasParaLimpieza(producto, algoritmo, horizonte);
+            
+            // Si hay más de MAX_PREDICCIONES_POR_CONFIGURACION, eliminar las antiguas
+            if (todasLasPredicciones.size() > MAX_PREDICCIONES_POR_CONFIGURACION) {
+                // Mantener las primeras N (más recientes), eliminar el resto
+                List<Prediccion> prediccionesAEliminar = todasLasPredicciones
+                    .subList(MAX_PREDICCIONES_POR_CONFIGURACION, todasLasPredicciones.size());
+                
+                log.info("[PREDICCION] Limpiando {} predicciones antiguas del producto {} (manteniendo últimas {})",
+                        prediccionesAEliminar.size(), producto.getProductoId(), MAX_PREDICCIONES_POR_CONFIGURACION);
+                
+                prediccionRepositorio.deleteAll(prediccionesAEliminar);
+            }
+        } catch (Exception e) {
+            // No fallar el guardado de predicción si falla la limpieza
+            log.warn("[PREDICCION] Advertencia: Error en limpieza de predicciones antiguas: {}", e.getMessage());
+        }
     }
 }

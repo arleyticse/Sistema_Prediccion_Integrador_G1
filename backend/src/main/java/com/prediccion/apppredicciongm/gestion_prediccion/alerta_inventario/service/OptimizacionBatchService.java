@@ -2,9 +2,9 @@ package com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.serv
 
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ProcesamientoBatchResponse;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.errors.ErrorProcesamientoLoteException;
-import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.request.CalcularOptimizacionRequest;
-import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.OptimizacionResponse;
-import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.service.OptimizacionInventarioService;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoOptimizacionResponse;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.service.IOptimizacionInventarioService;
+import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.dto.response.SmartPrediccionResponse;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.repository.IPrediccionRepositorio;
 import com.prediccion.apppredicciongm.models.Prediccion;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OptimizacionBatchService implements IOptimizacionBatchService {
 
-    private final OptimizacionInventarioService optimizacionService;
+    private final IOptimizacionInventarioService optimizacionService;
     private final IPrediccionRepositorio prediccionRepositorio;
     
     private static final int THREAD_POOL_SIZE = 5;
@@ -148,27 +149,57 @@ public class OptimizacionBatchService implements IOptimizacionBatchService {
     }
 
     @Override
-    public OptimizacionResponse ejecutarOptimizacionIndividual(
+    public CalculoOptimizacionResponse ejecutarOptimizacionIndividual(
             Integer prediccionId, 
             Double nivelServicio) {
         
         log.info("Ejecutando optimizacion para prediccion ID: {}", prediccionId);
         
-        // Validar que la prediccion existe
-        prediccionRepositorio.findById(prediccionId)
+        Prediccion prediccion = prediccionRepositorio.findById(prediccionId)
             .orElseThrow(() -> new IllegalArgumentException(
                 "Prediccion no encontrada: " + prediccionId
             ));
 
-        // Crear request con parametros
-        CalcularOptimizacionRequest request = CalcularOptimizacionRequest.builder()
-            .prediccionId(prediccionId.longValue())
-            .nivelServicioDeseado(nivelServicio != null ? nivelServicio : NIVEL_SERVICIO_DEFAULT)
-            .build();
 
-        // Ejecutar calculo
-        return optimizacionService.calcularOptimizacion(request);
+
+
+                double nivelServicioFinal = nivelServicio != null ? nivelServicio : NIVEL_SERVICIO_DEFAULT;
+
+                SmartPrediccionResponse smartResponse = construirSmartResponse(prediccion);
+                smartResponse.setMetadatos(Map.of("nivelServicioOverride", nivelServicioFinal));
+
+                return optimizacionService.calcularEOQROPDesdePrediccion(
+                    smartResponse,
+                    prediccion.getProducto().getProductoId().longValue()
+                );
     }
+
+            private SmartPrediccionResponse construirSmartResponse(Prediccion prediccion) {
+                Integer horizonte = prediccion.getHorizonteTiempo() != null
+                    ? prediccion.getHorizonteTiempo()
+                    : 30;
+
+                Double demandaTotal = prediccion.getDemandaPredichaTotal() != null
+                    ? prediccion.getDemandaPredichaTotal().doubleValue()
+                    : 0.0;
+
+                SmartPrediccionResponse.SmartPrediccionResponseBuilder builder = SmartPrediccionResponse.builder()
+                    .idPrediccion(prediccion.getPrediccionId() != null ? prediccion.getPrediccionId().longValue() : null)
+                    .idProducto(prediccion.getProducto() != null ? prediccion.getProducto().getProductoId().longValue() : null)
+                    .nombreProducto(prediccion.getProducto() != null ? prediccion.getProducto().getNombre() : null)
+                    .fechaEjecucion(prediccion.getFechaEjecucion())
+                    .horizonteTiempo(horizonte)
+                    .algoritmoUtilizado(prediccion.getAlgoritmoUsado())
+                    .demandaTotalPredicha(demandaTotal);
+
+                if (prediccion.getMetricasError() != null) {
+                    builder.metricas(SmartPrediccionResponse.MetricasCalidad.builder()
+                        .mape(prediccion.getMetricasError().doubleValue())
+                        .build());
+                }
+
+                return builder.build();
+            }
 
     /**
      * Procesa una optimizacion para una prediccion individual.
@@ -193,23 +224,32 @@ public class OptimizacionBatchService implements IOptimizacionBatchService {
                     "Prediccion no encontrada: " + prediccionId
                 ));
 
-            // Crear request con parametros
-            // Los costos se obtendran automaticamente del producto
-            CalcularOptimizacionRequest request = CalcularOptimizacionRequest.builder()
-                .prediccionId(prediccionId.longValue())
-                .nivelServicioDeseado(nivelServicio)
-                .build();
+            double nivelServicioFinal = nivelServicio != null ? nivelServicio : NIVEL_SERVICIO_DEFAULT;
 
-            // Ejecutar calculo
-            OptimizacionResponse optimizacion = optimizacionService.calcularOptimizacion(request);
+            SmartPrediccionResponse smartResponse = construirSmartResponse(prediccion);
+            smartResponse.setMetadatos(Map.of("nivelServicioOverride", nivelServicioFinal));
 
-            resultado.exitoso = true;
-            resultado.calculoId = optimizacion.getId() != null ? optimizacion.getId().intValue() : null;
-            resultado.eoq = optimizacion.getCantidadEconomicaPedido();
-            resultado.rop = optimizacion.getPuntoReorden();
+            CalculoOptimizacionResponse calculo = optimizacionService.calcularEOQROPDesdePrediccion(
+                smartResponse,
+                prediccion.getProducto().getProductoId().longValue()
+            );
+
+            resultado.exitoso = calculo != null;
+            if (calculo != null) {
+                resultado.calculoId = calculo.getCalculoId();
+                resultado.eoq = calculo.getEoqCantidadOptima() != null
+                    ? calculo.getEoqCantidadOptima().doubleValue()
+                    : null;
+                resultado.rop = calculo.getRopPuntoReorden() != null
+                    ? calculo.getRopPuntoReorden().doubleValue()
+                    : null;
+            }
             
-            log.debug("Optimizacion exitosa para prediccion ID: {}, EOQ: {}, ROP: {}", 
-                prediccionId, resultado.eoq, resultado.rop);
+            log.debug("Optimizacion {} para prediccion ID: {}, EOQ: {}, ROP: {}", 
+                resultado.exitoso ? "exitosa" : "sin resultados",
+                prediccionId,
+                resultado.eoq,
+                resultado.rop);
 
         } catch (Exception e) {
             log.error("Error al procesar optimizacion para prediccion ID: {}", 

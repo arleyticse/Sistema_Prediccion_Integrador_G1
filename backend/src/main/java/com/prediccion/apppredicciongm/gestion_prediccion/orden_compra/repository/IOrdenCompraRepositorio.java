@@ -2,7 +2,6 @@ package com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.repositor
 
 import com.prediccion.apppredicciongm.enums.EstadoOrdenCompra;
 import com.prediccion.apppredicciongm.models.OrdenCompra;
-import com.prediccion.apppredicciongm.models.Inventario.Producto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

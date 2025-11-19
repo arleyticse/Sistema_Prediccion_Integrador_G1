@@ -27,6 +27,7 @@ import { Toast } from 'primeng/toast';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePipe, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { DatePicker } from 'primeng/datepicker';
+import { SkeletonModule } from 'primeng/skeleton';
 
 interface Column {
   field: keyof KardexResponse | 'acciones';
@@ -61,7 +62,8 @@ interface TipoMovimientoDTO {
     DatePipe,
     CurrencyPipe,
     DecimalPipe,
-    DatePicker
+    DatePicker,
+    SkeletonModule
   ],
   templateUrl: './movimiento-component.html',
   styleUrl: './movimiento-component.css',

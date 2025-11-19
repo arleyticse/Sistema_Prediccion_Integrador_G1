@@ -430,199 +430,97 @@
         </div>
       }
 
-      <!-- Paso 3: Configurar Parámetros -->
+      <!-- Paso 3: Confirmar y Configurar Opciones -->
       @if (pasoActual() === 3) {
         <div class="animate-fadeIn">
           <div class="flex items-start gap-4 mb-6 p-4 bg-purple-50 rounded-lg">
-            <i class="pi pi-sliders-h text-purple-600 text-3xl"></i>
+            <i class="pi pi-check-square text-purple-600 text-3xl"></i>
             <div>
-              <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Configura los Parámetros</h3>
-              <p class="text-sm text-gray-600 m-0">Ajusta los parámetros avanzados del algoritmo seleccionado para optimizar la predicción</p>
+              <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Confirmar Configuración</h3>
+              <p class="text-sm text-gray-600 m-0">Revisa la configuración final antes de generar la predicción</p>
             </div>
           </div>
 
-          @switch (generarForm.get('algoritmo')?.value) {
-            @case ('simpleMovingAverageAlgorithm') {
-              <div class="border border-gray-200 rounded-xl p-6 bg-white">
-                <div class="flex items-center gap-3 mb-6">
-                  <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <i class="pi pi-chart-line text-blue-600 text-lg"></i>
-                  </div>
-                  <div>
-                    <h4 class="text-base font-bold text-gray-800 m-0">Promedio Móvil Simple (SMA)</h4>
-                    <p class="text-sm text-gray-500 m-0">Calcula el promedio de las últimas N observaciones</p>
-                  </div>
-                </div>
+          <!-- Resumen de Configuración -->
+          <div class="border border-gray-200 rounded-xl p-6 bg-white mb-6">
+            <h4 class="text-base font-bold text-gray-800 m-0 mb-4 flex items-center gap-2">
+              <i class="pi pi-info-circle text-blue-500"></i>
+              Resumen de Predicción
+            </h4>
 
-                <div class="space-y-4">
-                  <div>
-                    <div class="flex justify-between items-center mb-3">
-                      <label for="ventana" class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        Ventana de Observación
-                        <i class="pi pi-question-circle text-blue-500 text-xs cursor-help" 
-                           [pTooltip]="ayudaService.obtenerTooltipParametro('simpleMovingAverageAlgorithm', 'ventana')"
-                           tooltipPosition="top"></i>
-                      </label>
-                      <span class="text-lg font-bold text-blue-600">{{ generarForm.get('ventana')?.value }} días</span>
-                    </div>
-                    <p-slider 
-                      id="ventana"
-                      formControlName="ventana" 
-                      [min]="3"
-                      [max]="30"
-                      [step]="1"
-                      styleClass="w-full">
-                    </p-slider>
-                    <small class="flex items-center gap-2 mt-3 text-xs text-gray-500">
-                      <i class="pi pi-lightbulb text-amber-500"></i>
-                      {{ ayudaService.obtenerAyudaParametro('simpleMovingAverageAlgorithm', 'ventana')?.ayuda || 'Ventana mayor = Predicción más suave. Ventana menor = Más sensible a cambios recientes.' }}
-                    </small>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+                <i class="pi pi-box text-blue-600 text-xl"></i>
+                <div class="flex-1">
+                  <span class="text-xs text-blue-700 font-medium block mb-1">Producto</span>
+                  <span class="text-sm font-bold text-blue-900">{{ generarForm.get('producto')?.value?.nombre }}</span>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+                <i class="pi pi-sparkles text-purple-600 text-xl"></i>
+                <div class="flex-1">
+                  <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
+                  <span class="text-sm font-bold text-purple-900">{{ obtenerNombreAlgoritmo(generarForm.get('algoritmo')?.value || 'AUTO') }}</span>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
+                <i class="pi pi-calendar text-green-600 text-xl"></i>
+                <div class="flex-1">
+                  <span class="text-xs text-green-700 font-medium block mb-1">Horizonte</span>
+                  <span class="text-sm font-bold text-green-900">{{ generarForm.get('horizonteTiempo')?.value }} días</span>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
+                <i class="pi pi-chart-line text-amber-600 text-xl"></i>
+                <div class="flex-1">
+                  <span class="text-xs text-amber-700 font-medium block mb-1">Detección Estacional</span>
+                  <span class="text-sm font-bold text-amber-900">{{ generarForm.get('detectarEstacionalidad')?.value ? 'Activada' : 'Desactivada' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opción de Detección de Estacionalidad -->
+          <div class="border border-gray-200 rounded-xl p-6 bg-white">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex items-start gap-3 flex-1">
+                <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-chart-line text-indigo-600 text-lg"></i>
+                </div>
+                <div>
+                  <h4 class="text-base font-bold text-gray-800 m-0 mb-1">Detección Automática de Estacionalidad</h4>
+                  <p class="text-sm text-gray-600 m-0 mb-2">
+                    El sistema analizará tus datos históricos para identificar patrones estacionales (semanales, mensuales, anuales)
+                  </p>
+                  <div class="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                    <i class="pi pi-lightbulb text-amber-500"></i>
+                    <span>Recomendado para productos con variaciones cíclicas (helados, chocolates, panetón)</span>
                   </div>
                 </div>
               </div>
-            }
+              <p-toggleswitch 
+                formControlName="detectarEstacionalidad"
+                styleClass="ml-4">
+              </p-toggleswitch>
+            </div>
+          </div>
 
-            @case ('simpleExponentialSmoothingAlgorithm') {
-              <div class="border border-gray-200 rounded-xl p-6 bg-white">
-                <div class="flex items-center gap-3 mb-6">
-                  <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                    <i class="pi pi-chart-bar text-green-600 text-lg"></i>
-                  </div>
-                  <div>
-                    <h4 class="text-base font-bold text-gray-800 m-0">Suavizado Exponencial Simple (SES)</h4>
-                    <p class="text-sm text-gray-500 m-0">Pondera exponencialmente las observaciones pasadas</p>
-                  </div>
-                </div>
-
-                <div class="space-y-4">
-                  <div>
-                    <div class="flex justify-between items-center mb-3">
-                      <label for="alpha" class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        Factor de Suavizado (α)
-                        <i class="pi pi-question-circle text-green-500 text-xs cursor-help" 
-                           [pTooltip]="ayudaService.obtenerTooltipParametro('simpleExponentialSmoothingAlgorithm', 'alpha')"
-                           tooltipPosition="top"></i>
-                      </label>
-                      <span class="text-lg font-bold text-green-600">{{ generarForm.get('alpha')?.value }}</span>
-                    </div>
-                    <p-slider 
-                      id="alpha"
-                      formControlName="alpha" 
-                      [min]="0.01"
-                      [max]="0.99"
-                      [step]="0.01"
-                      styleClass="w-full">
-                    </p-slider>
-                    <small class="flex items-center gap-2 mt-3 text-xs text-gray-500">
-                      <i class="pi pi-lightbulb text-amber-500"></i>
-                      {{ ayudaService.obtenerAyudaParametro('simpleExponentialSmoothingAlgorithm', 'alpha')?.ayuda || 'α cercano a 1 = Reacciona rápido a cambios. α cercano a 0 = Predicción más estable.' }}
-                    </small>
-                  </div>
-                </div>
+          <!-- Nota sobre SMILE ML -->
+          <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+            <div class="flex items-start gap-3">
+              <i class="pi pi-info-circle text-blue-600 text-xl flex-shrink-0"></i>
+              <div>
+                <h5 class="text-sm font-bold text-blue-900 m-0 mb-1">🤖 Predicción Inteligente con SMILE ML</h5>
+                <p class="text-xs text-blue-800 m-0">
+                  Los algoritmos SMILE ML se auto-configuran internamente sin necesidad de ajustar parámetros manuales.
+                  El sistema optimizará automáticamente los hiperparámetros para maximizar la precisión de la predicción.
+                </p>
               </div>
-            }
-
-            @case ('holtWintersAlgorithm') {
-              <div class="border border-gray-200 rounded-xl p-6 bg-white">
-                <div class="flex items-center gap-3 mb-6">
-                  <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <i class="pi pi-chart-scatter text-orange-600 text-lg"></i>
-                  </div>
-                  <div>
-                    <h4 class="text-base font-bold text-gray-800 m-0">Holt-Winters (Triple Exponencial)</h4>
-                    <p class="text-sm text-gray-500 m-0">Captura nivel, tendencia y estacionalidad simultáneamente</p>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <div class="flex justify-between items-center mb-2">
-                      <label for="alphaHW" class="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        Nivel (α)
-                        <i class="pi pi-question-circle text-orange-500 text-xs cursor-help" 
-                           [pTooltip]="ayudaService.obtenerTooltipParametro('holtWintersAlgorithm', 'alpha')"
-                           tooltipPosition="top"></i>
-                      </label>
-                      <span class="text-base font-bold text-orange-600">{{ generarForm.get('alpha')?.value }}</span>
-                    </div>
-                    <p-slider 
-                      id="alphaHW"
-                      formControlName="alpha" 
-                      [min]="0.01"
-                      [max]="0.99"
-                      [step]="0.01"
-                      styleClass="w-full">
-                    </p-slider>
-                  </div>
-
-                  <div>
-                    <div class="flex justify-between items-center mb-2">
-                      <label for="beta" class="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        Tendencia (β)
-                        <i class="pi pi-question-circle text-orange-500 text-xs cursor-help" 
-                           [pTooltip]="ayudaService.obtenerTooltipParametro('holtWintersAlgorithm', 'beta')"
-                           tooltipPosition="top"></i>
-                      </label>
-                      <span class="text-base font-bold text-orange-600">{{ generarForm.get('beta')?.value }}</span>
-                    </div>
-                    <p-slider 
-                      id="beta"
-                      formControlName="beta" 
-                      [min]="0.01"
-                      [max]="0.99"
-                      [step]="0.01"
-                      styleClass="w-full">
-                    </p-slider>
-                  </div>
-
-                  <div>
-                    <div class="flex justify-between items-center mb-2">
-                      <label for="gamma" class="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        Estacionalidad (γ)
-                        <i class="pi pi-question-circle text-orange-500 text-xs cursor-help" 
-                           [pTooltip]="ayudaService.obtenerTooltipParametro('holtWintersAlgorithm', 'gamma')"
-                           tooltipPosition="top"></i>
-                      </label>
-                      <span class="text-base font-bold text-orange-600">{{ generarForm.get('gamma')?.value }}</span>
-                    </div>
-                    <p-slider 
-                      id="gamma"
-                      formControlName="gamma" 
-                      [min]="0.01"
-                      [max]="0.99"
-                      [step]="0.01"
-                      styleClass="w-full">
-                    </p-slider>
-                  </div>
-
-                  <div>
-                    <div class="flex justify-between items-center mb-2">
-                      <label for="periodo" class="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        Periodo Estacional
-                        <i class="pi pi-question-circle text-orange-500 text-xs cursor-help" 
-                           [pTooltip]="ayudaService.obtenerTooltipParametro('holtWintersAlgorithm', 'periodo')"
-                           tooltipPosition="top"></i>
-                      </label>
-                      <span class="text-base font-bold text-orange-600">{{ generarForm.get('periodo')?.value }} días</span>
-                    </div>
-                    <p-slider 
-                      id="periodo"
-                      formControlName="periodo" 
-                      [min]="2"
-                      [max]="30"
-                      [step]="1"
-                      styleClass="w-full">
-                    </p-slider>
-                  </div>
-                </div>
-
-                <small class="flex items-center gap-2 mt-4 text-xs text-gray-500">
-                  <i class="pi pi-lightbulb text-amber-500"></i>
-                  <strong>Consejo:</strong> {{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'periodo')?.ejemplo || 'Para productos con patrones semanales usa periodo = 7, para mensuales usa 30.' }}
-                </small>
-              </div>
-            }
-          }
+            </div>
+          </div>
         </div>
       }
     </form>

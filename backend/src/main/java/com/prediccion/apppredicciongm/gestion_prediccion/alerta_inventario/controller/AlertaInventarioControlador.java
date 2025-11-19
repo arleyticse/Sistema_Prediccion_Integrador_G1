@@ -124,7 +124,10 @@ public class AlertaInventarioControlador {
 
         try {
             // Obtener todas las alertas con datos enriquecidos
-            List<AlertaInventarioResponse> alertas = alertaService.listarAlertas();
+            List<AlertaInventarioResponse> alertas = alertaService.listarAlertas()
+                    .stream()
+                    .filter(a -> a.getCantidadSugerida() != null)
+                    .toList();
 
             log.info("Alertas dashboard: {} encontradas", alertas.size());
 

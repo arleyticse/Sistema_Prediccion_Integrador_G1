@@ -1,13 +1,49 @@
 package com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.service;
 
 import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.request.CalcularOptimizacionRequest;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoOptimizacionResponse;
 import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.OptimizacionResponse;
+import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.dto.response.SmartPrediccionResponse;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Servicio para calcular optimización de inventario (EOQ/ROP)
  * basado en predicciones de demanda
  */
 public interface IOptimizacionInventarioService {
+    
+    // ========== MÉTODO PRINCIPAL (INTEGRACIÓN ML → EOQ/ROP) ==========
+    
+    /**
+     * Calcula EOQ y ROP directamente desde una predicción ML.
+     * Este es el método principal que integra predicción con optimización.
+     * 
+     * @param prediccion Resultado de predicción ML
+     * @param productoId ID del producto
+     * @return Cálculo de optimización guardado en BD
+     */
+    CalculoOptimizacionResponse calcularEOQROPDesdePrediccion(
+            SmartPrediccionResponse prediccion,
+            Long productoId);
+    
+    /**
+     * Obtiene el último cálculo de optimización para un producto
+     * 
+     * @param productoId ID del producto
+     * @return Cálculo si existe
+     */
+    Optional<CalculoOptimizacionResponse> obtenerCalculoPorProducto(Long productoId);
+    
+    /**
+     * Obtiene todos los cálculos de optimización
+     * 
+     * @return Lista de todos los cálculos
+     */
+    List<CalculoOptimizacionResponse> obtenerTodosLosCalculos();
+    
+    // ========== MÉTODOS LEGACY (COMPATIBILIDAD) ==========
     
     /**
      * Calcula la optimización completa (EOQ + ROP) basada en una predicción

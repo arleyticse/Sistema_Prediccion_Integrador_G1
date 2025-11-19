@@ -22,7 +22,6 @@ import java.util.List;
  */
 @Mapper(componentModel = "spring")
 public interface AlertaInventarioMapper {
-
     /**
      * Convierte una entidad AlertaInventario a AlertaInventarioResponse.
      * 
@@ -58,6 +57,7 @@ public interface AlertaInventarioMapper {
     @Mapping(target = "proveedor.tiempoEntregaDias", source = "proveedorPrincipal.tiempoEntregaDias")
     @Mapping(target = "proveedor.contacto", source = "proveedorPrincipal.personaContacto")
     @Mapping(target = "proveedor.telefono", source = "proveedorPrincipal.telefono")
+    @Mapping(target = "codigoSKU", ignore = true)
     ProductoBasicoDTO toProductoDTO(Producto producto);
 
     /**

@@ -1,0 +1,46 @@
+@layer tailwind-base, primeng, tailwind-utilities;
+
+:root {
+  --primary-100: #0077c2;
+  --primary-200: #59a5f5;
+  --primary-300: #c8ffff;
+  --accent-100: #00bfff;
+  --accent-200: #00619a;
+  --text-100: #333333;
+  --text-200: #5c5c5c;
+  --bg-100: #ffffff;
+  --bg-200: #f5f5f5;
+  --bg-300: #cccccc;
+}
+
+/* PrimeNG Component Overrides - Blue Theme */
+.p-inputtext:enabled:focus,
+.p-inputtext:enabled:hover {
+  border-color: var(--primary-100) !important;
+}
+
+.p-inputtext:enabled:focus {
+  outline: 0 none !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 119, 194, 0.25) !important;
+}
+
+.p-password input:enabled:focus {
+  border-color: var(--primary-100) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 119, 194, 0.25) !important;
+}
+
+.p-button {
+  background: var(--primary-100) !important;
+  border-color: var(--primary-100) !important;
+}
+
+.p-button:enabled:hover {
+  background: var(--primary-200) !important;
+  border-color: var(--primary-200) !important;
+}
+
+.p-button:enabled:active {
+  background: var(--accent-200) !important;
+  border-color: var(--accent-200) !important;
+}

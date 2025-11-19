@@ -44,21 +44,18 @@ public class SeguridadConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(
-                                                                "/api/auth/**",
-                                                                "/api/catalogos/**",
-                                                                "/api/importacion/*/plantilla",
-                                                                "/api/importacion/*/validar",
-                                                                "/api/alertas-inventario/jobs/**",
-                                                                "/api/alertas-inventario/dashboard",
-                                                                "/api/normalizacion/**",
-                                                                "/v3/api-docs/**",
-                                                                "/swagger-ui/**",
-                                                                "/swagger-ui.html"
-                                                ).permitAll()// Permitir acceso público a las rutas de autenticación y plantillas
-                                                .requestMatchers("/css/**", "/js/**", "/img/**", "/").permitAll()// Permitir
-                                                .requestMatchers("/home/dashboard").hasAuthority("ROLE_Administrador")
-                                                .anyRequest().authenticated())
+                                                // DESARROLLO: Todos los endpoints públicos temporalmente para pruebas
+                                                // con curl
+                                                .requestMatchers("/api/auth/iniciar-sesion", "/api/auth/registro",
+                                                                "/api/auth/refresh-token")
+                                                .permitAll()
+                                                .requestMatchers("/api/auth/cerrar-sesion").authenticated()
+                                                .requestMatchers("/api/**").permitAll()
+                                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
+                                                                "/swagger-ui.html")
+                                                .permitAll()
+                                                .requestMatchers("/css/**", "/js/**", "/img/**", "/").permitAll()
+                                                .anyRequest().permitAll())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authenticationProvider(authenticationProvider())
@@ -81,8 +78,7 @@ public class SeguridadConfig {
 
         @Bean
         public DaoAuthenticationProvider authenticationProvider() {
-                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-                authProvider.setUserDetailsService(usuarioDetalleServicio);
+                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(usuarioDetalleServicio);
                 authProvider.setPasswordEncoder(codificadorContrasena());
                 return authProvider;
         }

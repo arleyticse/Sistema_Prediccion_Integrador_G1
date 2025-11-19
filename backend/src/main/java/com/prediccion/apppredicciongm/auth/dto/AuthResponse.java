@@ -19,16 +19,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthResponse {
-    
+
     /** Token JWT para autenticación en peticiones subsecuentes */
     private String token;
-    
+
     /** Nombre completo del usuario autenticado */
     private String nombreCompleto;
-    
+
     /** Email del usuario autenticado */
     private String email;
-    
+
     /** Rol asignado al usuario */
     private String rol;
+
+    /** Refresh Token para renovar el token JWT */
+    private String refreshToken;
 }

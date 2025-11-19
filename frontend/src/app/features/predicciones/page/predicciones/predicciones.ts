@@ -23,7 +23,7 @@ import { TabsModule } from 'primeng/tabs';
 import { TimelineModule } from 'primeng/timeline';
 import { PrediccionesService } from '../../service/predicciones.service';
 import { AyudaContextualService } from '../../service/ayuda-contextual.service';
-import { PrediccionResponse } from '../../models/PrediccionResponse';
+import { PrediccionResponse, EstadoPrediccion } from '../../models/PrediccionResponse';
 import { GenerarPrediccionRequest, AlgoritmoInfo } from '../../models/GenerarPrediccionRequest';
 import { OptimizacionResponse, CalcularOptimizacionRequest } from '../../models/OptimizacionResponse';
 import { ProductoResponse } from '../../../productos/models/ProductoResponse';
@@ -122,16 +122,9 @@ export class PrediccionesComponent {
   // Formulario de generación
   generarForm = new FormGroup({
     producto: new FormControl<ProductoResponse | null>(null, Validators.required),
-    algoritmo: new FormControl<string>('simpleMovingAverageAlgorithm', Validators.required),
+    algoritmo: new FormControl<string>('AUTO', Validators.required),
     horizonteTiempo: new FormControl<number>(30, [Validators.required, Validators.min(1), Validators.max(365)]),
-    // Parámetros SMA
-    ventana: new FormControl<number>(14, [Validators.min(3), Validators.max(100)]),
-    // Parámetros SES
-    alpha: new FormControl<number>(0.3, [Validators.min(0.01), Validators.max(0.99)]),
-    // Parámetros Holt-Winters
-    beta: new FormControl<number>(0.2, [Validators.min(0.01), Validators.max(0.99)]),
-    gamma: new FormControl<number>(0.3, [Validators.min(0.01), Validators.max(0.99)]),
-    periodo: new FormControl<number>(7, [Validators.min(2), Validators.max(52)])
+    detectarEstacionalidad: new FormControl<boolean>(true)
   });
 
   // Formulario de optimización EOQ/ROP (SIMPLIFICADO)
@@ -352,33 +345,43 @@ export class PrediccionesComponent {
   private inicializarAlgoritmos(): void {
     this.algoritmos.set([
       {
-        codigo: 'simpleMovingAverageAlgorithm',
-        nombre: 'Promedio Móvil Simple',
-        descripcion: 'Calcula el promedio de las últimas N ventas. Ideal para productos con demanda estable.',
+        codigo: 'AUTO',
+        nombre: 'Selección Automática',
+        descripcion: 'El sistema analiza tus datos y selecciona automáticamente el mejor algoritmo (ARIMA, Random Forest o Gradient Boosting) según patrones detectados.',
+        icono: 'pi pi-sparkles',
+        color: '#8b5cf6',
+        usoCaso: 'Recomendado para todos los productos - detección inteligente',
+        minimosDatos: 30,
+        recomendado: true
+      },
+      {
+        codigo: 'ARIMA',
+        nombre: 'ARIMA',
+        descripcion: 'Auto-Regressive Integrated Moving Average. Excelente para series con tendencias y estacionalidad compleja.',
         icono: 'pi pi-chart-line',
         color: '#3b82f6',
-        usoCaso: 'Productos básicos (arroz, azúcar, aceite)',
-        minimosDatos: 7,
+        usoCaso: 'Productos con patrones estacionales y tendencias',
+        minimosDatos: 30,
         recomendado: false
       },
       {
-        codigo: 'simpleExponentialSmoothingAlgorithm',
-        nombre: 'Suavizado Exponencial Simple',
-        descripcion: 'Da peso exponencial a observaciones pasadas. Balancea ventas recientes con historial.',
-        icono: 'pi pi-chart-bar',
+        codigo: 'RANDOM_FOREST',
+        nombre: 'Random Forest',
+        descripcion: 'Ensemble de árboles de decisión. Robusto ante datos ruidosos y relaciones no lineales.',
+        icono: 'pi pi-sitemap',
         color: '#10b981',
-        usoCaso: 'Productos de alta rotación (leche, pan, huevos)',
-        minimosDatos: 5,
+        usoCaso: 'Productos con demanda volátil o patrones complejos',
+        minimosDatos: 30,
         recomendado: false
       },
       {
-        codigo: 'holtWintersAlgorithm',
-        nombre: 'Holt-Winters (Triple Exponencial)',
-        descripcion: 'Algoritmo completo que detecta nivel, tendencia y patrones estacionales.',
-        icono: 'pi pi-chart-scatter',
+        codigo: 'GRADIENT_BOOSTING',
+        nombre: 'Gradient Boosting',
+        descripcion: 'Aprendizaje por refuerzo gradual. Alta precisión con ajuste fino de errores.',
+        icono: 'pi pi-chart-bar',
         color: '#f59e0b',
-        usoCaso: 'Productos estacionales (panetón, helados, chocolates)',
-        minimosDatos: 14,
+        usoCaso: 'Productos con alta rotación que requieren máxima precisión',
+        minimosDatos: 30,
         recomendado: false
       }
     ]);
@@ -427,13 +430,9 @@ export class PrediccionesComponent {
 
   showDialogGenerar(): void {
     this.generarForm.reset({
-      algoritmo: 'simpleMovingAverageAlgorithm',
+      algoritmo: 'AUTO',
       horizonteTiempo: 30,
-      ventana: 14,
-      alpha: 0.3,
-      beta: 0.2,
-      gamma: 0.3,
-      periodo: 7
+      detectarEstacionalidad: true
     });
     this.pasoActual.set(1);
     this.modoAutomatico.set(true);
@@ -445,7 +444,7 @@ export class PrediccionesComponent {
     const algoritmos = this.algoritmos();
     const reseteados = algoritmos.map(alg => ({
       ...alg,
-      recomendado: false
+      recomendado: alg.codigo === 'AUTO'
     }));
     this.algoritmos.set(reseteados);
     
@@ -476,78 +475,69 @@ export class PrediccionesComponent {
   }
 
   private actualizarParametrosSegunAlgoritmo(algoritmo: string): void {
-    // No deshabilitar controles, simplemente mantenerlos habilitados
-    // El backend solo usará los parámetros relevantes según el algoritmo
-    // Esto permite que los sliders funcionen correctamente
-    
-    // Resetear valores por defecto según el algoritmo seleccionado
-    switch (algoritmo) {
-      case 'simpleMovingAverageAlgorithm':
-        this.generarForm.patchValue({
-          ventana: 14
-        }, { emitEvent: false });
-        break;
-      case 'simpleExponentialSmoothingAlgorithm':
-        this.generarForm.patchValue({
-          alpha: 0.3
-        }, { emitEvent: false });
-        break;
-      case 'holtWintersAlgorithm':
-        this.generarForm.patchValue({
-          alpha: 0.4,
-          beta: 0.2,
-          gamma: 0.3,
-          periodo: 7
-        }, { emitEvent: false });
-        break;
-    }
+    // SMILE ML no requiere parámetros manuales por algoritmo
+    // Los algoritmos se auto-configuran internamente
+    // Solo mantenemos detectarEstacionalidad como opción global
   }
 
   onSubmit(): void {
     if (this.generarForm.valid) {
       const formValue = this.generarForm.value;
-      const algoritmo = formValue.algoritmo || 'simpleMovingAverageAlgorithm';
-      
-      // Construir parámetros según el algoritmo
-      const parametros: { [key: string]: number } = {};
-      
-      switch (algoritmo) {
-        case 'simpleMovingAverageAlgorithm':
-          parametros['ventana'] = formValue.ventana || 14;
-          break;
-        case 'simpleExponentialSmoothingAlgorithm':
-          parametros['alpha'] = formValue.alpha || 0.3;
-          break;
-        case 'holtWintersAlgorithm':
-          parametros['alpha'] = formValue.alpha || 0.4;
-          parametros['beta'] = formValue.beta || 0.2;
-          parametros['gamma'] = formValue.gamma || 0.3;
-          parametros['periodo'] = formValue.periodo || 7;
-          break;
-      }
+      const algoritmo = formValue.algoritmo || 'AUTO';
 
-      const request: GenerarPrediccionRequest = {
-        productoId: formValue.producto!.productoId,
-        algoritmo: algoritmo,
+      const request: any = {
+        idProducto: formValue.producto!.productoId,
+        algoritmoSeleccionado: algoritmo,
         horizonteTiempo: formValue.horizonteTiempo || 30,
-        parametros: parametros,
-        incluirDetalles: true
+        detectarEstacionalidad: formValue.detectarEstacionalidad ?? true,
+        generarOrdenCompra: false
       };
 
       this.loadingPrediccion.set(true);
-      this.prediccionesService.generarPrediccion(request).subscribe({
-        next: (prediccion) => {
+      this.prediccionesService.generarPrediccionInteligente(request).subscribe({
+        next: (response) => {
           this.messageService.add({
             severity: 'success',
             summary: 'Éxito',
-            detail: 'Predicción generada exitosamente'
+            detail: `Predicción generada con ${response.algoritmoUtilizado} - Calidad: ${response.metricas.calificacionCalidad}`
           });
           this.cargarPredicciones();
           this.closeDialogGenerar();
           this.loadingPrediccion.set(false);
           
-          // Mostrar automáticamente los detalles
-          this.verDetalle(prediccion);
+          // Mapear calidad de SMILE ML a formato PrediccionResponse
+          let calidadMapeada: 'EXCELENTE' | 'BUENA' | 'ACEPTABLE' | 'POBRE' = 'ACEPTABLE';
+          switch (response.metricas.calificacionCalidad) {
+            case 'EXCELENTE': calidadMapeada = 'EXCELENTE'; break;
+            case 'BUENA': calidadMapeada = 'BUENA'; break;
+            case 'REGULAR': calidadMapeada = 'ACEPTABLE'; break;
+            case 'MALA': calidadMapeada = 'POBRE'; break;
+          }
+          
+          // Mapear respuesta de SMILE ML a PrediccionResponse para visualización
+          const prediccionMapeada: PrediccionResponse = {
+            prediccionId: response.prediccionId,
+            productoId: response.idProducto,
+            productoNombre: response.nombreProducto,
+            algoritmo: response.algoritmoUtilizado,
+            horizonteTiempo: response.horizonteTiempo,
+            demandaPredichaTotal: response.valoresPredichos.reduce((a, b) => a + b, 0),
+            datosHistoricos: response.valoresHistoricos,
+            valoresPredichos: response.valoresPredichos,
+            fechaGeneracion: response.fechaEjecucion,
+            estado: 'ACTIVA' as EstadoPrediccion,
+            calidadPrediccion: calidadMapeada,
+            mape: response.metricas.mape,
+            mae: response.metricas.mae,
+            rmse: response.metricas.rmse,
+            tieneTendencia: response.tieneTendencia,
+            tieneEstacionalidad: response.tieneEstacionalidad,
+            advertencias: response.advertencias,
+            recomendaciones: response.recomendaciones
+          };
+          
+          // Mostrar detalles automáticamente
+          this.verDetalle(prediccionMapeada);
         },
         error: (error) => {
           this.messageService.add({

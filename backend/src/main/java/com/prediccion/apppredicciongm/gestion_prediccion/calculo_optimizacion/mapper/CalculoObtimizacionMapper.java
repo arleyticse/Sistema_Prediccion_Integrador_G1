@@ -1,7 +1,7 @@
 package com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.mapper;
 
 import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.request.CalculoObtimizacionCreateRequest;
-import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoObtimizacionResponse;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoOptimizacionResponse;
 import com.prediccion.apppredicciongm.models.CalculoObtimizacion;
 import org.springframework.stereotype.Component;
 
@@ -30,19 +30,26 @@ public class CalculoObtimizacionMapper {
     /**
      * Convierte entidad a DTO Response
      */
-    public CalculoObtimizacionResponse toResponse(CalculoObtimizacion entity) {
+    public CalculoOptimizacionResponse toResponse(CalculoObtimizacion entity) {
         if (entity == null) {
             return null;
         }
 
-        return CalculoObtimizacionResponse.builder()
+        Integer productoId = entity.getProducto() != null ? entity.getProducto().getProductoId() : null;
+        String productoNombre = entity.getProducto() != null ? entity.getProducto().getNombre() : null;
+        String productoCodigo = productoId != null ? "PROD-" + productoId : null;
+        
+        return CalculoOptimizacionResponse.builder()
                 .calculoId(entity.getCalculoId())
-                .producto(null)  // El producto se mapea en el servicio
+                .productoId(productoId)
+                .productoNombre(productoNombre)
+                .productoCodigo(productoCodigo)
                 .fechaCalculo(entity.getFechaCalculo())
                 .demandaAnualEstimada(entity.getDemandaAnualEstimada())
                 .eoqCantidadOptima(entity.getEoqCantidadOptima())
                 .ropPuntoReorden(entity.getRopPuntoReorden())
                 .stockSeguridadSugerido(entity.getStockSeguridadSugerido())
+                .stockSeguridad(entity.getStockSeguridad())
                 .costoTotalInventario(entity.getCostoTotalInventario())
                 .costoMantenimiento(entity.getCostoMantenimiento())
                 .costoPedido(entity.getCostoPedido())

@@ -195,6 +195,57 @@ public class ProcesamientoAlertasControlador {
     }
 
     /**
+     * Procesa alertas y devuelve predicciones detalladas agrupadas por proveedor.
+     * 
+     * POST /api/alertas-inventario/procesar/con-detalles
+     * 
+     * Este endpoint ejecuta predicciones para las alertas seleccionadas y devuelve
+     * los resultados completos incluyendo:
+     * - Predicciones con datos históricos y predichos (para gráficos)
+     * - Métricas de calidad (MAE, MAPE, RMSE)
+     * - Métricas agregadas por proveedor
+     * - Información completa de productos y proveedores
+     * 
+     * Body esperado:
+     * {
+     *   "alertaIds": [1, 2, 3, 4, 5],
+     *   "horizonteTiempo": 30
+     * }
+     * 
+     * Respuesta: Map<proveedorId, ResumenPrediccionPorProveedor>
+     * 
+     * @param request Datos de las alertas a procesar
+     * @return Map con predicciones agrupadas por proveedor
+     */
+    @PostMapping("/con-detalles")
+    public ResponseEntity<Map<Long, com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ResumenPrediccionPorProveedor>> 
+            procesarConDetalles(@Valid @RequestBody ProcesarAlertasRequest request) {
+        
+        log.info("POST /api/alertas-inventario/procesar/con-detalles - {} alertas", 
+                request.getAlertaIds().size());
+        
+        try {
+            Map<Long, com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ResumenPrediccionPorProveedor> resultado = 
+                prediccionBatchService.procesarAlertasAgrupadoPorProveedor(
+                    request.getAlertaIds(), 
+                    request.getHorizonteTiempo()
+                );
+            
+            log.info("Procesamiento completado: {} proveedores procesados", resultado.size());
+            
+            return ResponseEntity.ok(resultado);
+            
+        } catch (IllegalArgumentException e) {
+            log.error("Error de validación: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+            
+        } catch (Exception e) {
+            log.error("Error inesperado en procesamiento: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Obtiene el resumen detallado de ordenes de compra generadas.
      * 
      * GET /api/alertas-inventario/procesar/resumen-ordenes?ordenIds=1,2,3

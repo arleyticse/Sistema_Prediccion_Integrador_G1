@@ -13,6 +13,7 @@ import { KeyFilterModule } from 'primeng/keyfilter';
 import { MessageModule } from 'primeng/message';
 import { Dialog } from 'primeng/dialog';
 import { Toast } from 'primeng/toast';
+import { SkeletonModule } from 'primeng/skeleton';
 
 interface Column {
   field: keyof UnidadMedida | 'acciones';
@@ -20,7 +21,7 @@ interface Column {
 }
 @Component({
   selector: 'app-unidad-medida-component',
-  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule, KeyFilterModule, MessageModule, ReactiveFormsModule, Dialog, Toast],
+  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule, KeyFilterModule, MessageModule, ReactiveFormsModule, Dialog, Toast, SkeletonModule],
   templateUrl: './unidad-medida-component.html',
   styleUrl: './unidad-medida-component.css',
   providers: [ConfirmationService, MessageService]

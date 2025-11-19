@@ -24,6 +24,7 @@ import { MessageModule } from 'primeng/message';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
 import { FloatLabel } from "primeng/floatlabel";
+import { SkeletonModule } from 'primeng/skeleton';
 
 interface Column {
   field: keyof ProductoResponse | 'acciones';
@@ -46,7 +47,8 @@ interface Column {
     MessageModule,
     FormsModule,
     ImportacionCsvComponent,
-    FloatLabel
+    FloatLabel,
+    SkeletonModule
 ],
   templateUrl: './productos-component.html',
   styleUrl: './productos-component.css',

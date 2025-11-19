@@ -1,23 +1,15 @@
 <p>Movimientos</p>
 <div class="mb-4 flex justify-between">
-    <p-button 
-        (click)="abrirImportacion()" 
-        label="Importar CSV" 
-        icon="pi pi-upload"
-        severity="info"
-        [outlined]="true" />
+    <p-button (click)="abrirImportacion()" label="Importar CSV" icon="pi pi-upload" severity="info" [outlined]="true" />
     <p-button (click)="showDialog()" label="Nuevo Movimiento" icon="pi pi-plus" />
 </div>
 
 <!-- Componente de importación -->
-<app-importacion-csv
-    #importacionCsv
-    endpoint="/importacion/kardex"
-    tipoImportacion="Movimientos (Kardex)"
-    nombrePlantilla="plantilla_kardex.csv"
-    (importacionCompletada)="cargarMovimientos()" />
+<app-importacion-csv #importacionCsv endpoint="/importacion/kardex" tipoImportacion="Movimientos (Kardex)"
+    nombrePlantilla="plantilla_kardex.csv" (importacionCompletada)="cargarMovimientos()" />
 
-<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false" [style]="{ width: '50rem' }">
+<p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '50rem' }">
     <ng-template #header>
         <h2 class="text-3xl">Registrar Nuevo Movimiento</h2>
     </ng-template>
@@ -25,27 +17,17 @@
         <div class="space-y-6">
             <!-- Producto con búsqueda y virtual scroll -->
             <div class="field">
-                <p-select 
-                    id="producto" 
-                    [options]="productos()" 
-                    optionLabel="nombre"
-                    optionValue="productoId"
-                    placeholder="Buscar un producto..."
-                    [filter]="true"
-                    filterBy="nombre"
-                    [showClear]="true"
-                    [virtualScroll]="true"
-                    [virtualScrollItemSize]="38"
-                    [loading]="loadingProductos()"
-                    formControlName="productoId"
-                    class="w-full"
+                <p-select id="producto" [options]="productos()" optionLabel="nombre" optionValue="productoId"
+                    placeholder="Buscar un producto..." [filter]="true" filterBy="nombre" [showClear]="true"
+                    [virtualScroll]="true" [virtualScrollItemSize]="38" [loading]="loadingProductos()"
+                    formControlName="productoId" class="w-full"
                     [invalid]="movimientoForm.get('productoId')?.hasError('required') && movimientoForm.get('productoId')?.touched">
                     <ng-template #selectedItem let-option>
                         @if (option) {
-                            <div class="flex flex-col gap-1">
-                                <span class="font-semibold">{{ option.nombre }}</span>
-                                <span class="text-sm text-gray-500">{{ option.categoria?.nombre }}</span>
-                            </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="font-semibold">{{ option.nombre }}</span>
+                            <span class="text-sm text-gray-500">{{ option.categoria?.nombre }}</span>
+                        </div>
                         }
                     </ng-template>
                     <ng-template let-product #item>
@@ -55,24 +37,18 @@
                         </div>
                     </ng-template>
                 </p-select>
-                @if (movimientoForm.get('productoId')?.hasError('required') && movimientoForm.get('productoId')?.touched) {
-                    <p-message severity="error" variant="simple" size="small">El producto es requerido</p-message>
+                @if (movimientoForm.get('productoId')?.hasError('required') &&
+                movimientoForm.get('productoId')?.touched) {
+                <p-message severity="error" variant="simple" size="small">El producto es requerido</p-message>
                 }
             </div>
 
             <!-- Tipo de Movimiento y Proveedor (2 columnas) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field">
-                    <p-select 
-                        id="tipoMovimiento" 
-                        [options]="tiposMovimiento()" 
-                        optionLabel="descripcion"
-                        placeholder="Tipo de movimiento"
-                        [filter]="true"
-                        filterBy="descripcion"
-                        [showClear]="true"
-                        formControlName="tipoMovimiento"
-                        class="w-full"
+                    <p-select id="tipoMovimiento" [options]="tiposMovimiento()" optionLabel="descripcion"
+                        placeholder="Tipo de movimiento" [filter]="true" filterBy="descripcion" [showClear]="true"
+                        formControlName="tipoMovimiento" class="w-full"
                         [invalid]="movimientoForm.get('tipoMovimiento')?.hasError('required') && movimientoForm.get('tipoMovimiento')?.touched">
                         <ng-template let-tipo #item>
                             <div class="flex flex-col gap-1">
@@ -81,22 +57,17 @@
                             </div>
                         </ng-template>
                     </p-select>
-                    @if (movimientoForm.get('tipoMovimiento')?.hasError('required') && movimientoForm.get('tipoMovimiento')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">El tipo de movimiento es requerido</p-message>
+                    @if (movimientoForm.get('tipoMovimiento')?.hasError('required') &&
+                    movimientoForm.get('tipoMovimiento')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">El tipo de movimiento es
+                        requerido</p-message>
                     }
                 </div>
 
                 <div class="field">
-                    <p-select 
-                        id="proveedorId" 
-                        [options]="proveedores()" 
-                        optionLabel="razonSocial"
-                        placeholder="Proveedor (opcional)"
-                        [filter]="true"
-                        filterBy="razonSocial"
-                        [loading]="loadingProveedores()"
-                        [showClear]="true"
-                        formControlName="proveedorId"
+                    <p-select id="proveedorId" [options]="proveedores()" optionLabel="razonSocial"
+                        placeholder="Proveedor (opcional)" [filter]="true" filterBy="razonSocial"
+                        [loading]="loadingProveedores()" [showClear]="true" formControlName="proveedorId"
                         class="w-full">
                         <ng-template let-option #item>
                             <div class="flex flex-col gap-1">
@@ -112,27 +83,29 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field">
                     <p-floatlabel>
-                        <p-inputNumber inputId="cantidad" formControlName="cantidad" [min]="1" class="w-full" 
+                        <p-inputNumber inputId="cantidad" formControlName="cantidad" [min]="1" class="w-full"
                             [invalid]="(movimientoForm.get('cantidad')?.hasError('required') || movimientoForm.get('cantidad')?.hasError('min')) && movimientoForm.get('cantidad')?.touched" />
                         <label for="cantidad">Cantidad</label>
                     </p-floatlabel>
-                    @if (movimientoForm.get('cantidad')?.hasError('required') && movimientoForm.get('cantidad')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Cantidad requerida</p-message>
+                    @if (movimientoForm.get('cantidad')?.hasError('required') &&
+                    movimientoForm.get('cantidad')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Cantidad requerida</p-message>
                     }
                     @if (movimientoForm.get('cantidad')?.hasError('min') && movimientoForm.get('cantidad')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Cantidad debe ser mayor a 0</p-message>
+                    <p-message severity="error" variant="simple" size="small">Cantidad debe ser mayor a 0</p-message>
                     }
                 </div>
 
                 <div class="field">
                     <p-floatlabel>
-                        <p-inputNumber inputId="costoUnitario" formControlName="costoUnitario" [min]="0" 
-                            mode="decimal" [minFractionDigits]="2" class="w-full" prefix="S/ "
+                        <p-inputNumber inputId="costoUnitario" formControlName="costoUnitario" [min]="0" mode="decimal"
+                            [minFractionDigits]="2" class="w-full" prefix="S/ "
                             [invalid]="movimientoForm.get('costoUnitario')?.hasError('required') && movimientoForm.get('costoUnitario')?.touched" />
                         <label for="costoUnitario">Costo Unitario</label>
                     </p-floatlabel>
-                    @if (movimientoForm.get('costoUnitario')?.hasError('required') && movimientoForm.get('costoUnitario')?.touched) {
-                        <p-message severity="error" variant="simple" size="small">Costo unitario requerido</p-message>
+                    @if (movimientoForm.get('costoUnitario')?.hasError('required') &&
+                    movimientoForm.get('costoUnitario')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">Costo unitario requerido</p-message>
                     }
                 </div>
             </div>
@@ -140,12 +113,12 @@
             <!-- Motivo (full width) -->
             <div class="field">
                 <p-floatlabel>
-                    <input id="motivo" pInputText formControlName="motivo" class="w-full" 
+                    <input id="motivo" pInputText formControlName="motivo" class="w-full"
                         [invalid]="movimientoForm.get('motivo')?.hasError('required') && movimientoForm.get('motivo')?.touched" />
                     <label for="motivo">Motivo</label>
                 </p-floatlabel>
                 @if (movimientoForm.get('motivo')?.hasError('required') && movimientoForm.get('motivo')?.touched) {
-                    <p-message severity="error" variant="simple" size="small">El motivo es requerido</p-message>
+                <p-message severity="error" variant="simple" size="small">El motivo es requerido</p-message>
                 }
             </div>
 
@@ -177,13 +150,8 @@
 
                 <div class="field">
                     <p-floatlabel>
-                        <p-datepicker 
-                            inputId="fechaVencimiento" 
-                            formControlName="fechaVencimiento" 
-                            dateFormat="dd/mm/yy"
-                            [showIcon]="true"
-                            iconDisplay="input"
-                            placeholder="Seleccionar fecha"
+                        <p-datepicker inputId="fechaVencimiento" formControlName="fechaVencimiento"
+                            dateFormat="dd/mm/yy" [showIcon]="true" iconDisplay="input" placeholder="Seleccionar fecha"
                             class="w-full" />
                         <label for="fechaVencimiento">Fecha de Vencimiento</label>
                     </p-floatlabel>
@@ -210,23 +178,15 @@
             <!-- Observaciones (full width) -->
             <div class="field">
                 <label for="observaciones" class="block mb-2">Observaciones</label>
-                <textarea id="observaciones" pInputTextarea formControlName="observaciones" [rows]="3" 
-                    class="w-full" placeholder="Notas adicionales..." [autoResize]="true"></textarea>
+                <textarea id="observaciones" pInputTextarea formControlName="observaciones" [rows]="3" class="w-full"
+                    placeholder="Notas adicionales..." [autoResize]="true"></textarea>
             </div>
         </div>
     </form>
 
     <ng-template #footer>
-        <p-button 
-            label="Guardar" 
-            icon="pi pi-check" 
-            (onClick)="onSubmit()"
-            [disabled]="movimientoForm.invalid" />
-        <p-button 
-            label="Cancelar" 
-            icon="pi pi-times" 
-            severity="danger"
-            (click)="closeDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (onClick)="onSubmit()" [disabled]="movimientoForm.invalid" />
+        <p-button label="Cancelar" icon="pi pi-times" severity="danger" (click)="closeDialog()" />
     </ng-template>
 </p-dialog>
 
@@ -239,41 +199,55 @@
             <p-inputIcon>
                 <i class="pi pi-search"></i>
             </p-inputIcon>
-            <input 
-                pInputText 
-                type="text"
-                [value]="searchValue()"
-               (input)="onSearchChange($event.target.value)"
+            <input pInputText type="text" [value]="searchValue()" (input)="onSearchChange($event.target.value)"
                 placeholder="Buscar movimientos..." />
         </p-iconField>
     </div>
 </div>
 
-<p-table #dt [columns]="cols" [value]="movimientos()" [scrollable]="true" scrollHeight="400px" 
-    [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()" [rowTrackBy]="trackByKardexId">
+@if (loading()) {
+<!-- Skeleton Loading State -->
+<div class="space-y-3">
+    <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+    @for (item of [1,2,3,4,5,6,7]; track item) {
+    <div class="flex gap-3">
+        <p-skeleton width="20%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="10%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="10%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+    </div>
+    }
+</div>
+} @else {
+<p-table #dt [columns]="cols" [value]="movimientos()" [scrollable]="true" scrollHeight="400px"
+    [tableStyle]="{ 'min-width': '50rem' }" [rowTrackBy]="trackByKardexId">
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.field) {
-                <th>{{ col.header }}</th>
+            <th>{{ col.header }}</th>
             }
         </tr>
     </ng-template>
     <ng-template #body let-rowData let-rowIndex="rowIndex" let-columns="columns">
         <tr>
             @for (col of columns; track col.field) {
-                @if (col.field === 'acciones') {
-                    <td>
-                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Anular" severity="danger" (onClick)="eliminar(rowData)" />
-                    </td>
-                } @else if (col.field === 'fechaMovimiento') {
-                    <td>{{ rowData[col.field] | date:'dd/MM/yyyy HH:mm':'America/Lima':'es-PE' }}</td>
-                } @else if (col.field === 'valorTotal') {
-                    <td>{{ rowData[col.field] | currency:'PEN':'symbol':'1.2-2':'es-PE' }}</td>
-                } @else if (col.field === 'saldoCantidad') {
-                    <td>{{ rowData[col.field] | number:'1.2-2':'es-PE' }}</td>
-                } @else {
-                    <td>{{ rowData[col.field] }}</td>
-                }
+            @if (col.field === 'acciones') {
+            <td>
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Anular" severity="danger"
+                    (onClick)="eliminar(rowData)" />
+            </td>
+            } @else if (col.field === 'fechaMovimiento') {
+            <td>{{ rowData[col.field] | date:'dd/MM/yyyy HH:mm':'America/Lima':'es-PE' }}</td>
+            } @else if (col.field === 'valorTotal') {
+            <td>{{ rowData[col.field] | currency:'PEN':'symbol':'1.2-2':'es-PE' }}</td>
+            } @else if (col.field === 'saldoCantidad') {
+            <td>{{ rowData[col.field] | number:'1.2-2':'es-PE' }}</td>
+            } @else {
+            <td>{{ rowData[col.field] }}</td>
+            }
             }
         </tr>
     </ng-template>
@@ -285,13 +259,10 @@
         </tr>
     </ng-template>
 </p-table>
+}
 
 <div class="card flex justify-center mt-4">
-    <p-paginator 
-        (onPageChange)="onPageChange($event)" 
-        [first]="first()" 
-        [rows]="rows()" 
-        [totalRecords]="totalRecords()" 
+    <p-paginator (onPageChange)="onPageChange($event)" [first]="first()" [rows]="rows()" [totalRecords]="totalRecords()"
         [rowsPerPageOptions]="rowsPerPageOptions" />
 </div>
 

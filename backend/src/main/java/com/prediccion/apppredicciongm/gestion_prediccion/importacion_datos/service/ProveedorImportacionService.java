@@ -209,7 +209,7 @@ public class ProveedorImportacionService implements IProveedorImportacionService
             // Actualizar registro de importación
             actualizarImportacion(importacion, estadoFinal, exitosos, fallidos);
 
-            log.info("✅ Importación de proveedores completada. Exitosos: {}, Fallidos: {}", 
+                log.info("[IMPORTACION] Importación de proveedores completada. Exitosos: {}, Fallidos: {}", 
                 exitosos, fallidos);
             log.info(response.generarResumen());
 

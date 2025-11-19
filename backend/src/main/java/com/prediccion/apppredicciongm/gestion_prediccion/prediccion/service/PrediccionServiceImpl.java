@@ -37,10 +37,24 @@ import java.util.stream.Collectors;
  * Orquesta la ejecución de algoritmos de predicción, gestiona datos históricos
  * del kardex y persiste los resultados en la base de datos.
  *
+ * @deprecated Este servicio usa algoritmos básicos (SMA, SES, Holt-Winters).
+ *             Usar en su lugar {@link SmartPredictorServiceImpl} que implementa
+ *             algoritmos avanzados de Machine Learning con Smile ML v3.1.1:
+ *             - ARIMA: Modelos autorregresivos integrados de media móvil
+ *             - RandomForest: Bosques aleatorios para series temporales
+ *             - GradientBoosting: Potenciación de gradiente para predicción
+ *             
+ *             Los algoritmos SMILE proporcionan:
+ *             - Mayor precisión (MAPE típicamente <20%)
+ *             - Selección automática del mejor modelo
+ *             - Detección automática de estacionalidad
+ *             - Métricas de calidad avanzadas (MAE, RMSE, MAPE)
+ * 
  * @author Sistema de Predicción
  * @version 1.0
  * @since 2025-11-03
  */
+@Deprecated(since = "2.0", forRemoval = true)
 @Service
 @Transactional
 public class PrediccionServiceImpl implements IPrediccionService {

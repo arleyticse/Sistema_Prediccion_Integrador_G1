@@ -49,8 +49,7 @@
                     <label for="stockDisponible" class="block mb-2">Stock Disponible</label>
                     <p-inputNumber id="stockDisponible" formControlName="stockDisponible" [min]="0" class="w-full"
                         placeholder="Cantidad disponible"
-                        [invalid]="inventarioForm.get('stockDisponible')?.hasError('required')&& inventarioForm.get('stockDisponible')?.touched"
-                        />
+                        [invalid]="inventarioForm.get('stockDisponible')?.hasError('required')&& inventarioForm.get('stockDisponible')?.touched" />
                     @if (inventarioForm.get('stockDisponible')?.hasError('required') &&
                     inventarioForm.get('stockDisponible')?.touched) {
                     <p-message severity="error" variant="simple" size="small">Stock disponible requerido</p-message>
@@ -61,9 +60,8 @@
                     <label for="stockReservado" class="block mb-2">Stock Reservado</label>
                     <p-inputNumber id="stockReservado" formControlName="stockReservado" [min]="0" class="w-full"
                         placeholder="Cantidad reservada"
-                        [invalid]="inventarioForm.get('stockReservado')?.hasError('required')&& inventarioForm.get('stockReservado')?.touched"
-                        />
-                         @if (inventarioForm.get('stockReservado')?.hasError('required') &&
+                        [invalid]="inventarioForm.get('stockReservado')?.hasError('required')&& inventarioForm.get('stockReservado')?.touched" />
+                    @if (inventarioForm.get('stockReservado')?.hasError('required') &&
                     inventarioForm.get('stockReservado')?.touched) {
                     <p-message severity="error" variant="simple" size="small">Stock reservado requerido</p-message>
                     }
@@ -73,8 +71,7 @@
                     <label for="stockEnTransito" class="block mb-2">Stock En Tránsito</label>
                     <p-inputNumber id="stockEnTransito" formControlName="stockEnTransito" [min]="0" class="w-full"
                         placeholder="Cantidad en tránsito"
-                        [invalid]="inventarioForm.get('stockEnTransito')?.hasError('required')&& inventarioForm.get('stockEnTransito')?.touched"
-                        />
+                        [invalid]="inventarioForm.get('stockEnTransito')?.hasError('required')&& inventarioForm.get('stockEnTransito')?.touched" />
                     @if (inventarioForm.get('stockEnTransito')?.hasError('required') &&
                     inventarioForm.get('stockEnTransito')?.touched) {
                     <p-message severity="error" variant="simple" size="small">Stock en tránsito requerido</p-message>
@@ -88,8 +85,7 @@
                     <label for="stockMinimo" class="block mb-2">Stock Mínimo</label>
                     <p-inputNumber id="stockMinimo" formControlName="stockMinimo" [min]="0" class="w-full"
                         placeholder="Cantidad mínima"
-                        [invalid]="inventarioForm.get('stockMinimo')?.hasError('required')&& inventarioForm.get('stockMinimo')?.touched"
-                        />
+                        [invalid]="inventarioForm.get('stockMinimo')?.hasError('required')&& inventarioForm.get('stockMinimo')?.touched" />
                     @if (inventarioForm.get('stockMinimo')?.hasError('required') &&
                     inventarioForm.get('stockMinimo')?.touched) {
                     <p-message severity="error" variant="simple" size="small">Stock mínimo requerido</p-message>
@@ -99,9 +95,8 @@
                 <div class="field">
                     <label for="stockMaximo" class="block mb-2">Stock Máximo</label>
                     <p-inputNumber id="stockMaximo" formControlName="stockMaximo" [min]="0" class="w-full"
-                        placeholder="Cantidad máxima" 
-                        [invalid]="inventarioForm.get('stockMaximo')?.hasError('required')&& inventarioForm.get('stockMaximo')?.touched"
-                        />
+                        placeholder="Cantidad máxima"
+                        [invalid]="inventarioForm.get('stockMaximo')?.hasError('required')&& inventarioForm.get('stockMaximo')?.touched" />
                     @if (inventarioForm.get('stockMaximo')?.hasError('required') &&
                     inventarioForm.get('stockMaximo')?.touched) {
                     <p-message severity="error" variant="simple" size="small">Stock máximo requerido</p-message>
@@ -111,9 +106,8 @@
                 <div class="field">
                     <label for="puntoReorden" class="block mb-2">Punto de Reorden</label>
                     <p-inputNumber id="puntoReorden" formControlName="puntoReorden" [min]="0" class="w-full"
-                        placeholder="Punto de reorden" 
-                        [invalid]="inventarioForm.get('puntoReorden')?.hasError('required')&& inventarioForm.get('puntoReorden')?.touched"
-                        />
+                        placeholder="Punto de reorden"
+                        [invalid]="inventarioForm.get('puntoReorden')?.hasError('required')&& inventarioForm.get('puntoReorden')?.touched" />
                     @if (inventarioForm.get('puntoReorden')?.hasError('required') &&
                     inventarioForm.get('puntoReorden')?.touched) {
                     <p-message severity="error" variant="simple" size="small">Punto de reorden requerido</p-message>
@@ -147,7 +141,24 @@
 <p-toast />
 
 <!-- Tabla de Inventarios -->
-<p-table [columns]="cols" [value]="inventarios()" [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+@if (loading()) {
+<!-- Skeleton Loading State -->
+<div class="space-y-3">
+    <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+    @for (item of [1,2,3,4,5,6]; track item) {
+    <div class="flex gap-3">
+        <p-skeleton width="25%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="12%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="12%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="12%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="15%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="10%" height="2.5rem"></p-skeleton>
+        <p-skeleton width="14%" height="2.5rem"></p-skeleton>
+    </div>
+    }
+</div>
+} @else {
+<p-table [columns]="cols" [value]="inventarios()" [tableStyle]="{ 'min-width': '50rem' }">
     <ng-template #header let-columns>
         <tr>
             @for (col of columns; track col.field) {
@@ -179,6 +190,7 @@
         </tr>
     </ng-template>
 </p-table>
+}
 
 <!-- Paginador -->
 <div class="card flex justify-center mt-4">

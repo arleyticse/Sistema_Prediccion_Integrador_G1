@@ -13,6 +13,7 @@ import {
   ProcesamientoBatchResponse 
 } from '../models/ProcesamientoAlerta';
 import { ResumenOrden } from '../models/ResumenOrden';
+import { ResumenPrediccionPorProveedor } from '../models/PrediccionDetallada';
 import { NivelCriticidad } from '../models/NivelCriticidad';
 import { TipoAlerta } from '../models/TipoAlerta';
 import { EstadoAlerta } from '../models/EstadoAlerta';
@@ -252,6 +253,28 @@ export class AlertaInventarioService extends BaseService<AlertaInventario> {
   ): Observable<ProcesamientoBatchResponse> {
     return this.http.post<ProcesamientoBatchResponse>(
       `${this.baseUrl}/procesar/automatico`,
+      request
+    );
+  }
+
+  /**
+   * Procesa alertas y devuelve predicciones detalladas agrupadas por proveedor.
+   * 
+   * Este endpoint ejecuta predicciones para las alertas seleccionadas y devuelve
+   * los resultados completos incluyendo:
+   * - Predicciones con datos históricos y predichos (para gráficos)
+   * - Métricas de calidad (MAE, MAPE, RMSE)
+   * - Métricas agregadas por proveedor
+   * - Información completa de productos y proveedores
+   * 
+   * @param request Datos del procesamiento (alertaIds y horizonteTiempo)
+   * @returns Observable<Map<number, ResumenPrediccionPorProveedor>>
+   */
+  procesarAlertasConDetalles(
+    request: ProcesarAlertasRequest
+  ): Observable<Record<number, ResumenPrediccionPorProveedor>> {
+    return this.http.post<Record<number, ResumenPrediccionPorProveedor>>(
+      `${this.baseUrl}/procesar/con-detalles`,
       request
     );
   }

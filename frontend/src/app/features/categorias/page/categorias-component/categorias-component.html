@@ -36,8 +36,21 @@
 <p-toast />
 <!-- Tabla de Categorías -->
 <div class="card">
+    @if (loading()) {
+    <!-- Skeleton Loading State -->
+    <div class="space-y-3">
+        <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+        @for (item of [1,2,3,4,5]; track item) {
+        <div class="flex gap-3">
+            <p-skeleton width="10%" height="2.5rem"></p-skeleton>
+            <p-skeleton width="70%" height="2.5rem"></p-skeleton>
+            <p-skeleton width="20%" height="2.5rem"></p-skeleton>
+        </div>
+        }
+    </div>
+    } @else {
     <p-table [columns]="cols" [value]="categorias()" [scrollable]="true" scrollHeight="400px"
-        [tableStyle]="{ 'min-width': '50rem' }" [loading]="loading()">
+        [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template #header let-columns>
             <tr>
                 @for (col of columns; track col.field) {
@@ -66,5 +79,6 @@
             </tr>
         </ng-template>
     </p-table>
+    }
 </div>
 <p-confirmDialog />

@@ -259,7 +259,7 @@ export default class DashboardPrincipalComponent implements OnInit {
   }
 
   navegarAPredicciones(): void {
-    this.router.navigate(['/administracion/predicciones']);
+    this.router.navigate(['/administracion/alertas-inventario/flujo-procesamiento']);
   }
 
   navegarAOrdenes(): void {

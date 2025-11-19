@@ -2,6 +2,7 @@ package com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.controlle
 
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.request.GenerarOrdenRequest;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.response.OrdenCompraResponse;
+import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.response.ResumenOrdenCompraDTO;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.OrdenCompraNoEncontradaException;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.OrdenYaConfirmadaException;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.ProductoSinProveedorException;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 
 /**
  * Controlador REST para operaciones de órdenes de compra automáticas.
@@ -63,30 +65,30 @@ public class OrdenCompraControlador {
             @PathVariable Integer prediccionId,
             @RequestBody(required = false) GenerarOrdenRequest request) {
 
-        log.info("📦 POST /generar/{} - Generando orden automática", prediccionId);
+        log.info("[ORDEN] POST /generar/{} - Generando orden automática", prediccionId);
 
         try {
             OrdenCompra orden = ordenService.generarOrdenAutomatica(prediccionId);
             OrdenCompraResponse response = ordenMapper.ordenCompraToResponse(orden);
 
-            log.info("✅ Orden generada exitosamente: {} (ID: {})", 
+            log.info("[ORDEN] Orden generada exitosamente: {} (ID: {})", 
                     orden.getNumeroOrden(), orden.getOrdenCompraId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (PrediccionNoEncontradaException e) {
-            log.error("❌ Predicción no encontrada: {}", prediccionId);
+            log.error("[ORDEN] Predicción no encontrada: {}", prediccionId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         } catch (DatosInsuficientesException e) {
-            log.warn("⚠️ No es necesaria la orden: {}", e.getMessage());
+            log.warn("[ORDEN] Advertencia: No es necesaria la orden: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
         } catch (ProductoSinProveedorException e) {
-            log.error("❌ Producto sin proveedor: {}", e.getMessage());
+            log.error("[ORDEN] Producto sin proveedor: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
         } catch (Exception e) {
-            log.error("❌ Error al generar orden: {}", e.getMessage(), e);
+            log.error("[ORDEN] Error al generar orden: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -107,19 +109,19 @@ public class OrdenCompraControlador {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        log.info("📋 GET / - Obteniendo todas las órdenes (page={}, size={})", page, size);
+        log.info("[ORDEN] GET / - Obteniendo todas las órdenes (page={}, size={})", page, size);
 
         try {
             Pageable pageable = PageRequest.of(page, size);
             Page<OrdenCompra> ordenesPage = ordenService.obtenerTodasLasOrdenes(pageable);
             Page<OrdenCompraResponse> responsePage = ordenesPage.map(ordenMapper::ordenCompraToResponse);
 
-            log.info("✅ Se encontraron {} órdenes de {} total", 
+            log.info("[ORDEN] Se encontraron {} órdenes de {} total", 
                     responsePage.getNumberOfElements(), responsePage.getTotalElements());
             return ResponseEntity.ok(responsePage);
 
         } catch (Exception e) {
-            log.error("❌ Error al obtener órdenes: {}", e.getMessage());
+            log.error("[ORDEN] Error al obtener órdenes: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -142,7 +144,7 @@ public class OrdenCompraControlador {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        log.info("📋 GET /producto/{} - Obteniendo órdenes (page={}, size={})", 
+        log.info("[ORDEN] GET /producto/{} - Obteniendo órdenes (page={}, size={})", 
                 productoId, page, size);
 
         try {
@@ -150,12 +152,12 @@ public class OrdenCompraControlador {
             Page<OrdenCompra> ordenesPage = ordenService.obtenerOrdenesPorProducto(productoId, pageable);
             Page<OrdenCompraResponse> responsePage = ordenesPage.map(ordenMapper::ordenCompraToResponse);
 
-            log.info("✅ Se encontraron {} órdenes de {} total", 
+            log.info("[ORDEN] Se encontraron {} órdenes de {} total", 
                     responsePage.getNumberOfElements(), responsePage.getTotalElements());
             return ResponseEntity.ok(responsePage);
 
         } catch (Exception e) {
-            log.error("❌ Error al obtener órdenes: {}", e.getMessage());
+            log.error("[ORDEN] Error al obtener órdenes: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -174,21 +176,52 @@ public class OrdenCompraControlador {
     public ResponseEntity<OrdenCompraResponse> obtenerUltimaOrden(
             @PathVariable Integer productoId) {
 
-        log.info("🔍 GET /ultima/{} - Obteniendo última orden", productoId);
+        log.info("[ORDEN] GET /ultima/{} - Obteniendo última orden", productoId);
 
         try {
             OrdenCompra orden = ordenService.obtenerUltimaOrden(productoId);
             OrdenCompraResponse response = ordenMapper.ordenCompraToResponse(orden);
 
-            log.info("✅ Última orden obtenida: {}", orden.getNumeroOrden());
+            log.info("[ORDEN] Última orden obtenida: {}", orden.getNumeroOrden());
             return ResponseEntity.ok(response);
 
         } catch (OrdenCompraNoEncontradaException e) {
-            log.warn("⚠️ No existe orden para producto: {}", productoId);
+            log.warn("[ORDEN] Advertencia: No existe orden para producto: {}", productoId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         } catch (Exception e) {
-            log.error("❌ Error al obtener última orden: {}", e.getMessage());
+            log.error("[ORDEN] Error al obtener última orden: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene el resumen completo de una orden para generación de PDF.
+     *
+     * Endpoint: GET /api/ordenes/{ordenId}/pdf-data
+     *
+     * @param ordenId ID de la orden
+     * @return el resumen completo con empresa, proveedor, detalles y totales
+     */
+    @GetMapping("/{ordenId}/pdf-data")
+    @Operation(summary = "Obtener datos para PDF",
+               description = "Obtiene todos los datos necesarios para generar un PDF de la orden de compra")
+    public ResponseEntity<ResumenOrdenCompraDTO> obtenerDatosParaPDF(
+            @PathVariable Long ordenId) {
+
+        log.info("[ORDEN] GET /{}/pdf-data - Obteniendo datos completos para PDF", ordenId);
+
+        try {
+            ResumenOrdenCompraDTO resumen = ordenService.obtenerResumenOrdenCompra(ordenId);
+            log.info("[ORDEN] Resumen obtenido para orden: {}", ordenId);
+            return ResponseEntity.ok(resumen);
+
+        } catch (RuntimeException e) {
+            log.warn("[ORDEN] Advertencia: Orden no encontrada: {}", ordenId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        } catch (Exception e) {
+            log.error("[ORDEN] Error al obtener resumen: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -207,19 +240,19 @@ public class OrdenCompraControlador {
     public ResponseEntity<OrdenCompraResponse> obtenerOrdenPorId(
             @PathVariable Long ordenId) {
 
-        log.info("🔍 GET /{} - Obteniendo orden por ID", ordenId);
+        log.info("[ORDEN] GET /{} - Obteniendo orden por ID", ordenId);
 
         try {
             // Esta consulta se podría optimizar agregando un método al servicio
-            log.info("✅ Orden obtenida: {}", ordenId);
+            log.info("[ORDEN] Orden obtenida: {}", ordenId);
             return ResponseEntity.ok(new OrdenCompraResponse());
 
         } catch (OrdenCompraNoEncontradaException e) {
-            log.warn("⚠️ Orden no encontrada: {}", ordenId);
+            log.warn("[ORDEN] Advertencia: Orden no encontrada: {}", ordenId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         } catch (Exception e) {
-            log.error("❌ Error al obtener orden: {}", e.getMessage());
+            log.error("[ORDEN] Error al obtener orden: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -240,20 +273,20 @@ public class OrdenCompraControlador {
     public ResponseEntity<Void> confirmarOrden(
             @PathVariable Long ordenId) {
 
-        log.info("✅ POST /{}/confirmar - Confirmando orden", ordenId);
+        log.info("[ORDEN] POST /{}/confirmar - Confirmando orden", ordenId);
 
         try {
             ordenService.confirmarOrden(ordenId);
 
-            log.info("✅ Orden confirmada: {}", ordenId);
+            log.info("[ORDEN] Orden confirmada: {}", ordenId);
             return ResponseEntity.noContent().build();
 
         } catch (OrdenCompraNoEncontradaException e) {
-            log.warn("⚠️ Orden no encontrada: {}", ordenId);
+            log.warn("[ORDEN] Advertencia: Orden no encontrada: {}", ordenId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         } catch (Exception e) {
-            log.error("❌ Error al confirmar orden: {}", e.getMessage());
+            log.error("[ORDEN] Error al confirmar orden: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -274,24 +307,83 @@ public class OrdenCompraControlador {
     public ResponseEntity<Void> cancelarOrden(
             @PathVariable Long ordenId) {
 
-        log.info("❌ DELETE /{} - Cancelando orden", ordenId);
+        log.info("[ORDEN] DELETE /{} - Cancelando orden", ordenId);
 
         try {
             ordenService.cancelarOrden(ordenId);
 
-            log.info("✅ Orden cancelada: {}", ordenId);
+            log.info("[ORDEN] Orden cancelada: {}", ordenId);
             return ResponseEntity.noContent().build();
 
         } catch (OrdenCompraNoEncontradaException e) {
-            log.warn("⚠️ Orden no encontrada: {}", ordenId);
+            log.warn("[ORDEN] Advertencia: Orden no encontrada: {}", ordenId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         } catch (OrdenYaConfirmadaException e) {
-            log.warn("⚠️ No se puede cancelar orden confirmada: {}", ordenId);
+            log.warn("[ORDEN] Advertencia: No se puede cancelar orden confirmada: {}", ordenId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
         } catch (Exception e) {
-            log.error("❌ Error al cancelar orden: {}", e.getMessage());
+            log.error("[ORDEN] Error al cancelar orden: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Obtiene todas las órdenes en estado BORRADOR pendientes de aprobación.
+     *
+     * Endpoint: GET /api/ordenes/borradores
+     *
+     * @return lista de órdenes en BORRADOR
+     */
+    @GetMapping("/borradores")
+    @Operation(summary = "Obtener órdenes BORRADOR",
+               description = "Obtiene todas las órdenes en estado BORRADOR que requieren aprobación")
+    public ResponseEntity<List<OrdenCompraResponse>> obtenerOrdenesBorrador() {
+
+        log.info("[ORDEN] GET /borradores - Obteniendo órdenes en BORRADOR");
+
+        try {
+            List<OrdenCompra> ordenes = ordenService.obtenerOrdenesBorrador();
+            List<OrdenCompraResponse> responses = ordenes.stream()
+                    .map(ordenMapper::ordenCompraToResponse)
+                    .toList();
+
+            log.info("[ORDEN] Se encontraron {} órdenes en BORRADOR", responses.size());
+            return ResponseEntity.ok(responses);
+
+        } catch (Exception e) {
+            log.error("[ORDEN] Error al obtener órdenes BORRADOR: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Aprueba múltiples órdenes BORRADOR, cambiando su estado a PENDIENTE.
+     *
+     * Endpoint: POST /api/ordenes/aprobar-borrador
+     *
+     * Request body: { "ordenIds": [1, 2, 3] }
+     *
+     * @param ordenIds lista de IDs de órdenes a aprobar
+     * @return respuesta sin contenido (204 No Content)
+     */
+    @PostMapping("/aprobar-borrador")
+    @Operation(summary = "Aprobar órdenes BORRADOR",
+               description = "Aprueba múltiples órdenes cambiando su estado de BORRADOR a PENDIENTE")
+    public ResponseEntity<Void> aprobarOrdenesBorrador(
+            @RequestBody List<Long> ordenIds) {
+
+        log.info("[ORDEN] POST /aprobar-borrador - Aprobando {} órdenes", ordenIds.size());
+
+        try {
+            ordenService.aprobarOrdenesBorrador(ordenIds);
+
+            log.info("[ORDEN] Órdenes aprobadas exitosamente");
+            return ResponseEntity.noContent().build();
+
+        } catch (Exception e) {
+            log.error("[ORDEN] Error al aprobar órdenes: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -302,31 +394,31 @@ public class OrdenCompraControlador {
      */
     @ExceptionHandler(OrdenCompraNoEncontradaException.class)
     public ResponseEntity<?> manejarOrdenNoEncontrada(OrdenCompraNoEncontradaException e) {
-        log.error("❌ Excepción: {}", e.getMessage());
+        log.error("[ORDEN] Excepción: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Orden no encontrada: " + e.getMessage());
     }
 
     @ExceptionHandler(OrdenYaConfirmadaException.class)
     public ResponseEntity<?> manejarOrdenYaConfirmada(OrdenYaConfirmadaException e) {
-        log.error("❌ Excepción: {}", e.getMessage());
+        log.error("[ORDEN] Excepción: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Operación no permitida: " + e.getMessage());
     }
 
     @ExceptionHandler(ProductoSinProveedorException.class)
     public ResponseEntity<?> manejarProductoSinProveedor(ProductoSinProveedorException e) {
-        log.error("❌ Excepción: {}", e.getMessage());
+        log.error("[ORDEN] Excepción: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error de configuración: " + e.getMessage());
     }
 
     @ExceptionHandler(DatosInsuficientesException.class)
     public ResponseEntity<?> manejarDatosInsuficientes(DatosInsuficientesException e) {
-        log.warn("⚠️ Advertencia: {}", e.getMessage());
+        log.warn("[ORDEN] Advertencia: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validación fallida: " + e.getMessage());
     }
 
     @ExceptionHandler(PrediccionNoEncontradaException.class)
     public ResponseEntity<?> manejarPrediccionNoEncontrada(PrediccionNoEncontradaException e) {
-        log.error("❌ Excepción: {}", e.getMessage());
+        log.error("[ORDEN] Excepción: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Predicción no encontrada: " + e.getMessage());
     }
 }

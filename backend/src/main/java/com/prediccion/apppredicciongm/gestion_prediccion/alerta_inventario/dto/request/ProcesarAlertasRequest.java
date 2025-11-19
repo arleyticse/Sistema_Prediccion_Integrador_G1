@@ -35,10 +35,14 @@ public class ProcesarAlertasRequest {
 
     /**
      * Horizonte de tiempo para la prediccion en meses.
-     * Por defecto es 12 meses.
+     * 
+     * Si no se proporciona, el sistema calcula automaticamente basado en:
+     * - Tipo de producto (rotacion rapida: 3 meses, media: 6 meses, lenta: 12 meses)
+     * - Lead time del proveedor
+     * - Patron de demanda historico
+     * 
+     * Valor recomendado por defecto: 12 meses
      */
-    @NotNull(message = "El horizonte de tiempo es obligatorio")
-    @Min(value = 1, message = "El horizonte de tiempo debe ser al menos 1 mes")
     private Integer horizonteTiempo;
 
     /**

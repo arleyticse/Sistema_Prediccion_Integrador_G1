@@ -42,7 +42,17 @@ public class ProductoBasicoDTO {
     private String unidadMedida;
 
     /**
+     * Costo de adquisición unitario del producto.
+     */
+    private java.math.BigDecimal costoAdquisicion;
+
+    /**
      * Informacion del proveedor principal.
      */
     private ProveedorBasicoDTO proveedor;
+
+    /**
+     * Código SKU generado dinámicamente (Formato: [INICIAL_CATEGORIA][0000][ID])
+     */
+    private String codigoSKU;
 }
