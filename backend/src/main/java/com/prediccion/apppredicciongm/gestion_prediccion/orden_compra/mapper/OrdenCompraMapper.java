@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+// LocalDate not referenced explicitly here; MapStruct maps LocalDate -> LocalDate automatically
 
 /**
  * Mapper para convertir entre entidad OrdenCompra y DTOs de respuesta.
@@ -17,7 +18,6 @@ import java.util.List;
  */
 @Mapper(componentModel = "spring")
 public interface OrdenCompraMapper {
-    
     /**
      * Convierte una entidad OrdenCompra a OrdenCompraResponse.
      *
@@ -33,7 +33,7 @@ public interface OrdenCompraMapper {
     @Mapping(target = "cantidadSolicitada", ignore = true)
     @Mapping(target = "detallesCalculo", ignore = true)
     OrdenCompraResponse ordenCompraToResponse(OrdenCompra ordenCompra);
-    
+
     /**
      * Convierte una lista de órdenes a lista de DTOs de respuesta.
      *
@@ -41,4 +41,5 @@ public interface OrdenCompraMapper {
      * @return lista de DTOs de respuesta
      */
     List<OrdenCompraResponse> ordenCompraListToResponseList(List<OrdenCompra> ordenes);
+
 }

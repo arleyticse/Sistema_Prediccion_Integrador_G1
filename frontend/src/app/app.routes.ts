@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { ManagementLayouts } from './layouts/management-layouts/management-layouts';
 import { authGuard } from './core/guards/auth';
-import { adminGuard, roleGuard } from './core/guards/role.guard';
+import { gerenteGuard, roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/administracion/alertas-inventario', pathMatch: 'full' },
@@ -9,6 +9,11 @@ export const routes: Routes = [
         path: 'login',
         loadComponent: () =>
             import('./features/auth/page/login/login').then(m => m.default)
+    },
+    {
+        path: 'password-recovery',
+        loadComponent: () =>
+            import('./features/auth/page/password-recovery/password-recovery').then(m => m.PasswordRecoveryComponent)
     },
     {
         path: 'administracion',
@@ -64,16 +69,12 @@ export const routes: Routes = [
             },
             {
                 path: 'predicciones',
-                canActivate: [roleGuard],
-                data: { rol: 'GERENTE' },
                 loadComponent: () =>
                     import('./features/predicciones/page/predicciones/predicciones')
                         .then(m => m.PrediccionesComponent)
             },
             {
                 path: 'ordenes-compra',
-                canActivate: [roleGuard],
-                data: { rol: 'GERENTE' },
                 loadComponent: () =>
                     import('./features/ordenes-compra/page/ordenes-compra/ordenes-compra')
                         .then(m => m.OrdenesCompraComponent)
@@ -91,13 +92,19 @@ export const routes: Routes = [
             },
             {
                 path: 'admin',
-                canActivate: [adminGuard],
+                canActivate: [gerenteGuard],
                 children: [
                     {
                         path: 'usuarios',
                         loadComponent: () =>
                             import('./features/usuarios-admin/gestion-usuarios.component')
                                 .then(m => m.GestionUsuariosComponent)
+                    },
+                    {
+                        path: 'configuracion-empresa',
+                        loadComponent: () =>
+                            import('./features/administracion/configuracion-empresa/configuracion-empresa.component')
+                                .then(m => m.ConfiguracionEmpresaComponent)
                     },
                     {
                         path: '',

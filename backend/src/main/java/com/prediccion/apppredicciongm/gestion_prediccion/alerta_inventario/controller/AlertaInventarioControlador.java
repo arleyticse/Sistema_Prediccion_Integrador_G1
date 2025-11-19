@@ -116,6 +116,11 @@ public class AlertaInventarioControlador {
      * - Stock actual y mínimo desde inventario
      * - Ideal para visualización en dashboard
      * 
+     * FILTROS APLICADOS:
+     * - Solo alertas PENDIENTE o EN_PROCESO (excluye RESUELTA, IGNORADA, CANCELADA)
+     * - Excluye tipo PREDICCION_VENCIDA (solo muestra alertas de inventario accionables)
+     * - Solo alertas con cantidad sugerida calculada
+     * 
      * @return Lista de alertas para dashboard
      */
     @GetMapping("/dashboard")
@@ -123,13 +128,14 @@ public class AlertaInventarioControlador {
         log.info("GET /api/alertas-inventario/dashboard");
 
         try {
-            // Obtener todas las alertas con datos enriquecidos
-            List<AlertaInventarioResponse> alertas = alertaService.listarAlertas()
+            // Obtener alertas pendientes con datos enriquecidos
+            List<AlertaInventarioResponse> alertas = alertaService.obtenerAlertasPendientes()
                     .stream()
-                    .filter(a -> a.getCantidadSugerida() != null)
+                    .filter(a -> !"PREDICCION_VENCIDA".equals(a.getTipoAlerta()))
+                    .filter(a -> a.getCantidadSugerida() != null && a.getCantidadSugerida() > 0)
                     .toList();
 
-            log.info("Alertas dashboard: {} encontradas", alertas.size());
+            log.info("Alertas dashboard: {} encontradas (filtradas: PENDIENTE/EN_PROCESO, sin PREDICCION_VENCIDA)", alertas.size());
 
             return ResponseEntity.ok(alertas);
 

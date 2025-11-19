@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { UsuarioAdminService, UsuarioCreateRequest } from './services/usuario-admin.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -10,8 +11,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
+import { AvatarModule } from 'primeng/avatar';
 import { ToolbarModule } from 'primeng/toolbar';
+import { CardModule } from 'primeng/card';
+// (ToolbarModule already imported above) - avoid duplicate import
 
 import { MessageService, ConfirmationService } from 'primeng/api';
 
@@ -20,7 +23,7 @@ interface Usuario {
   id_usuario: number;
   nombre: string;
   email: string;
-  rol: 'ADMIN' | 'GERENTE' | 'OPERARIO';
+  rol: 'GERENTE' | 'OPERARIO';
   activo?: boolean;
   fechaCreacion?: Date;
 }
@@ -37,6 +40,7 @@ interface Usuario {
     ToastModule,
     ConfirmDialogModule,
     TagModule,
+    AvatarModule,
     CardModule,
     ToolbarModule
   ],
@@ -44,10 +48,10 @@ interface Usuario {
   template: `
     <div class="card">
       <!-- Toolbar -->
-      <p-toolbar class="mb-4">
+      <p-toolbar class="mb-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded">
         <div class="p-toolbar-group-left">
-          <h1 class="text-2xl font-bold text-gray-800">Gestión de Usuarios</h1>
-          <small class="text-gray-500 ml-2">RF001 - Registro y administración</small>
+          <h1 class="text-2xl font-bold">Gestión de Usuarios</h1>
+          <small class="ml-2 opacity-80">RF001 - Registro y administración</small>
         </div>
         <div class="p-toolbar-group-right">
           <p-button
@@ -60,9 +64,9 @@ interface Usuario {
       </p-toolbar>
 
       <!-- Cards de estadísticas -->
-      <div class="grid mb-4">
-        <div class="col-12 lg:col-4">
-          <p-card>
+      <div class="flex flex-row gap-4 mb-6">
+        <div class="flex-1">
+          <p-card class="bg-white border border-slate-200">
             <div class="text-center">
               <div class="text-3xl font-bold text-blue-600">{{ totalUsuarios() }}</div>
               <div class="text-sm text-gray-600">Total Usuarios</div>
@@ -70,8 +74,8 @@ interface Usuario {
           </p-card>
         </div>
         
-        <div class="col-12 lg:col-4">
-          <p-card>
+        <div class="flex-1">
+          <p-card class="bg-white border border-slate-200">
             <div class="text-center">
               <div class="text-3xl font-bold text-green-600">{{ usuariosActivos() }}</div>
               <div class="text-sm text-gray-600">Usuarios Activos</div>
@@ -80,10 +84,10 @@ interface Usuario {
         </div>
 
         <div class="col-12 lg:col-4">
-          <p-card>
+          <p-card class="bg-white border border-slate-200">
             <div class="text-center">
-              <div class="text-3xl font-bold text-purple-600">{{ estadisticas().ADMIN }}</div>
-              <div class="text-sm text-gray-600">Administradores</div>
+              <div class="text-3xl font-bold text-purple-600">{{ estadisticas().GERENTE }}</div>
+              <div class="text-sm text-gray-600">Gerentes</div>
             </div>
           </p-card>
         </div>
@@ -99,7 +103,7 @@ interface Usuario {
         
         <ng-template pTemplate="caption">
           <div class="flex justify-content-between align-items-center">
-            <span class="p-input-icon-left">
+            <span class="p-input-icon-left w-full">
               <i class="pi pi-search"></i>
               <input 
                 pInputText 
@@ -123,9 +127,12 @@ interface Usuario {
         <ng-template pTemplate="body" let-usuario>
           <tr>
             <td>
-              <div class="flex align-items-center">
-                <div class="font-medium">{{ usuario.nombre }}</div>
-                <div class="text-sm text-gray-500 ml-2">ID: {{ usuario.id_usuario }}</div>
+              <div class="flex align-items-center gap-3">
+                <p-avatar label="{{ usuario.nombre[0] }}" shape="circle" styleClass="!bg-gradient-to-br !from-blue-600 !to-blue-800 !text-white"></p-avatar>
+                <div>
+                  <div class="font-medium">{{ usuario.nombre }}</div>
+                  <div class="text-sm text-gray-500">ID: {{ usuario.id_usuario }}</div>
+                </div>
               </div>
             </td>
             <td>{{ usuario.email }}</td>
@@ -234,9 +241,8 @@ interface Usuario {
               formControlName="rol"
               class="w-full p-2 border border-gray-300 rounded">
               <option value="">Selecciona un rol</option>
-              <option value="ADMIN">ADMIN - Administrador</option>
-              <option value="GERENTE">GERENTE - Gerente</option>
-              <option value="OPERARIO">OPERARIO - Operario</option>
+              <option value="GERENTE">GERENTE - Gerente (Acceso completo incluyendo gestión de usuarios)</option>
+              <option value="OPERARIO">OPERARIO - Operario (Acceso completo excepto gestión de usuarios)</option>
             </select>
           </div>
 
@@ -259,7 +265,7 @@ interface Usuario {
       </p-dialog>
 
       <!-- Toast para notificaciones -->
-      <p-toast></p-toast>
+      <p-toast position="top-right"></p-toast>
       
       <!-- Confirmación para eliminación -->
       <p-confirmDialog></p-confirmDialog>
@@ -299,6 +305,7 @@ export class GestionUsuariosComponent implements OnInit {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
+  private usuarioAdminService = inject(UsuarioAdminService);
 
   // Signals para estado reactivo
   usuarios = signal<Usuario[]>([]);
@@ -326,7 +333,6 @@ export class GestionUsuariosComponent implements OnInit {
   estadisticas = computed(() => {
     const usuarios = this.usuarios();
     return {
-      ADMIN: usuarios.filter(u => u.rol === 'ADMIN').length,
       GERENTE: usuarios.filter(u => u.rol === 'GERENTE').length,
       OPERARIO: usuarios.filter(u => u.rol === 'OPERARIO').length
     };
@@ -344,64 +350,53 @@ export class GestionUsuariosComponent implements OnInit {
     this.formularioUsuario = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
-      clave: ['', [Validators.required, Validators.minLength(6)]],
+      clave: [''],
       rol: ['', Validators.required]
     });
   }
 
   async cargarUsuarios() {
     this.cargando.set(true);
-    try {
-      // Simular datos de usuarios (reemplazar con servicio real)
-      const usuariosSimulados: Usuario[] = [
-        {
-          id_usuario: 1,
-          nombre: 'José Martínez',
-          email: 'jose@gmail.com',
-          rol: 'ADMIN',
-          activo: true,
-          fechaCreacion: new Date('2024-01-15')
-        },
-        {
-          id_usuario: 2,
-          nombre: 'María Gerente',
-          email: 'gerente@minimarket.com',
-          rol: 'GERENTE',
-          activo: true,
-          fechaCreacion: new Date('2024-02-01')
-        },
-        {
-          id_usuario: 3,
-          nombre: 'Carlos Operario',
-          email: 'operario@minimarket.com',
-          rol: 'OPERARIO',
-          activo: true,
-          fechaCreacion: new Date('2024-02-15')
-        }
-      ];
-      
-      this.usuarios.set(usuariosSimulados);
-    } catch (error) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudieron cargar los usuarios'
-      });
-    } finally {
-      this.cargando.set(false);
-    }
+    this.usuarioAdminService.listarUsuarios().subscribe({
+      next: (usuarios) => {
+        const usuariosMapeados: Usuario[] = usuarios.map(u => ({
+          id_usuario: u.usuarioId!,
+          nombre: u.nombreCompleto,
+          email: u.email,
+          rol: u.rol as any,
+          activo: u.activo,
+          fechaCreacion: new Date()
+        }));
+        this.usuarios.set(usuariosMapeados);
+        this.cargando.set(false);
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudieron cargar los usuarios'
+        });
+        this.cargando.set(false);
+      }
+    });
   }
 
   mostrarDialogNuevo() {
     this.esEdicion.set(false);
     this.usuarioSeleccionado.set(null);
     this.formularioUsuario.reset();
+    // Agregar validadores para contraseña en modo creación
+    this.formularioUsuario.get('clave')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.formularioUsuario.get('clave')?.updateValueAndValidity();
     this.dialogVisible.set(true);
   }
 
   editarUsuario(usuario: Usuario) {
     this.esEdicion.set(true);
     this.usuarioSeleccionado.set(usuario);
+    // Remover validadores de contraseña en modo edición
+    this.formularioUsuario.get('clave')?.clearValidators();
+    this.formularioUsuario.get('clave')?.updateValueAndValidity();
     this.formularioUsuario.patchValue({
       nombre: usuario.nombre,
       email: usuario.email,
@@ -413,53 +408,58 @@ export class GestionUsuariosComponent implements OnInit {
   async guardarUsuario() {
     if (this.formularioUsuario.valid) {
       this.guardando.set(true);
-      try {
-        const datosUsuario = this.formularioUsuario.value;
-        
-        if (this.esEdicion()) {
-          // Simular actualización
-          const usuarios = this.usuarios();
-          const index = usuarios.findIndex(u => u.id_usuario === this.usuarioSeleccionado()?.id_usuario);
-          if (index !== -1) {
-            usuarios[index] = {
-              ...usuarios[index],
-              ...datosUsuario
-            };
-            this.usuarios.set([...usuarios]);
+      
+      const formValue = this.formularioUsuario.value;
+      const request: UsuarioCreateRequest = {
+        nombre: formValue.nombre,
+        email: formValue.email,
+        claveHash: formValue.clave || '',
+        rol: formValue.rol
+      };
+
+      if (this.esEdicion()) {
+        const id = this.usuarioSeleccionado()!.id_usuario;
+        this.usuarioAdminService.actualizarUsuario(id, request).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: 'Usuario actualizado correctamente'
+            });
+            this.cargarUsuarios();
+            this.cerrarDialog();
+            this.guardando.set(false);
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'No se pudo actualizar el usuario'
+            });
+            this.guardando.set(false);
           }
-          
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Usuario actualizado correctamente'
-          });
-        } else {
-          // Simular creación
-          const nuevoUsuario: Usuario = {
-            id_usuario: Math.max(...this.usuarios().map(u => u.id_usuario)) + 1,
-            ...datosUsuario,
-            activo: true,
-            fechaCreacion: new Date()
-          };
-          
-          this.usuarios.set([...this.usuarios(), nuevoUsuario]);
-          
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Usuario registrado correctamente'
-          });
-        }
-        
-        this.cerrarDialog();
-      } catch (error) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo guardar el usuario'
         });
-      } finally {
-        this.guardando.set(false);
+      } else {
+        this.usuarioAdminService.registrarUsuario(request).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: 'Usuario registrado correctamente'
+            });
+            this.cargarUsuarios();
+            this.cerrarDialog();
+            this.guardando.set(false);
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'No se pudo registrar el usuario'
+            });
+            this.guardando.set(false);
+          }
+        });
       }
     }
   }
@@ -476,22 +476,23 @@ export class GestionUsuariosComponent implements OnInit {
   }
 
   async eliminarUsuario(usuario: Usuario) {
-    try {
-      const usuarios = this.usuarios().filter(u => u.id_usuario !== usuario.id_usuario);
-      this.usuarios.set(usuarios);
-      
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: 'Usuario eliminado correctamente'
-      });
-    } catch (error) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudo eliminar el usuario'
-      });
-    }
+    this.usuarioAdminService.eliminarUsuario(usuario.id_usuario).subscribe({
+      next: () => {
+        this.usuarios.set(this.usuarios().filter(u => u.id_usuario !== usuario.id_usuario));
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Usuario eliminado correctamente'
+        });
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo eliminar el usuario'
+        });
+      }
+    });
   }
 
   cerrarDialog() {
@@ -506,10 +507,9 @@ export class GestionUsuariosComponent implements OnInit {
 
   obtenerSeveridadRol(rol: string): 'success' | 'info' | 'warn' | 'danger' {
     switch (rol) {
-      case 'ADMIN': return 'success';
-      case 'GERENTE': return 'info';
-      case 'OPERARIO': return 'warn';
-      default: return 'info';
+      case 'GERENTE': return 'success';
+      case 'OPERARIO': return 'info';
+      default: return 'warn';
     }
   }
 }

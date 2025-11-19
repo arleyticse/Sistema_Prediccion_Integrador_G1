@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repositorio para gestionar las operaciones de persistencia de
@@ -79,10 +80,14 @@ public interface IAlertaInventarioRepositorio extends JpaRepository<AlertaInvent
        List<AlertaInventario> findAlertasPendientesByProducto(@Param("productoId") Integer productoId);
 
        /**
-        * Obtiene alertas pendientes agrupadas por proveedor.
+        * Obtiene alertas pendientes agrupadas por proveedor para flujo de procesamiento.
         * Consulta las alertas y las ordena por el proveedor principal del producto.
         * Incluye EAGER FETCH de producto, categoria, unidadMedida, proveedorPrincipal
         * e inventario.
+        * 
+        * EXCLUYE alertas de tipo PREDICCION_VENCIDA porque el flujo de procesamiento
+        * es para generar nuevas predicciones desde alertas de inventario (STOCK_BAJO, 
+        * PUNTO_REORDEN), no para actualizar predicciones existentes.
         * 
         * @return Lista de alertas pendientes con informacion completa cargada
         */
@@ -92,6 +97,7 @@ public interface IAlertaInventarioRepositorio extends JpaRepository<AlertaInvent
                      "LEFT JOIN FETCH p.unidadMedida " +
                      "LEFT JOIN FETCH p.proveedorPrincipal " +
                      "WHERE a.estado = 'PENDIENTE' " +
+                     "AND a.tipoAlerta != 'PREDICCION_VENCIDA' " +
                      "ORDER BY " +
                      "CASE a.nivelCriticidad " +
                      "  WHEN 'CRITICA' THEN 1 " +
@@ -171,4 +177,15 @@ public interface IAlertaInventarioRepositorio extends JpaRepository<AlertaInvent
                      "AND a.estado IN ('PENDIENTE', 'EN_PROCESO') " +
                      "ORDER BY a.nivelCriticidad, a.fechaGeneracion DESC")
        List<AlertaInventario> findAlertasAsignadasAUsuario(@Param("usuarioId") Integer usuarioId);
+
+       /**
+        * Obtiene la ultima alerta generada para un producto y tipo especifico.
+        * Util para verificar el estado de la ultima alerta y evitar duplicados.
+        * 
+        * @param productoId ID del producto
+        * @param tipoAlerta Tipo de alerta
+        * @return Optional con la ultima alerta encontrada
+        */
+       Optional<AlertaInventario> findTopByProducto_ProductoIdAndTipoAlertaOrderByFechaGeneracionDesc(
+                     Integer productoId, TipoAlerta tipoAlerta);
 }

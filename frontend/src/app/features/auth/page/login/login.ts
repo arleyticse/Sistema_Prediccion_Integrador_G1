@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -17,6 +17,7 @@ import { AuthService } from '../../../../core/services/auth';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterLink,
     ToastModule,
     CardModule,
     InputTextModule,

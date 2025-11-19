@@ -13,8 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import com.prediccion.apppredicciongm.auth.dto.AuthRequest;
 import com.prediccion.apppredicciongm.auth.dto.AuthResponse;
 import com.prediccion.apppredicciongm.auth.dto.UsuarioCreateRequest;
+import com.prediccion.apppredicciongm.auth.dto.ForgotPasswordRequest;
+import com.prediccion.apppredicciongm.auth.dto.VerifyOtpRequest;
+import com.prediccion.apppredicciongm.auth.dto.ResetPasswordRequest;
 import com.prediccion.apppredicciongm.auth.models.SeguridadUsuario;
 import com.prediccion.apppredicciongm.auth.service.IUsuarioService;
+import com.prediccion.apppredicciongm.auth.service.PasswordRecoveryService;
 import com.prediccion.apppredicciongm.models.Usuario;
 import com.prediccion.apppredicciongm.security.jwt.JwtTokenUtil;
 import com.prediccion.apppredicciongm.auth.service.RefreshTokenService;
@@ -23,13 +27,16 @@ import com.prediccion.apppredicciongm.auth.dto.TokenRefreshRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
 
 /**
  * Controlador de autenticación y autorización.
  * 
- * Maneja las operaciones de login, registro y actualización de contraseñas.
- * Genera tokens JWT para las peticiones autenticadas.
+ * Maneja las operaciones de login, registro, recuperación de contraseña
+ * y actualización de contraseñas. Genera tokens JWT para las peticiones autenticadas.
  * 
  * @version 1.0
  * @since 1.0
@@ -48,6 +55,7 @@ public class AutentificacionControlador {
     private final IUsuarioService usuarioServicio;
     private final PasswordEncoder codificadorContrasena;
     private final RefreshTokenService refreshTokenService;
+    private final PasswordRecoveryService passwordRecoveryService;
 
     /**
      * Inicia sesión de un usuario.
@@ -219,5 +227,56 @@ public class AutentificacionControlador {
                             .build());
                 })
                 .orElseThrow(() -> new RuntimeException("Refresh token no está en la base de datos!"));
+    }
+
+    /**
+     * Solicita recuperación de contraseña.
+     * 
+     * Genera un código OTP de 6 dígitos y lo envía al correo del usuario.
+     * El código tiene validez de 10 minutos.
+     * 
+     * @param request Email del usuario
+     * @return Mensaje de confirmación
+     */
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Olvidé mi contraseña", description = "Solicita código OTP para recuperación de contraseña")
+    public ResponseEntity<Map<String, Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("Solicitud de recuperación de contraseña para: {}", request.getEmail());
+        Map<String, Object> response = passwordRecoveryService.sendPasswordResetCode(request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Verifica el código OTP sin cambiar la contraseña.
+     * 
+     * Permite validar que el código sea correcto antes de proceder
+     * al cambio de contraseña.
+     * 
+     * @param request Email y código OTP
+     * @return Resultado de la verificación
+     */
+    @PostMapping("/verify-otp")
+    @Operation(summary = "Verificar código OTP", description = "Valida el código OTP sin cambiar la contraseña")
+    public ResponseEntity<Map<String, Object>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        log.info("Verificación de código OTP para: {}", request.getEmail());
+        Map<String, Object> response = passwordRecoveryService.verifyOtpCode(request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Restablece la contraseña usando código OTP.
+     * 
+     * Verifica el código OTP y actualiza la contraseña del usuario.
+     * El código se marca como usado después de un restablecimiento exitoso.
+     * 
+     * @param request Email, código OTP y nueva contraseña
+     * @return Resultado de la operación
+     */
+    @PostMapping("/reset-password")
+    @Operation(summary = "Restablecer contraseña", description = "Restablece la contraseña usando código OTP")
+    public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        log.info("Solicitud de restablecimiento de contraseña para: {}", request.getEmail());
+        Map<String, Object> response = passwordRecoveryService.resetPassword(request);
+        return ResponseEntity.ok(response);
     }
 }

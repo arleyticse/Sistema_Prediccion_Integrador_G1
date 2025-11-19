@@ -38,7 +38,7 @@ public class Usuario implements Serializable {
     @Column(name = "clave_hash")
     private String claveHash;
 
-    /** Rol del usuario (ADMIN, USUARIO, etc.) */
+    /** Rol del usuario (GERENTE o OPERARIO) */
     private String rol;
 
     /** Email único del usuario (usado para autenticación) */

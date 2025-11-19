@@ -129,4 +129,14 @@ public interface IOrdenCompraService {
      * @param ordenIds lista de IDs de órdenes a aprobar
      */
     void aprobarOrdenesBorrador(List<Long> ordenIds);
+
+    /**
+     * Obtiene una orden de compra por su ID.
+     *
+     * @param ordenId ID de la orden
+     * @return OrdenCompra si existe
+     * @throws com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.OrdenCompraNoEncontradaException
+     *         si no se encuentra la orden
+     */
+    OrdenCompra obtenerOrdenPorId(Long ordenId);
 }

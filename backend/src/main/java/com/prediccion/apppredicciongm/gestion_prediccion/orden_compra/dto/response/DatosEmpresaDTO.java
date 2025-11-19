@@ -30,4 +30,16 @@ public class DatosEmpresaDTO {
     
     private String actividadEconomica;
     private String regimenTributario;
+    
+    /**
+     * Logo de la empresa en Base64 (sin prefijo Data URL).
+     * Para usar en PDFs, decodificar con Base64.getDecoder().decode()
+     */
+    private String logoBase64;
+    
+    /**
+     * Tipo MIME del logo (image/png, image/jpeg, image/webp).
+     * Útil para determinar el formato al generar PDFs.
+     */
+    private String logoMimeType;
 }

@@ -26,6 +26,8 @@ import com.prediccion.apppredicciongm.repository.IProveedorRepositorio;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.response.*;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.OrdenCompraNoEncontradaException;
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
+import com.prediccion.apppredicciongm.gestion_configuracion.service.ConfiguracionEmpresaService;
+import com.prediccion.apppredicciongm.models.ConfiguracionEmpresa;
 
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ public class OrdenCompraService implements IOrdenCompraService {
     private final IOrdenCompraRepositorio ordenCompraRepositorio;
     private final IPrediccionRepositorio prediccionRepositorio;
     private final IProveedorRepositorio proveedorRepositorio;
+    private final ConfiguracionEmpresaService configuracionEmpresaService;
 
     @Override
     public OrdenCompra generarOrdenAutomatica(Integer prediccionId) {
@@ -74,6 +77,13 @@ public class OrdenCompraService implements IOrdenCompraService {
         return ordenCompraRepositorio.findAll().stream()
             .findFirst()
             .orElse(null);
+    }
+
+    @Override
+    public OrdenCompra obtenerOrdenPorId(Long ordenId) {
+        log.info("[ORDEN][CONSULTA] Obteniendo orden por ID: {}", ordenId);
+        return ordenCompraRepositorio.findById(ordenId)
+                .orElseThrow(() -> new com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.OrdenCompraNoEncontradaException("Orden no encontrada: " + ordenId));
     }
 
     @Override
@@ -225,16 +235,19 @@ public class OrdenCompraService implements IOrdenCompraService {
         OrdenCompra orden = ordenCompraRepositorio.findById(ordenId)
                 .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada con ID: " + ordenId));
         
-        // Construir datos de la empresa (información estática o de configuración)
+        // Obtener configuración de la empresa desde la base de datos
+        ConfiguracionEmpresa config = configuracionEmpresaService.obtenerConfiguracion();
+        
+        // Construir datos de la empresa desde la configuración
         DatosEmpresaDTO datosEmpresa = DatosEmpresaDTO.builder()
-                .razonSocial("Sistema de Predicción y Gestión")
-                .nombreComercial("Predicción GM")
-                .ruc("9999999999999") // Configurable
-                .direccion("Dirección de la empresa")
-                .ciudad("Ciudad")
-                .pais("Ecuador")
-                .telefono("0999999999")
-                .email("info@empresa.com")
+                .razonSocial(config.getNombreEmpresa())
+                .nombreComercial(config.getNombreEmpresa())
+                .ruc(config.getRuc() != null ? config.getRuc() : "N/A")
+                .direccion(config.getDireccion() != null ? config.getDireccion() : "")
+                .telefono(config.getTelefono() != null ? config.getTelefono() : "")
+                .email(config.getEmail() != null ? config.getEmail() : "")
+                .logoBase64(config.getLogoBase64())
+                .logoMimeType(config.getLogoMimeType())
                 .build();
         
         // Construir datos del proveedor
@@ -252,13 +265,21 @@ public class OrdenCompraService implements IOrdenCompraService {
         
         // Construir lista de detalles
         List<DetalleProductoOrdenDTO> detalles = orden.getDetalles().stream()
-                .map(detalle -> DetalleProductoOrdenDTO.builder()
-                        .nombreProducto(detalle.getProducto().getNombre())
-                        .unidadMedida(detalle.getProducto().getUnidadMedida().toString())
-                        .cantidadSolicitada(detalle.getCantidadSolicitada())
-                        .precioUnitario(detalle.getPrecioUnitario())
-                        .subtotal(detalle.getSubtotal())
-                        .build())
+                .map(detalle -> {
+                    // Obtener el nombre de la unidad de medida correctamente (evitar proxy de Hibernate)
+                    String unidadMedida = "N/A";
+                    if (detalle.getProducto() != null && detalle.getProducto().getUnidadMedida() != null) {
+                        unidadMedida = detalle.getProducto().getUnidadMedida().getNombre();
+                    }
+                    
+                    return DetalleProductoOrdenDTO.builder()
+                            .nombreProducto(detalle.getProducto().getNombre())
+                            .unidadMedida(unidadMedida)
+                            .cantidadSolicitada(detalle.getCantidadSolicitada())
+                            .precioUnitario(detalle.getPrecioUnitario())
+                            .subtotal(detalle.getSubtotal())
+                            .build();
+                })
                 .collect(Collectors.toList());
         
         // Calcular totales

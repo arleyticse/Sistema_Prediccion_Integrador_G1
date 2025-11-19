@@ -34,4 +34,10 @@ public class AuthResponse {
 
     /** Refresh Token para renovar el token JWT */
     private String refreshToken;
+
+    /** ID del usuario */
+    private Long usuarioId;
+
+    /** Estado activo del usuario */
+    private Boolean activo;
 }

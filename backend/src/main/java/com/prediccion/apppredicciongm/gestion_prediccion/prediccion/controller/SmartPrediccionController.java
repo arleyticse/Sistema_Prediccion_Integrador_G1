@@ -44,7 +44,7 @@ public class SmartPrediccionController {
      */
     @PostMapping("/inteligente")
     // DESARROLLO: Autorización deshabilitada temporalmente para pruebas con curl
-    // TODO: Habilitar en producción - @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN')")
+    // TODO: Habilitar en producción - @PreAuthorize("hasAnyRole('GERENTE', 'OPERARIO')")
     @Operation(
         summary = "Predicción inteligente con Smile ML",
         description = "Ejecuta predicción avanzada con selección automática de algoritmos. " +
@@ -104,7 +104,7 @@ public class SmartPrediccionController {
      * Implementa funcionalidad híbrida: automática + manual
      */
     @GetMapping("/horizonte-automatico/{productoId}")
-    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('GERENTE', 'OPERARIO')")
     @Operation(
         summary = "Calcular horizonte automático",
         description = "Calcula el horizonte de predicción óptimo basado en: lead time del proveedor, " +
@@ -172,7 +172,7 @@ public class SmartPrediccionController {
      * Implementa RF006: Información sobre análisis predictivos múltiples
      */
     @GetMapping("/algoritmos-smile")
-    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('GERENTE', 'OPERARIO')")
     @Operation(
         summary = "Información de algoritmos Smile ML",
         description = "Retorna información detallada sobre los algoritmos de Machine Learning disponibles."
@@ -221,7 +221,7 @@ public class SmartPrediccionController {
      * Implementa RF007: Visualizaciones gráficas
      */
     @GetMapping("/visualizacion-datos/{productoId}")
-    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('GERENTE', 'OPERARIO')")
     @Operation(
         summary = "Datos para visualización gráfica",
         description = "Obtiene datos históricos formateados para visualizaciones gráficas sin ejecutar predicción. " +
@@ -259,7 +259,7 @@ public class SmartPrediccionController {
      * Procesar productos con alertas de inventario usando ML
      */
     @PostMapping("/procesar-alertas")
-    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('GERENTE', 'OPERARIO')")
     @Operation(
         summary = "Procesar productos con alertas",
         description = "Genera predicciones inteligentes para todos los productos con alertas de inventario"
@@ -294,7 +294,7 @@ public class SmartPrediccionController {
      * Validar datos históricos de un producto
      */
     @GetMapping("/validar-datos/{productoId}")
-    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('GERENTE', 'OPERARIO')")
     @Operation(
         summary = "Validar datos históricos", 
         description = "Verifica si un producto tiene suficientes datos para predicción ML"

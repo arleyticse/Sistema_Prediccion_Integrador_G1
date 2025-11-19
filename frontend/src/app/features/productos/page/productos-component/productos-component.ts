@@ -25,6 +25,7 @@ import { ChangeDetectionStrategy } from '@angular/core';
 import { ImportacionCsvComponent } from '../../../../shared/components/importacion-csv/importacion-csv';
 import { FloatLabel } from "primeng/floatlabel";
 import { SkeletonModule } from 'primeng/skeleton';
+import { Tooltip } from "primeng/tooltip";
 
 interface Column {
   field: keyof ProductoResponse | 'acciones';
@@ -48,7 +49,8 @@ interface Column {
     FormsModule,
     ImportacionCsvComponent,
     FloatLabel,
-    SkeletonModule
+    SkeletonModule,
+    Tooltip
 ],
   templateUrl: './productos-component.html',
   styleUrl: './productos-component.css',

@@ -13,7 +13,6 @@
   --bg-300: #cccccc;
 }
 
-/* PrimeNG Component Overrides - Blue Theme */
 .p-inputtext:enabled:focus,
 .p-inputtext:enabled:hover {
   border-color: var(--primary-100) !important;

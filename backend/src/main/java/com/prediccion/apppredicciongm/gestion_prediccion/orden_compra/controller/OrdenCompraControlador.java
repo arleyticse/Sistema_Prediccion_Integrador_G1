@@ -243,9 +243,10 @@ public class OrdenCompraControlador {
         log.info("[ORDEN] GET /{} - Obteniendo orden por ID", ordenId);
 
         try {
-            // Esta consulta se podría optimizar agregando un método al servicio
+            OrdenCompra orden = ordenService.obtenerOrdenPorId(ordenId);
+            OrdenCompraResponse response = ordenMapper.ordenCompraToResponse(orden);
             log.info("[ORDEN] Orden obtenida: {}", ordenId);
-            return ResponseEntity.ok(new OrdenCompraResponse());
+            return ResponseEntity.ok(response);
 
         } catch (OrdenCompraNoEncontradaException e) {
             log.warn("[ORDEN] Advertencia: Orden no encontrada: {}", ordenId);

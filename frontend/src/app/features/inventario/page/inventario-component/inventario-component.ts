@@ -21,6 +21,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { Toast } from 'primeng/toast';
 import { Message } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
+import { Tooltip } from "primeng/tooltip";
 
 interface Column {
   field: keyof InventarioResponse | 'acciones' | 'producto';
@@ -44,8 +45,9 @@ interface Column {
     TextareaModule,
     Toast,
     Message,
-    SkeletonModule
-  ],
+    SkeletonModule,
+    Tooltip
+],
   templateUrl: './inventario-component.html',
   styleUrl: './inventario-component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

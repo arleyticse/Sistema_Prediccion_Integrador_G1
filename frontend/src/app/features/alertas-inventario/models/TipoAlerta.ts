@@ -13,6 +13,7 @@ export enum TipoAlerta {
   VENCIMIENTO_PROXIMO = 'VENCIMIENTO_PROXIMO',
   VENCIMIENTO_VENCIDO = 'VENCIMIENTO_VENCIDO',
   DEMANDA_ANOMALA = 'DEMANDA_ANOMALA',
+  PREDICCION_VENCIDA = 'PREDICCION_VENCIDA',
   COSTO_ELEVADO = 'COSTO_ELEVADO',
   MERMA_ALTA = 'MERMA_ALTA',
   PROVEEDOR_RETRASO = 'PROVEEDOR_RETRASO'
@@ -30,6 +31,7 @@ export const TipoAlertaLabels: Record<TipoAlerta, string> = {
   [TipoAlerta.VENCIMIENTO_PROXIMO]: 'Vencimiento Próximo',
   [TipoAlerta.VENCIMIENTO_VENCIDO]: 'Vencimiento Vencido',
   [TipoAlerta.DEMANDA_ANOMALA]: 'Demanda Anómala',
+  [TipoAlerta.PREDICCION_VENCIDA]: 'Predicción Vencida',
   [TipoAlerta.COSTO_ELEVADO]: 'Costo Elevado',
   [TipoAlerta.MERMA_ALTA]: 'Merma Alta',
   [TipoAlerta.PROVEEDOR_RETRASO]: 'Proveedor con Retraso'

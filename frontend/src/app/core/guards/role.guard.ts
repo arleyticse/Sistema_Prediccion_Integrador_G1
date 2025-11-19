@@ -2,21 +2,29 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth';
 
-export const adminGuard: CanActivateFn = (route, state) => {
+/**
+ * Guard for GERENTE role (has all permissions including user management)
+ */
+export const gerenteGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   const currentUser = authService.getUsuario();
   
-  if (currentUser && currentUser.rol === 'ADMIN') {
+  if (currentUser && currentUser.rol === 'GERENTE') {
     return true;
   }
 
-  // Redireccionar a sin permisos si no es admin
+  // Redirect to no permissions if not gerente
   router.navigate(['/sin-permisos']);
   return false;
 };
 
+/**
+ * Role guard with hierarchy: GERENTE > OPERARIO
+ * GERENTE has all permissions including user management
+ * OPERARIO has all permissions except user management
+ */
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -29,9 +37,8 @@ export const roleGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  // Jerarquía de roles: ADMIN > GERENTE > OPERARIO
+  // Role hierarchy: GERENTE: 2, OPERARIO: 1
   const roleHierarchy = {
-    'ADMIN': 3,
     'GERENTE': 2,
     'OPERARIO': 1
   };

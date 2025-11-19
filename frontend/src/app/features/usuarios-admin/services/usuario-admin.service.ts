@@ -11,23 +11,24 @@ export interface UsuarioCreateRequest {
   nombre: string;
   email: string;
   claveHash: string;
-  rol: 'ADMIN' | 'GERENTE' | 'OPERARIO';
+  rol: 'GERENTE' | 'OPERARIO';
 }
 
 /**
- * Servicio para gestión de usuarios por administradores
- * RF001: El sistema permite al administrador registrar usuarios
+ * Servicio para gestión de usuarios por gerentes
+ * RF001: El sistema permite al gerente registrar usuarios
  */
 @Injectable({
   providedIn: 'root'
 })
 export class UsuarioAdminService {
   
-  private readonly baseUrl = `${environment.apiUrl}/api/admin/usuarios`;
+  // environment.apiUrl already contains the '/api' prefix, so we append the rest
+  private readonly baseUrl = `${environment.apiUrl}/admin/usuarios`;
   private readonly http = inject(HttpClient);
 
   /**
-   * RF001: Registrar nuevo usuario (solo administradores)
+   * RF001: Registrar nuevo usuario (solo gerentes)
    */
   registrarUsuario(usuario: UsuarioCreateRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/registrar`, usuario);
@@ -49,6 +50,13 @@ export class UsuarioAdminService {
       null,
       { params: { nuevoRol } }
     );
+  }
+
+  /**
+   * Actualizar datos de un usuario
+   */
+  actualizarUsuario(usuarioId: number, usuario: UsuarioCreateRequest): Observable<AuthResponse> {
+    return this.http.put<AuthResponse>(`${this.baseUrl}/${usuarioId}`, usuario);
   }
 
   /**

@@ -51,6 +51,11 @@ public enum TipoAlerta {
     DEMANDA_ANOMALA,
     
     /**
+     * Alerta cuando una prediccion de demanda ha vencido o esta proxima a vencer.
+     */
+    PREDICCION_VENCIDA,
+    
+    /**
      * Alerta cuando el costo del producto se eleva significativamente.
      */
     COSTO_ELEVADO,

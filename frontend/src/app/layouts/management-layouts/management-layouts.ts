@@ -169,24 +169,80 @@ import { AccordionModule } from 'primeng/accordion';
         box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
       }
     }
+
+    /* Theme overrides mapped to CSS variables (palette) */
+    :host ::ng-deep {
+      /* Map common Tailwind utility classes to theme variables */
+      .text-blue-600 { color: var(--primary-100) !important; }
+      .text-blue-700 { color: var(--primary-200) !important; }
+      .from-blue-600 { color: var(--primary-100) !important; }
+      .to-blue-800 { color: var(--primary-200) !important; }
+      .bg-blue-50 { background-color: rgba(89,165,245,0.06) !important; }
+
+      /* Active link (routerLinkActive with important class) */
+      a[routerLinkActive].!bg-blue-600,
+      a[routerLinkActive].!bg-blue-600[routerLinkActive] {
+        background-color: var(--primary-100) !important;
+        color: var(--bg-100) !important;
+      }
+      a[routerLinkActive].!bg-blue-600 i,
+      a[routerLinkActive].!bg-blue-600 span {
+        color: var(--bg-100) !important;
+      }
+
+      /* Group hover mappings (Tailwind classes include colons; escape them) */
+      .group-hover\:text-blue-600:hover { color: var(--primary-100) !important; }
+      .dark\:group-hover\:text-blue-400:hover { color: var(--primary-200) !important; }
+
+      /* Avatar preset override to use theme gradients */
+      p-avatar .p-avatar {
+        background: linear-gradient(135deg, var(--primary-100), var(--primary-200)) !important;
+        color: var(--bg-100) !important;
+        box-shadow: 0 6px 18px rgba(0, 119, 194, 0.15) !important;
+      }
+
+      /* Title gradient text using palette */
+      h2 {
+        background: linear-gradient(90deg, var(--primary-100), var(--primary-200));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      /* Links and groups hover accent */
+      .group:hover .group-hover\:text-blue-600,
+      .group:hover .group-hover\:text-blue-600 * {
+        color: var(--primary-100) !important;
+      }
+
+      /* Subtle background for active/hovered menu items */
+      a:hover, .p-accordion .p-accordion-header .p-accordion-header-link:hover {
+        background: linear-gradient(90deg, rgba(7,119,194,0.04), rgba(89,165,245,0.03)) !important;
+      }
+
+      /* Make separators and borders follow theme */
+      .border-slate-200 { border-color: var(--bg-300) !important; }
+      .dark\:border-slate-800 { border-color: rgba(12,18,28,0.65) !important; }
+
+      /* Improve logout button gradient using palette */
+      .logout-gradient {
+        background: linear-gradient(90deg, var(--accent-100), var(--accent-200)) !important;
+        color: var(--bg-100) !important;
+      }
+    }
   `]
 })
 export class ManagementLayouts {
   private authService = inject(AuthService);
   public roleService = inject(RolePermissionsService);
-  // Estado de expansión del sidebar
   isExpanded = signal(false);
   
-  // Track which accordion panels are open
   activeAccordionIndex = signal<string[]>([]);
-  
-  // Computed para obtener iniciales del usuario
   usuario = this.authService.usuario;
   currentRole = this.roleService.currentRole;
   permissions = this.roleService.currentPermissions;
   
   constructor() {
-    // Effect to close all accordions when sidebar collapses
     effect(() => {
       if (!this.isExpanded()) {
         this.activeAccordionIndex.set([]);
@@ -304,15 +360,14 @@ export class ManagementLayouts {
           label: 'Administración',
           icon: 'pi pi-fw pi-cog',
           items: [
-            ...(perms.canManageParameters ? [{
-              label: 'Parámetros Algoritmos',
-              icon: 'pi pi-fw pi-sliders-h',
-              routerLink: ['/administracion/parametros']
-            }] : []),
             ...(perms.canManageUsers ? [{
               label: 'Gestión de Usuarios',
               icon: 'pi pi-fw pi-users',
-              routerLink: ['/administracion/usuarios']
+              routerLink: ['/administracion/admin/usuarios']
+            }, {
+              label: 'Configuración Empresa',
+              icon: 'pi pi-fw pi-building',
+              routerLink: ['/administracion/admin/configuracion-empresa']
             }] : [])
           ]
         }
@@ -389,7 +444,10 @@ export class ManagementLayouts {
         icon: 'pi pi-fw pi-cog',
         items: [
           ...(perms.canManageParameters ? [{ label: 'Parámetros Algoritmos', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/administracion/parametros'] }] : []),
-          ...(perms.canManageUsers ? [{ label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-users', routerLink: ['/administracion/usuarios'] }] : [])
+          ...(perms.canManageUsers ? [
+            { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-users', routerLink: ['/administracion/admin/usuarios'] },
+            { label: 'Configuración Empresa', icon: 'pi pi-fw pi-building', routerLink: ['/administracion/admin/configuracion-empresa'] }
+          ] : [])
         ]
       });
     }

@@ -28,6 +28,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { DatePipe, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { DatePicker } from 'primeng/datepicker';
 import { SkeletonModule } from 'primeng/skeleton';
+import { environment } from '../../../../environments/environment';
+import { Tooltip } from "primeng/tooltip";
 
 interface Column {
   field: keyof KardexResponse | 'acciones';
@@ -63,8 +65,9 @@ interface TipoMovimientoDTO {
     CurrencyPipe,
     DecimalPipe,
     DatePicker,
-    SkeletonModule
-  ],
+    SkeletonModule,
+    Tooltip
+],
   templateUrl: './movimiento-component.html',
   styleUrl: './movimiento-component.css',
   providers: [ConfirmationService, MessageService],
@@ -177,7 +180,7 @@ export class MovimientoComponent {
   }
 
   private cargarTiposMovimiento(): void {
-    this.http.get<TipoMovimientoDTO[]>('http://localhost:8080/api/catalogos/tipos-movimiento').subscribe(
+    this.http.get<TipoMovimientoDTO[]>(`${environment.apiUrl}/catalogos/tipos-movimiento`).subscribe(
       (tipos) => {
         this.tiposMovimiento.set(tipos);
       },

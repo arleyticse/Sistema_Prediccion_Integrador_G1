@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { environment } from '../../environments/environment';
 
-// Configurar fuentes usando el método correcto
 (pdfMake as any).addVirtualFileSystem(pdfFonts);
 
 export interface ResumenOrdenCompraDTO {
@@ -38,6 +38,8 @@ export interface DatosEmpresaDTO {
   telefono: string;
   email: string;
   sitioWeb?: string;
+  logoBase64?: string;
+  logoMimeType?: string;
 }
 
 export interface DatosProveedorDTO {
@@ -65,7 +67,7 @@ export interface DetalleProductoOrdenDTO {
 })
 export class OrdenPdfService {
   
-  private readonly API_URL = 'http://localhost:8080/api/ordenes';
+  private readonly API_URL = `${environment.apiUrl}/ordenes`;
 
   constructor(private http: HttpClient) {}
 
@@ -112,6 +114,9 @@ export class OrdenPdfService {
    * Construye la definición del documento PDF
    */
   private construirDocumentDefinition(datos: ResumenOrdenCompraDTO): TDocumentDefinitions {
+    // Preparar el logo si existe
+    const logoDataUrl = this.construirDataUrlLogo(datos.empresa.logoBase64, datos.empresa.logoMimeType);
+    
     return {
       pageSize: 'A4',
       pageMargins: [40, 60, 40, 60],
@@ -133,33 +138,63 @@ export class OrdenPdfService {
       },
       
       content: [
-        // Información de la empresa
+        // Logo y encabezado de la empresa
         {
-          text: 'EMPRESA EMISORA',
-          style: 'sectionHeader'
+          columns: [
+            ...(logoDataUrl ? [{
+              image: logoDataUrl,
+              width: 100,
+              height: 80,
+              alignment: 'right' as const
+            }] : []),
+            // Información de la empresa
+            {
+              width: logoDataUrl ? '*' : '100%',
+              stack: [
+                { text: 'EMPRESA EMISORA', style: 'sectionHeader' },
+                { text: datos.empresa.razonSocial, style: 'bold', fontSize: 12 },
+                { text: `RUC: ${datos.empresa.ruc}`, fontSize: 10 },
+                { text: datos.empresa.direccion, fontSize: 9 },
+                { text: `${datos.empresa.ciudad || ''} ${datos.empresa.pais || ''}`.trim(), fontSize: 9 },
+                { text: `Tel: ${datos.empresa.telefono}`, fontSize: 9 },
+                { text: datos.empresa.email, fontSize: 9, color: '#0066cc' }
+              ],
+              margin: logoDataUrl ? [15, 0, 0, 0] as [number, number, number, number] : [0, 0, 0, 0] as [number, number, number, number]
+            }
+          ],
+          margin: [0, 0, 0, 10] as [number, number, number, number]
+        },
+
+        // Línea divisoria y datos de la orden
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1, color: '#cccccc' }],
+          margin: [0, 5, 0, 10] as [number, number, number, number]
         },
         {
           columns: [
             {
-              width: '50%',
+              width: '33%',
               stack: [
-                { text: datos.empresa.razonSocial, style: 'bold' },
-                { text: `RUC: ${datos.empresa.ruc}` },
-                { text: datos.empresa.direccion },
-                { text: `${datos.empresa.ciudad || ''} - ${datos.empresa.pais || ''}` }
+                { text: 'FECHA ORDEN', style: 'small', color: '#666666' },
+                { text: this.formatearFecha(datos.fechaOrden), style: 'bold' }
               ]
             },
             {
-              width: '50%',
+              width: '33%',
               stack: [
-                { text: `Tel: ${datos.empresa.telefono}` },
-                { text: datos.empresa.email },
-                { text: `Fecha: ${this.formatearFecha(datos.fechaOrden)}` },
-                { text: `Estado: ${datos.estadoOrden}`, style: 'bold' }
+                { text: 'ESTADO', style: 'small', color: '#666666' },
+                { text: datos.estadoOrden, style: 'bold', color: this.obtenerColorEstado(datos.estadoOrden) }
+              ]
+            },
+            {
+              width: '34%',
+              stack: [
+                { text: 'ENTREGA ESPERADA', style: 'small', color: '#666666' },
+                { text: datos.fechaEntregaEsperada ? this.formatearFecha(datos.fechaEntregaEsperada) : 'N/A' }
               ]
             }
           ],
-          margin: [0, 5, 0, 15]
+          margin: [0, 0, 0, 15] as [number, number, number, number]
         },
 
         // Información del proveedor
@@ -209,8 +244,8 @@ export class OrdenPdfService {
                 detalle.nombreProducto,
                 { text: detalle.unidadMedida, alignment: 'center' as const },
                 { text: detalle.cantidadSolicitada.toString(), alignment: 'center' as const },
-                { text: `$${detalle.precioUnitario.toFixed(2)}`, alignment: 'right' as const },
-                { text: `$${detalle.subtotal.toFixed(2)}`, alignment: 'right' as const }
+                { text: `S/ ${detalle.precioUnitario.toFixed(2)}`, alignment: 'right' as const },
+                { text: `S/ ${detalle.subtotal.toFixed(2)}`, alignment: 'right' as const }
               ])
             ]
           },
@@ -232,14 +267,14 @@ export class OrdenPdfService {
                 {
                   columns: [
                     { text: 'Subtotal:', alignment: 'right', width: '50%' },
-                    { text: `$${datos.subtotal.toFixed(2)}`, alignment: 'right', width: '50%' }
+                    { text: `S/ ${datos.subtotal.toFixed(2)}`, alignment: 'right', width: '50%' }
                   ],
                   margin: [0, 2]
                 },
                 {
                   columns: [
                     { text: 'Impuestos:', alignment: 'right', width: '50%' },
-                    { text: `$${datos.impuestos.toFixed(2)}`, alignment: 'right', width: '50%' }
+                    { text: `S/ ${datos.impuestos.toFixed(2)}`, alignment: 'right', width: '50%' }
                   ],
                   margin: [0, 2]
                 },
@@ -249,7 +284,7 @@ export class OrdenPdfService {
                 {
                   columns: [
                     { text: 'TOTAL:', alignment: 'right', style: 'bold', width: '50%' },
-                    { text: `$${datos.totalOrden.toFixed(2)}`, alignment: 'right', style: 'bold', width: '50%' }
+                    { text: `S/ ${datos.totalOrden.toFixed(2)}`, alignment: 'right', style: 'bold', width: '50%' }
                   ],
                   margin: [0, 5]
                 }
@@ -357,5 +392,20 @@ export class OrdenPdfService {
     const mes = (date.getMonth() + 1).toString().padStart(2, '0');
     const anio = date.getFullYear();
     return `${dia}/${mes}/${anio}`;
+  }
+
+  private construirDataUrlLogo(logoBase64?: string, logoMimeType?: string): string | null {
+    if (!logoBase64 || !logoMimeType) return null;
+    return `data:${logoMimeType};base64,${logoBase64}`;
+  }
+
+  private obtenerColorEstado(estado: string): string {
+    const colores: {[key: string]: string} = {
+      'PENDIENTE': '#FFA500',
+      'APROBADA': '#28A745',
+      'CANCELADA': '#DC3545',
+      'BORRADOR': '#6C757D'
+    };
+    return colores[estado] || '#000000';
   }
 }

@@ -1,0 +1,17 @@
+.configuracion-empresa-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Estilos para la vista previa del logo */
+img {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .configuracion-empresa-container {
+    padding: 1rem;
+  }
+}

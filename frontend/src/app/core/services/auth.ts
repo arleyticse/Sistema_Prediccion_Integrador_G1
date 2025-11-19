@@ -3,13 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { signal, effect } from '@angular/core';
 import { AuthRequest, AuthResponse, UsuarioInfo } from '../models/auth.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   
   private tokenSignal = signal<string | null>(this.getTokenFromStorage());
   private usuarioSignal = signal<UsuarioInfo | null>(this.getUsuarioFromStorage());

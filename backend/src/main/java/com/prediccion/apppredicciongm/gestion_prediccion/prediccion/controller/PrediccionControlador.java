@@ -92,7 +92,6 @@ public class PrediccionControlador {
         logger.debug("Algoritmo: {}, Horizonte: {} dias", request.getAlgoritmo(), request.getHorizonteTiempo());
         
         try {
-            // Usar el nuevo método que devuelve PrediccionResponse completo
             PrediccionResponse response = prediccionService.generarPrediccionCompleta(
                 request.getProductoId(),
                 request.getAlgoritmo(),
@@ -137,7 +136,7 @@ public class PrediccionControlador {
      * @return Página de predicciones
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('GERENTE', 'ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('GERENTE','OPERARIO')")
     @Operation(summary = "Listar todas las predicciones",
                description = "Retorna todas las predicciones generadas con paginación")
     @ApiResponses(value = {

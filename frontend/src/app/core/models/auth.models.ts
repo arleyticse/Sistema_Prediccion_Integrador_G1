@@ -11,6 +11,8 @@ export interface AuthResponse {
   nombreCompleto: string;
   email: string;
   rol: string;
+  usuarioId?: number;
+  activo?: boolean;
 }
 
 // Interfaz para los datos del usuario en memoria

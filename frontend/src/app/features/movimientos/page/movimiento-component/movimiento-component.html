@@ -236,8 +236,8 @@
             @for (col of columns; track col.field) {
             @if (col.field === 'acciones') {
             <td>
-                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Anular" severity="danger"
-                    (onClick)="eliminar(rowData)" />
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="" severity="danger"
+                    (onClick)="eliminar(rowData)" pTooltip="Anular" tooltipPosition="top" />
             </td>
             } @else if (col.field === 'fechaMovimiento') {
             <td>{{ rowData[col.field] | date:'dd/MM/yyyy HH:mm':'America/Lima':'es-PE' }}</td>

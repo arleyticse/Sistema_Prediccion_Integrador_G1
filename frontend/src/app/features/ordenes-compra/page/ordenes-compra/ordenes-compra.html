@@ -188,7 +188,7 @@
           } @else if (col.field === 'fechaOrden' || col.field === 'fechaEntregaEsperada') {
             <td>{{ formatDate(rowData[col.field]) }}</td>
           } @else if (col.field === 'totalOrden') {
-            <td>{{ formatCurrency(rowData[col.field]) }}</td>
+            <td>S/. {{ rowData[col.field]}}</td>
           } @else if (col.field === 'generadaAutomaticamente') {
             <td>
               <i 

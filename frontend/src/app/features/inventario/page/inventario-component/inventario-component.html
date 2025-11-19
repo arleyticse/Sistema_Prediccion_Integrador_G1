@@ -171,10 +171,10 @@
             @for (col of columns; track col.field) {
             @if (col.field === 'acciones') {
             <td>
-                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info"
-                    (onClick)="editar(inventario)" />
-                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger"
-                    (onClick)="eliminar(inventario)" />
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="" severity="info"
+                    (onClick)="editar(inventario)" pTooltip="Editar" tooltipPosition="top" />
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="" severity="danger"
+                    (onClick)="eliminar(inventario)" pTooltip="Eliminar" tooltipPosition="top" />
             </td>
             } @else if (col.field === 'producto') {
             <td>{{ inventario.nombreProducto }}</td>

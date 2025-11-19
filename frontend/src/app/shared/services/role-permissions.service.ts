@@ -1,13 +1,12 @@
 import { Injectable, inject, computed } from '@angular/core';
 import { AuthService } from '../../core/services/auth';
 
-export type UserRole = 'ADMIN' | 'GERENTE' | 'OPERARIO';
+export type UserRole = 'GERENTE' | 'OPERARIO';
 
 export interface RolePermissions {
   canAccessPredictions: boolean;
   canAccessOrders: boolean;
   canAccessReports: boolean;
-  canAccessAdminPanel: boolean;
   canManageUsers: boolean;
   canManageParameters: boolean;
   canViewSensitiveData: boolean;
@@ -39,15 +38,16 @@ export class RolePermissionsService {
   
   /**
    * Obtiene los permisos basados en el rol
+   * GERENTE: Acceso completo incluyendo gestión de usuarios
+   * OPERARIO: Acceso completo excepto gestión de usuarios
    */
   private getPermissionsForRole(role: UserRole | null): RolePermissions {
     switch (role) {
-      case 'ADMIN':
+      case 'GERENTE':
         return {
           canAccessPredictions: true,
           canAccessOrders: true,
           canAccessReports: true,
-          canAccessAdminPanel: true,
           canManageUsers: true,
           canManageParameters: true,
           canViewSensitiveData: true,
@@ -56,31 +56,16 @@ export class RolePermissionsService {
           canDeleteData: true
         };
       
-      case 'GERENTE':
+      case 'OPERARIO':
         return {
           canAccessPredictions: true,
           canAccessOrders: true,
           canAccessReports: true,
-          canAccessAdminPanel: false,
           canManageUsers: false,
           canManageParameters: true,
           canViewSensitiveData: true,
           canCreateOrders: true,
           canModifyPredictions: true,
-          canDeleteData: false
-        };
-      
-      case 'OPERARIO':
-        return {
-          canAccessPredictions: false,
-          canAccessOrders: false,
-          canAccessReports: false,
-          canAccessAdminPanel: false,
-          canManageUsers: false,
-          canManageParameters: false,
-          canViewSensitiveData: false,
-          canCreateOrders: false,
-          canModifyPredictions: false,
           canDeleteData: false
         };
       
@@ -90,7 +75,6 @@ export class RolePermissionsService {
           canAccessPredictions: false,
           canAccessOrders: false,
           canAccessReports: false,
-          canAccessAdminPanel: false,
           canManageUsers: false,
           canManageParameters: false,
           canViewSensitiveData: false,
@@ -135,7 +119,7 @@ export class RolePermissionsService {
       case '/administracion/reportes':
         return this.hasPermission('canAccessReports');
       
-      case '/administracion/usuarios':
+      case '/administracion/admin/usuarios':
         return this.hasPermission('canManageUsers');
       
       case '/administracion/parametros':
@@ -232,7 +216,7 @@ export class RolePermissionsService {
       {
         label: 'Gestión de Usuarios',
         icon: 'pi pi-user',
-        routerLink: '/administracion/usuarios',
+        routerLink: '/administracion/admin/usuarios',
         visible: this.hasPermission('canManageUsers')
       }
     ];
@@ -247,18 +231,10 @@ export class RolePermissionsService {
     const role = this.currentRole();
     
     switch (role) {
-      case 'ADMIN':
-        return {
-          name: 'Administrador',
-          description: 'Acceso completo al sistema',
-          color: 'red',
-          icon: 'pi pi-shield'
-        };
-      
       case 'GERENTE':
         return {
           name: 'Gerente',
-          description: 'Acceso a predicciones y órdenes',
+          description: 'Acceso completo al sistema incluyendo gestión de usuarios',
           color: 'blue',
           icon: 'pi pi-briefcase'
         };
@@ -266,7 +242,7 @@ export class RolePermissionsService {
       case 'OPERARIO':
         return {
           name: 'Operario',
-          description: 'Acceso de solo lectura a inventario',
+          description: 'Acceso completo excepto gestión de usuarios',
           color: 'green',
           icon: 'pi pi-user'
         };

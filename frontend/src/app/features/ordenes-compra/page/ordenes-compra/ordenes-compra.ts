@@ -267,12 +267,6 @@ export class OrdenesCompraComponent {
     return new Date(date).toLocaleDateString('es-ES');
   }
 
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  }
 
   /**
    * Genera y descarga el PDF de una orden de compra
