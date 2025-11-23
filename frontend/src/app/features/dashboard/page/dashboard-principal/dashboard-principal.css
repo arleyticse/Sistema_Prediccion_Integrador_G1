@@ -1,43 +1,110 @@
-/* Estilos específicos del dashboard principal */
+/* Dashboard-specific dark mode styles */
 
-:host ::ng-deep {
-  /* Personalización de cards */
-  .p-card {
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .p-card-body {
-    padding: 1.5rem;
-  }
-
-  /* Personalización de badges */
-  .p-badge {
-    font-weight: 600;
-  }
-
-  /* Personalización de gráficos */
-  .p-chart {
-    canvas {
-      max-height: 100%;
-    }
-  }
-
-  /* Hover effects para tarjetas */
-  .p-card:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease-in-out;
-  }
-
-  /* Animaciones suaves */
-  .transition-shadow {
-    transition: box-shadow 0.3s ease-in-out;
-  }
+/* Ensure PrimeNG components inherit dark mode properly */
+:host ::ng-deep .dark .p-card {
+  background-color: #1e293b !important;
+  border-color: rgba(204, 204, 204, 0.2) !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  :host ::ng-deep .p-card-body {
-    padding: 1rem;
-  }
+:host ::ng-deep .dark .p-card .p-card-body {
+  color: #f5f5f5 !important;
+}
+
+:host ::ng-deep .dark .p-card .p-card-content {
+  color: #f5f5f5 !important;
+}
+
+:host ::ng-deep .dark .p-card .p-card-header {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Timeline dark mode support - AGGRESSIVE FIX for text visibility */
+:host ::ng-deep .dark .p-timeline {
+  color: #f5f5f5 !important;
+}
+
+:host ::ng-deep .dark .p-timeline-event-connector {
+  background-color: #334155 !important;
+}
+
+:host ::ng-deep .dark .p-timeline-event-content {
+  color: #f5f5f5 !important;
+}
+
+:host ::ng-deep .dark .p-timeline-event-opposite {
+  color: #cccccc !important;
+}
+
+/* Force ALL text elements inside timeline to be visible */
+:host ::ng-deep .dark .p-timeline h1,
+:host ::ng-deep .dark .p-timeline h2,
+:host ::ng-deep .dark .p-timeline h3,
+:host ::ng-deep .dark .p-timeline h4,
+:host ::ng-deep .dark .p-timeline h5,
+:host ::ng-deep .dark .p-timeline h6,
+:host ::ng-deep .dark .p-timeline p,
+:host ::ng-deep .dark .p-timeline span,
+:host ::ng-deep .dark .p-timeline div,
+:host ::ng-deep .dark .p-timeline i {
+  color: #f5f5f5 !important;
+}
+
+/* Specific fix for timeline content wrapper */
+:host ::ng-deep .dark .p-timeline .p-timeline-event-content > * {
+  color: #f5f5f5 !important;
+}
+
+:host ::ng-deep .dark .p-timeline .p-timeline-event-content * {
+  color: #f5f5f5 !important;
+}
+
+/* Timeline marker ring - ensure visibility in dark mode */
+:host ::ng-deep .dark .timeline-marker-in {
+  background-color: rgba(0,119,194,0.2) !important;
+  color: #59a5f5 !important;
+  border-color: #59a5f5 !important;
+}
+
+:host ::ng-deep .dark .timeline-marker-out {
+  background-color: rgba(239,68,68,0.2) !important;
+  color: #f87171 !important;
+  border-color: #f87171 !important;
+}
+
+:host ::ng-deep .dark .timeline-marker-neutral {
+  background-color: rgba(148,163,184,0.2) !important;
+  color: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Override PrimeNG Tag colors in dark mode */
+:host ::ng-deep .dark .p-tag {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+/* Chart dark mode - ensure proper contrast */
+:host ::ng-deep .dark canvas {
+  filter: brightness(0.95);
+}
+
+/* Compact timeline spacing */
+:host ::ng-deep .compact-timeline .p-timeline-event {
+  min-height: auto !important;
+}
+
+:host ::ng-deep .compact-timeline .p-timeline-event-content {
+  padding: 0.5rem 0 !important;
+}
+
+/* Additional global dark mode fixes for this component */
+:host ::ng-deep .dark {
+  /* Force text color for all nested elements */
+  color: #f5f5f5;
+}
+
+:host ::ng-deep .dark * {
+  /* Ensure inherited color is light */
+  color: inherit;
 }

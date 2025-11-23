@@ -13,6 +13,94 @@
   --bg-300: #cccccc;
 }
 
+/* Dark mode variable overrides */
+:root.dark {
+  --text-100: #f5f5f5;
+  --text-200: #cccccc;
+  --bg-100: #0f172a; /* slate-900 */
+  --bg-200: #1e293b; /* slate-800 */
+  --bg-300: #334155; /* slate-700 */
+}
+
+/* Tailwind utility extensions based on CSS variables */
+@layer tailwind-utilities {
+  .bg-primary-100 { background-color: var(--primary-100); }
+  .bg-primary-200 { background-color: var(--primary-200); }
+  .bg-primary-300 { background-color: var(--primary-300); }
+  .bg-accent-100 { background-color: var(--accent-100); }
+  .bg-accent-200 { background-color: var(--accent-200); }
+  .bg-bg-100 { background-color: var(--bg-100); }
+  .bg-bg-200 { background-color: var(--bg-200); }
+  .bg-bg-300 { background-color: var(--bg-300); }
+
+  .text-primary-100 { color: var(--primary-100); }
+  .text-primary-200 { color: var(--primary-200); }
+  .text-accent-100 { color: var(--accent-100); }
+  .text-accent-200 { color: var(--accent-200); }
+  .text-text-100 { color: var(--text-100); }
+  .text-text-200 { color: var(--text-200); }
+
+  .border-primary-100 { border-color: var(--primary-100); }
+  .border-primary-200 { border-color: var(--primary-200); }
+  .border-accent-100 { border-color: var(--accent-100); }
+  .border-accent-200 { border-color: var(--accent-200); }
+
+  /* Gradients */
+  .gradient-brand { background: linear-gradient(135deg, var(--primary-100) 0%, var(--accent-100) 100%); }
+  .gradient-attention { background: linear-gradient(135deg, #dc2626 0%, #f97316 100%); }
+  .gradient-info { background: linear-gradient(135deg, var(--primary-200) 0%, var(--primary-100) 100%); }
+  .gradient-neutral { background: linear-gradient(135deg, var(--bg-200) 0%, var(--bg-300) 100%); }
+
+  /* Card surface helpers */
+  .card-surface {
+    background-color: var(--bg-100);
+    border: 1px solid var(--bg-200);
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.06);
+    transition: background-color .2s ease, border-color .2s ease;
+  }
+  .dark .card-surface {
+    background-color: var(--bg-200);
+    border-color: rgba(204,204,204,0.4);
+  }
+  .card-interactive {
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .card-interactive:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px -4px rgba(0,0,0,0.15);
+  }
+
+  /* Timeline marker ring helpers */
+  .timeline-marker-in {
+    background-color: rgba(0,119,194,0.12);
+    color: var(--primary-100);
+    border: 2px solid var(--primary-100);
+    border-radius: 9999px;
+  }
+  .timeline-marker-out {
+    background-color: rgba(239,68,68,0.12); /* red-500 */
+    color: #ef4444;
+    border: 2px solid #ef4444;
+    border-radius: 9999px;
+  }
+  .timeline-marker-neutral {
+    background-color: rgba(245,245,245,0.5);
+    color: var(--text-200);
+    border: 2px solid var(--text-200);
+    border-radius: 9999px;
+  }
+
+  /* Focus styles */
+  .focus-outline:focus-visible {
+    outline: 2px solid var(--primary-100);
+    outline-offset: 2px;
+  }
+  .dark .focus-outline:focus-visible {
+    outline-color: var(--primary-200);
+  }
+}
+
 .p-inputtext:enabled:focus,
 .p-inputtext:enabled:hover {
   border-color: var(--primary-100) !important;
@@ -42,4 +130,96 @@
 .p-button:enabled:active {
   background: var(--accent-200) !important;
   border-color: var(--accent-200) !important;
+}
+
+/* Global PrimeNG Dark Mode Overrides */
+.dark .p-timeline {
+  color: #f5f5f5 !important;
+}
+
+.dark .p-timeline-event-content {
+  color: #f5f5f5 !important;
+}
+
+.dark .p-timeline-event-connector {
+  background-color: #334155 !important;
+}
+
+/* Force all text in timeline to be visible */
+.dark .p-timeline h1,
+.dark .p-timeline h2,
+.dark .p-timeline h3,
+.dark .p-timeline h4,
+.dark .p-timeline h5,
+.dark .p-timeline h6,
+.dark .p-timeline p,
+.dark .p-timeline span,
+.dark .p-timeline div {
+  color: #f5f5f5 !important;
+}
+
+/* Timeline markers in dark mode */
+.dark .timeline-marker-in {
+  background-color: rgba(0,119,194,0.2) !important;
+  color: #59a5f5 !important;
+  border-color: #59a5f5 !important;
+}
+
+.dark .timeline-marker-out {
+  background-color: rgba(239,68,68,0.2) !important;
+  color: #f87171 !important;
+  border-color: #f87171 !important;
+}
+
+.dark .timeline-marker-neutral {
+  background-color: rgba(148,163,184,0.2) !important;
+  color: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* PrimeNG Cards in dark mode */
+.dark .p-card {
+  background-color: #1e293b !important;
+  border-color: rgba(204, 204, 204, 0.2) !important;
+  color: #f5f5f5 !important;
+}
+
+.dark .p-card .p-card-header {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f5f5f5 !important;
+}
+
+.dark .p-card .p-card-body {
+  color: #f5f5f5 !important;
+}
+
+.dark .p-card .p-card-content {
+  color: #f5f5f5 !important;
+}
+
+/* PrimeNG Tags in dark mode */
+.dark .p-tag {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+.dark .p-tag.p-tag-success {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+  color: #4ade80 !important;
+}
+
+.dark .p-tag.p-tag-info {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+.dark .p-tag.p-tag-warn {
+  background-color: rgba(251, 146, 60, 0.2) !important;
+  color: #fb923c !important;
+}
+
+.dark .p-tag.p-tag-danger {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
 }

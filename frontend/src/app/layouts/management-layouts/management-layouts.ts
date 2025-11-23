@@ -45,8 +45,8 @@ import { AccordionModule } from 'primeng/accordion';
         </div>
 
         <div class="px-3 py-4">
-          <a [routerLink]="['/administracion/dashboard']" 
-             routerLinkActive="!bg-blue-600 !text-white dark:!bg-blue-700"
+           <a [routerLink]="['/administracion/dashboard']" 
+             routerLinkActive="!bg-blue-100 !text-primary-100"
              [routerLinkActiveOptions]="{exact: true}"
              class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-200 group">
             <i class="pi pi-fw pi-home text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"></i>
@@ -66,7 +66,7 @@ import { AccordionModule } from 'primeng/accordion';
               <ul class="space-y-1 mt-1">
                 <li *ngFor="let item of group.items">
                   <a [routerLink]="item.routerLink" 
-                     routerLinkActive="!bg-blue-600 !text-white dark:!bg-blue-700"
+                    routerLinkActive="bg-blue-100 text-primary-100"
                      class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-200 group relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <i [class]="item.icon + ' text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors relative z-10'"></i>
@@ -79,16 +79,16 @@ import { AccordionModule } from 'primeng/accordion';
         </p-accordion>
       </aside>
 
-      <main class="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
-        <div class="bg-white/95 dark:bg-slate-900/95 shadow-sm border-b border-slate-200 dark:border-slate-800 p-6 sticky top-0 z-20 backdrop-blur-sm">
+      <main class="flex-1 overflow-auto bg-bg-100 dark:bg-bg-dark-100">
+        <div class="bg-white/95 dark:bg-bg-dark-200 shadow-sm border-b border-bg-200 dark:border-bg-dark-300 p-6 sticky top-0 z-20 backdrop-blur-sm">
           <div class="max-w-7xl flex items-center justify-between mx-auto">
             <div>
-              <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">Sistema de Predicción de Demanda</h2>
+              <h2 class="text-2xl font-bold bg-gradient-to-r from-[#0077c2] to-[#59a5f5] bg-clip-text text-transparent">Sistema de Predicción de Demanda</h2>
               @if (currentRole()) {
                 <div class="flex items-center gap-2 mt-2">
-                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
-                    <i [class]="'text-xs ' + roleService.getRoleInfo().icon + ' text-blue-600 dark:text-blue-400'"></i>
-                    <span class="text-xs font-medium text-blue-700 dark:text-blue-300">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+                    <i [class]="'text-xs ' + roleService.getRoleInfo().icon + ' text-[#0077c2] dark:text-[#59a5f5]'"></i>
+                    <span class="text-xs font-medium text-[#0077c2] dark:text-[#59a5f5]">
                       {{ roleService.getRoleInfo().name }}
                     </span>
                   </span>
@@ -106,8 +106,8 @@ import { AccordionModule } from 'primeng/accordion';
                     shape="circle"
                   ></p-avatar>
                   <div class="hidden sm:block">
-                    <p class="text-sm font-semibold text-slate-800 dark:text-white">{{ usuario()?.nombreCompleto }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ usuario()?.rol }}</p>
+                    <p class="text-sm font-semibold text-text-100 dark:text-text-dark-100">{{ usuario()?.nombreCompleto }}</p>
+                    <p class="text-xs text-text-200 dark:text-text-dark-200">{{ usuario()?.rol }}</p>
                   </div>
                 </div>
 
@@ -155,8 +155,8 @@ import { AccordionModule } from 'primeng/accordion';
       }
       
       /* Active route styling */
-      a[routerLinkActive].!bg-blue-600 i,
-      a[routerLinkActive].!bg-blue-600 span {
+      a[routerLinkActive].bg-blue-600 i,
+      a[routerLinkActive].bg-blue-600 span {
         color: white !important;
       }
     }
@@ -180,13 +180,13 @@ import { AccordionModule } from 'primeng/accordion';
       .bg-blue-50 { background-color: rgba(89,165,245,0.06) !important; }
 
       /* Active link (routerLinkActive with important class) */
-      a[routerLinkActive].!bg-blue-600,
-      a[routerLinkActive].!bg-blue-600[routerLinkActive] {
+      a[routerLinkActive].bg-blue-600,
+      a[routerLinkActive].bg-blue-600[routerLinkActive] {
         background-color: var(--primary-100) !important;
         color: var(--bg-100) !important;
       }
-      a[routerLinkActive].!bg-blue-600 i,
-      a[routerLinkActive].!bg-blue-600 span {
+      a[routerLinkActive].bg-blue-600 i,
+      a[routerLinkActive].bg-blue-600 span {
         color: var(--bg-100) !important;
       }
 
@@ -438,16 +438,13 @@ export class ManagementLayouts {
       icon: 'pi pi-fw pi-chart-line',
       items: predItems
     });
-    if (perms.canManageParameters || perms.canManageUsers) {
+    if (perms.canManageUsers) {
       groups.push({
         label: 'Administración',
         icon: 'pi pi-fw pi-cog',
         items: [
-          ...(perms.canManageParameters ? [{ label: 'Parámetros Algoritmos', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/administracion/parametros'] }] : []),
-          ...(perms.canManageUsers ? [
-            { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-users', routerLink: ['/administracion/admin/usuarios'] },
-            { label: 'Configuración Empresa', icon: 'pi pi-fw pi-building', routerLink: ['/administracion/admin/configuracion-empresa'] }
-          ] : [])
+          { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-users', routerLink: ['/administracion/admin/usuarios'] },
+          { label: 'Configuración Empresa', icon: 'pi pi-fw pi-building', routerLink: ['/administracion/admin/configuracion-empresa'] }
         ]
       });
     }

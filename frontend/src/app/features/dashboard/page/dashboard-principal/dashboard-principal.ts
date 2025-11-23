@@ -7,9 +7,12 @@ import { BadgeModule } from 'primeng/badge';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TimelineModule } from 'primeng/timeline';
 import { Router } from '@angular/router';
 import { AlertaInventarioService } from '../../../alertas-inventario/services/alerta-inventario.service';
 import { AlertaInventario } from '../../../alertas-inventario/models/AlertaInventario';
+import { MovimientoService } from '../../../movimientos/service/movimiento-service';
+import { KardexResponse } from '../../../movimientos/model/KardexResponse';
 
 interface EstadisticaCard {
   titulo: string;
@@ -33,7 +36,8 @@ interface EstadisticaCard {
     BadgeModule,
     TagModule,
     DividerModule,
-    SkeletonModule
+    SkeletonModule,
+    TimelineModule
   ],
   templateUrl: './dashboard-principal.html',
   styleUrls: ['./dashboard-principal.css']
@@ -43,6 +47,8 @@ export default class DashboardPrincipalComponent implements OnInit {
   // Signals para datos reactivos
   cargando = signal<boolean>(true);
   alertasActivas = signal<AlertaInventario[]>([]);
+  cargandoMovimientos = signal<boolean>(false);
+  ultimosMovimientos = signal<KardexResponse[]>([]);
   
   // Estadísticas generales
   estadisticas = signal<EstadisticaCard[]>([]);
@@ -64,6 +70,7 @@ export default class DashboardPrincipalComponent implements OnInit {
 
   constructor(
     private alertaService: AlertaInventarioService,
+    private movimientoService: MovimientoService,
     private router: Router
   ) {
     this.configurarOpcionesGraficos();
@@ -71,6 +78,7 @@ export default class DashboardPrincipalComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarDatosDashboard();
+    this.cargarUltimosMovimientos();
   }
 
   private configurarOpcionesGraficos(): void {
@@ -82,30 +90,64 @@ export default class DashboardPrincipalComponent implements OnInit {
     this.chartOptions = {
       maintainAspectRatio: false,
       aspectRatio: 0.8,
+      responsive: true,
       plugins: {
         legend: {
           labels: {
-            color: textColor
-          }
+            color: textColor,
+            font: {
+              size: 12,
+              weight: '500'
+            },
+            padding: 15,
+            usePointStyle: true
+          },
+          position: 'bottom'
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 12,
+          cornerRadius: 8,
+          titleFont: {
+            size: 14,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: 13
+          },
+          displayColors: true
         }
       },
       scales: {
         x: {
           ticks: {
-            color: textColorSecondary
+            color: textColorSecondary,
+            font: {
+              size: 11
+            }
           },
           grid: {
-            color: surfaceBorder
+            color: surfaceBorder,
+            display: false
           }
         },
         y: {
           ticks: {
-            color: textColorSecondary
+            color: textColorSecondary,
+            font: {
+              size: 11
+            }
           },
           grid: {
-            color: surfaceBorder
-          }
+            color: surfaceBorder,
+            drawBorder: false
+          },
+          beginAtZero: true
         }
+      },
+      animation: {
+        duration: 750,
+        easing: 'easeInOutQuart'
       }
     };
   }
@@ -143,7 +185,7 @@ export default class DashboardPrincipalComponent implements OnInit {
         titulo: 'Alertas Activas',
         valor: alertas.length,
         icono: 'pi pi-bell',
-        color: 'orange',
+        color: 'orange', // palette key
         tendencia: { valor: 12, tipo: 'negativa' }
       },
       {
@@ -185,13 +227,25 @@ export default class DashboardPrincipalComponent implements OnInit {
           label: 'Alertas',
           data: Object.values(contadores),
           backgroundColor: [
-            documentStyle.getPropertyValue('--p-red-500'),
-            documentStyle.getPropertyValue('--p-orange-500'),
-            documentStyle.getPropertyValue('--p-blue-500'),
-            documentStyle.getPropertyValue('--p-purple-500')
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(251, 146, 60, 0.8)',
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(168, 85, 247, 0.8)'
           ],
-          borderColor: 'transparent',
-          borderRadius: 8
+          borderColor: [
+            'rgb(239, 68, 68)',
+            'rgb(251, 146, 60)',
+            'rgb(59, 130, 246)',
+            'rgb(168, 85, 247)'
+          ],
+          borderWidth: 2,
+          borderRadius: 8,
+          hoverBackgroundColor: [
+            'rgba(239, 68, 68, 1)',
+            'rgba(251, 146, 60, 1)',
+            'rgba(59, 130, 246, 1)',
+            'rgba(168, 85, 247, 1)'
+          ]
         }
       ]
     });
@@ -211,11 +265,19 @@ export default class DashboardPrincipalComponent implements OnInit {
         {
           data: [critica, alta, media, baja],
           backgroundColor: [
-            documentStyle.getPropertyValue('--p-red-500'),
-            documentStyle.getPropertyValue('--p-orange-500'),
-            documentStyle.getPropertyValue('--p-yellow-500'),
-            documentStyle.getPropertyValue('--p-green-500')
-          ]
+            'rgba(239, 68, 68, 0.9)',
+            'rgba(251, 146, 60, 0.9)',
+            'rgba(234, 179, 8, 0.9)',
+            'rgba(34, 197, 94, 0.9)'
+          ],
+          borderColor: [
+            'rgb(239, 68, 68)',
+            'rgb(251, 146, 60)',
+            'rgb(234, 179, 8)',
+            'rgb(34, 197, 94)'
+          ],
+          borderWidth: 3,
+          hoverOffset: 15
         }
       ]
     });
@@ -231,17 +293,26 @@ export default class DashboardPrincipalComponent implements OnInit {
         {
           label: 'Stock Actual',
           data: [65, 59, 80, 81, 56, 55],
-          fill: false,
-          borderColor: documentStyle.getPropertyValue('--p-blue-500'),
-          tension: 0.4
+          fill: true,
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 3,
+          tension: 0.4,
+          pointBackgroundColor: 'rgb(59, 130, 246)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7
         },
         {
           label: 'Stock Óptimo',
           data: [75, 75, 75, 75, 75, 75],
           fill: false,
-          borderColor: documentStyle.getPropertyValue('--p-green-500'),
-          borderDash: [5, 5],
-          tension: 0
+          borderColor: 'rgb(34, 197, 94)',
+          borderWidth: 2,
+          borderDash: [8, 4],
+          tension: 0,
+          pointRadius: 0
         }
       ]
     });
@@ -267,6 +338,54 @@ export default class DashboardPrincipalComponent implements OnInit {
   }
 
   // Helpers para obtener colores según criticidad
+  claseDecorativaEstadistica(stat: EstadisticaCard): string {
+    const base = 'absolute top-0 right-0 w-32 h-32 opacity-10 -mr-10 -mt-10 rounded-full';
+    const map: Record<string,string> = {
+      orange: 'gradient-attention',
+      red: 'bg-gradient-to-br from-red-500 to-red-700',
+      purple: 'bg-gradient-to-br from-purple-500 to-purple-700',
+      blue: 'bg-gradient-to-br from-blue-500 to-blue-700'
+    };
+    return `${base} ${map[stat.color] || 'gradient-neutral'}`;
+  }
+
+  claseValorEstadistica(stat: EstadisticaCard): string {
+    const base = 'text-4xl font-extrabold mb-3 bg-clip-text text-transparent';
+    const map: Record<string,string> = {
+      orange: 'bg-gradient-to-r from-orange-500 to-orange-700',
+      red: 'bg-gradient-to-r from-red-500 to-red-700',
+      purple: 'bg-gradient-to-r from-purple-500 to-purple-700',
+      blue: 'bg-gradient-to-r from-blue-500 to-blue-700'
+    };
+    return `${base} ${map[stat.color] || 'bg-gradient-to-r from-gray-500 to-gray-700'}`;
+  }
+
+  claseIconoEstadistica(stat: EstadisticaCard): string {
+    const base = 'w-20 h-20 flex items-center justify-center rounded-2xl shadow-lg transition-transform duration-300 hover:scale-110';
+    const map: Record<string,string> = {
+      orange: 'bg-gradient-to-br from-orange-500 to-orange-600',
+      red: 'bg-gradient-to-br from-red-500 to-red-600',
+      purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
+      blue: 'bg-gradient-to-br from-blue-500 to-blue-600'
+    };
+    return `${base} ${map[stat.color] || 'bg-gradient-to-br from-gray-500 to-gray-600'}`;
+  }
+
+  claseTendencia(stat: EstadisticaCard): string {
+    if (!stat.tendencia) return '';
+    return stat.tendencia.tipo === 'positiva'
+      ? 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+      : 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+  }
+
+  claseIconoCriticidad(nivel: string): string {
+    const map: Record<string,string> = {
+      CRITICA: 'text-red-600 dark:text-red-400',
+      ALTA: 'text-orange-600 dark:text-orange-400'
+    };
+    return map[nivel] || 'text-surface-600 dark:text-surface-300';
+  }
+
   obtenerColorCriticidad(nivel: string): 'success' | 'info' | 'warn' | 'danger' {
     const colores: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
       'CRITICA': 'danger',
@@ -295,5 +414,98 @@ export default class DashboardPrincipalComponent implements OnInit {
       'INVENTARIO_EXCESIVO': 'Inventario Excesivo'
     };
     return textos[tipo] || tipo;
+  }
+
+  // Método para cargar últimos movimientos
+  cargarUltimosMovimientos(): void {
+    this.cargandoMovimientos.set(true);
+    this.movimientoService.getUltimosMovimientos(8).subscribe({
+      next: (movimientos) => {
+        this.ultimosMovimientos.set(movimientos);
+        this.cargandoMovimientos.set(false);
+      },
+      error: (error) => {
+        console.error('Error al cargar movimientos:', error);
+        this.ultimosMovimientos.set([]);
+        this.cargandoMovimientos.set(false);
+      }
+    });
+  }
+
+  // Helpers para movimientos
+  obtenerIconoMovimiento(tipo: string): string {
+    const iconos: Record<string, string> = {
+      'ENTRADA_COMPRA': 'pi pi-shopping-cart',
+      'ENTRADA_DEVOLUCION': 'pi pi-reply',
+      'ENTRADA_AJUSTE': 'pi pi-plus-circle',
+      'ENTRADA_PRODUCCION': 'pi pi-cog',
+      'SALIDA_VENTA': 'pi pi-shopping-bag',
+      'SALIDA_DEVOLUCION': 'pi pi-arrow-circle-left',
+      'SALIDA_AJUSTE': 'pi pi-minus-circle',
+      'SALIDA_MERMA': 'pi pi-exclamation-triangle',
+      'SALIDA_CONSUMO': 'pi pi-box'
+    };
+    return iconos[tipo] || 'pi pi-circle';
+  }
+
+  obtenerColorMovimiento(tipo: string): string {
+    if (tipo?.startsWith('ENTRADA')) {
+      return 'timeline-marker-in';
+    } else if (tipo?.startsWith('SALIDA')) {
+      return 'timeline-marker-out';
+    }
+    return 'timeline-marker-neutral';
+  }
+
+  obtenerTextoTipoMovimiento(tipo: string): string {
+    const textos: Record<string, string> = {
+      'ENTRADA_COMPRA': 'Compra',
+      'ENTRADA_DEVOLUCION': 'Devolución Cliente',
+      'ENTRADA_AJUSTE': 'Ajuste Entrada',
+      'ENTRADA_PRODUCCION': 'Producción',
+      'SALIDA_VENTA': 'Venta',
+      'SALIDA_DEVOLUCION': 'Devolución Proveedor',
+      'SALIDA_AJUSTE': 'Ajuste Salida',
+      'SALIDA_MERMA': 'Merma',
+      'SALIDA_CONSUMO': 'Consumo'
+    };
+    return textos[tipo] || tipo;
+  }
+
+  obtenerSeveridadMovimiento(tipo: string): 'success' | 'info' | 'warn' | 'danger' {
+    if (tipo?.startsWith('ENTRADA')) {
+      return 'success';
+    } else if (tipo === 'SALIDA_MERMA') {
+      return 'danger';
+    } else if (tipo?.startsWith('SALIDA')) {
+      return 'warn';
+    }
+    return 'info';
+  }
+
+  navegarAMovimientos(): void {
+    this.router.navigate(['/administracion/movimientos']);
+  }
+
+  formatearFecha(fecha: string | Date): string {
+    const date = new Date(fecha);
+    const ahora = new Date();
+    const diffMs = ahora.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHoras = Math.floor(diffMs / 3600000);
+    const diffDias = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Hace un momento';
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffHoras < 24) return `Hace ${diffHoras}h`;
+    if (diffDias === 1) return 'Ayer';
+    if (diffDias < 7) return `Hace ${diffDias} días`;
+    
+    return date.toLocaleDateString('es-ES', { 
+      day: '2-digit', 
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 }

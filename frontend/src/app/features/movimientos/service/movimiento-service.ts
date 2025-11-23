@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { PageKardexResponse } from '../model/KardexResponse';
+import { PageKardexResponse, KardexResponse } from '../model/KardexResponse';
 import { KardexCreateRequest } from '../model/KardexRequest';
 import { environment } from '../../../environments/environment';
 @Injectable({
@@ -12,6 +12,10 @@ export class MovimientoService {
 
   getKardex(page: number = 0, size: number = 10) {
     return this.http.get<PageKardexResponse>(`${this.URL}?page=${page}&size=${size}`);
+  }
+
+  getUltimosMovimientos(limit: number = 10) {
+    return this.http.get<KardexResponse[]>(`${this.URL}/dashboard/ultimos?limit=${limit}`);
   }
 
   createKardex(request: KardexCreateRequest) {

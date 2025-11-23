@@ -28,7 +28,11 @@ fs.writeFileSync('package.json', JSON.stringify(cleanPkg, null, 2));
 
 try {
   console.log(' Ejecutando electron-builder...\n');
-  execSync('npx electron-builder --win --x64', { stdio: 'inherit' });
+  
+  // Usar la ruta directa al ejecutable local para evitar problemas con npx
+  const electronBuilder = path.resolve(__dirname, 'node_modules', '.bin', process.platform === 'win32' ? 'electron-builder.cmd' : 'electron-builder');
+  
+  execSync(`"${electronBuilder}" --win --x64`, { stdio: 'inherit' });
   console.log('\n Build completado exitosamente!');
   console.log(' El instalador está en: release/');
 } catch (error) {

@@ -91,6 +91,12 @@ export const routes: Routes = [
                 ]
             },
             {
+                path: 'reportes',
+                loadComponent: () =>
+                    import('./features/reportes/page/reportes.component')
+                        .then(m => m.default)
+            },
+            {
                 path: 'admin',
                 canActivate: [gerenteGuard],
                 children: [

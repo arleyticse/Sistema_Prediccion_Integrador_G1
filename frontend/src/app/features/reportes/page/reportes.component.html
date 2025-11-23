@@ -1,0 +1,393 @@
+<div class="reportes-container p-6">
+  <p-toast />
+  
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Reportes</h1>
+    <p class="text-gray-600">Generación de reportes en PDF para predicciones e inventario</p>
+  </div>
+
+  <!-- Tabs -->
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">
+        <i class="pi pi-chart-line mr-2"></i>
+        Reporte de Predicciones
+      </p-tab>
+      <p-tab value="1">
+        <i class="pi pi-box mr-2"></i>
+        Reporte de Inventario
+      </p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+      <!-- Tab Predicciones -->
+      <p-tabpanel value="0">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          <!-- Filtro Fecha Inicio -->
+          <div class="flex flex-col">
+            <label class="mb-2 font-semibold text-gray-700">Fecha Inicio</label>
+            <p-datepicker
+              [(ngModel)]="fechaInicio"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              placeholder="Seleccione fecha inicio"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Filtro Fecha Fin -->
+          <div class="flex flex-col">
+            <label class="mb-2 font-semibold text-gray-700">Fecha Fin</label>
+            <p-datepicker
+              [(ngModel)]="fechaFin"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              placeholder="Seleccione fecha fin"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Botón Generar -->
+          <div class="flex flex-col justify-end">
+            <button
+              pButton
+              label="Generar Reporte"
+              icon="pi pi-refresh"
+              (click)="cargarReportePredicciones()"
+              [disabled]="cargando()"
+              class="w-full"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Spinner de Carga -->
+        @if (cargando()) {
+          <div class="flex justify-center items-center py-12">
+            <p-progressSpinner styleClass="w-16 h-16" strokeWidth="4" />
+          </div>
+        }
+
+        <!-- Resultados -->
+        @if (datosPredicciones() && !cargando()) {
+          <div class="space-y-6">
+            <!-- Resumen General -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <p-card class="bg-blue-50">
+                <div class="text-center">
+                  <div class="text-3xl font-bold text-blue-600">
+                    {{ datosPredicciones()!.resumenGeneral.totalPredicciones }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-2">Total Predicciones</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-green-50">
+                <div class="text-center">
+                  <div class="text-3xl font-bold text-green-600">
+                    {{ datosPredicciones()!.resumenGeneral.prediccionesExcelentes }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-2">Excelentes</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-blue-50">
+                <div class="text-center">
+                  <div class="text-3xl font-bold text-blue-500">
+                    {{ datosPredicciones()!.resumenGeneral.prediccionesBuenas }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-2">Buenas</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-orange-50">
+                <div class="text-center">
+                  <div class="text-3xl font-bold text-orange-500">
+                    {{ datosPredicciones()!.resumenGeneral.prediccionesRegulares }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-2">Regulares</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-red-50">
+                <div class="text-center">
+                  <div class="text-3xl font-bold text-red-600">
+                    {{ datosPredicciones()!.resumenGeneral.prediccionesMalas }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-2">Malas</div>
+                </div>
+              </p-card>
+            </div>
+
+            <!-- Porcentaje de Éxito -->
+            <p-card class="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+              <div class="text-center">
+                <div class="text-4xl font-bold">
+                  {{ datosPredicciones()!.resumenGeneral.porcentajeExito.toFixed(2) }}%
+                </div>
+                <div class="text-lg mt-2">Porcentaje de Éxito</div>
+              </div>
+            </p-card>
+
+            <!-- Estadísticas -->
+            <p-card>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-blue-600">
+                    {{ datosPredicciones()!.estadisticas.mapePromedio.toFixed(2) }}%
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">MAPE Promedio</div>
+                </div>
+
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-purple-600">
+                    {{ datosPredicciones()!.estadisticas.algoritmoMasUsado }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Algoritmo Más Usado</div>
+                </div>
+
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-green-600">
+                    {{ datosPredicciones()!.estadisticas.demandaTotalPredicha.toFixed(2) }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Demanda Total Predicha</div>
+                </div>
+              </div>
+            </p-card>
+
+            <!-- Botones de Acción -->
+            <div class="flex gap-4 justify-center">
+              <button
+                pButton
+                label="Vista Previa PDF"
+                icon="pi pi-eye"
+                (click)="previsualizarPDFPredicciones()"
+                class="p-button-secondary"
+              ></button>
+
+              <button
+                pButton
+                label="Descargar PDF"
+                icon="pi pi-download"
+                (click)="descargarPDFPredicciones()"
+                class="p-button-primary"
+              ></button>
+            </div>
+          </div>
+        }
+
+        <!-- Mensaje Sin Datos -->
+        @if (!datosPredicciones() && !cargando()) {
+          <p-message severity="info" text="Seleccione un rango de fechas y genere el reporte" />
+        }
+      </p-tabpanel>
+
+      <!-- Tab Inventario -->
+      <p-tabpanel value="1">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <!-- Filtro Categoría -->
+          <div class="flex flex-col">
+            <label class="mb-2 font-semibold text-gray-700">Categoría</label>
+            <p-select
+              [(ngModel)]="categoriaSeleccionada"
+              [options]="categorias()"
+              optionLabel="nombre"
+              placeholder="Todas las categorías"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Botón Generar -->
+          <div class="flex flex-col justify-end">
+            <button
+              pButton
+              label="Generar Reporte"
+              icon="pi pi-refresh"
+              (click)="cargarReporteInventario()"
+              [disabled]="cargando()"
+              class="w-full"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Spinner de Carga -->
+        @if (cargando()) {
+          <div class="flex justify-center items-center py-12">
+            <p-progressSpinner styleClass="w-16 h-16" strokeWidth="4" />
+          </div>
+        }
+
+        <!-- Resultados -->
+        @if (datosInventario() && !cargando()) {
+          <div class="space-y-6">
+            <!-- Resumen General -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <p-card class="bg-blue-50">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-blue-600">
+                    {{ datosInventario()!.resumenGeneral.totalProductos }}
+                  </div>
+                  <div class="text-xs text-gray-600 mt-1">Total Productos</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-green-50">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-green-600">
+                    {{ datosInventario()!.resumenGeneral.productosConStock }}
+                  </div>
+                  <div class="text-xs text-gray-600 mt-1">En Stock</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-red-50">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-red-600">
+                    {{ datosInventario()!.resumenGeneral.productosSinStock }}
+                  </div>
+                  <div class="text-xs text-gray-600 mt-1">Sin Stock</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-orange-50">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-orange-600">
+                    {{ datosInventario()!.resumenGeneral.productosBajoMinimo }}
+                  </div>
+                  <div class="text-xs text-gray-600 mt-1">Bajo Mínimo</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-red-100">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-red-700">
+                    {{ datosInventario()!.resumenGeneral.productosEnReorden }}
+                  </div>
+                  <div class="text-xs text-gray-600 mt-1">Requieren Reorden</div>
+                </div>
+              </p-card>
+
+              <p-card class="bg-purple-50">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-purple-600">
+                    {{ datosInventario()!.resumenGeneral.productosObsoletos }}
+                  </div>
+                  <div class="text-xs text-gray-600 mt-1">Obsoletos</div>
+                </div>
+              </p-card>
+            </div>
+
+            <!-- Valoración -->
+            <p-card>
+              <ng-template pTemplate="header">
+                <div class="text-lg font-bold p-3">Valoración de Inventario</div>
+              </ng-template>
+              
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-blue-600">
+                    {{ currencyService.format(datosInventario()!.valoracion.valorTotalInventario) }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Valor Total</div>
+                </div>
+
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-green-600">
+                    {{ currencyService.format(datosInventario()!.valoracion.valorStockDisponible) }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Valor Disponible</div>
+                </div>
+
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-purple-600">
+                    {{ currencyService.format(datosInventario()!.valoracion.valorStockReservado) }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Valor Reservado</div>
+                </div>
+
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-orange-600">
+                    {{ currencyService.format(datosInventario()!.valoracion.valorStockEnTransito) }}
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1">Valor En Tránsito</div>
+                </div>
+              </div>
+            </p-card>
+
+            <!-- Productos Críticos -->
+            <p-card>
+              <ng-template pTemplate="header">
+                <div class="text-lg font-bold p-3">Productos Críticos (Top 10)</div>
+              </ng-template>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-100">
+                    <tr>
+                      <th class="px-4 py-2 text-left">Producto</th>
+                      <th class="px-4 py-2 text-center">Código</th>
+                      <th class="px-4 py-2 text-center">Stock</th>
+                      <th class="px-4 py-2 text-center">Mínimo</th>
+                      <th class="px-4 py-2 text-center">Días Sin Venta</th>
+                      <th class="px-4 py-2 text-center">Criticidad</th>
+                      <th class="px-4 py-2 text-left">Razón</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (producto of datosInventario()!.productosCriticos.slice(0, 10); track producto.codigoProducto) {
+                      <tr class="border-b hover:bg-gray-50">
+                        <td class="px-4 py-2">{{ producto.nombreProducto }}</td>
+                        <td class="px-4 py-2 text-center">{{ producto.codigoProducto }}</td>
+                        <td class="px-4 py-2 text-center font-bold">{{ producto.stockDisponible }}</td>
+                        <td class="px-4 py-2 text-center">{{ producto.stockMinimo }}</td>
+                        <td class="px-4 py-2 text-center">{{ producto.diasSinVenta || 'N/A' }}</td>
+                        <td class="px-4 py-2 text-center">
+                          <span 
+                            class="px-2 py-1 rounded text-white text-xs font-bold"
+                            [ngClass]="{
+                              'bg-red-600': producto.nivelCriticidad === 'CRITICO',
+                              'bg-orange-500': producto.nivelCriticidad === 'ALTO',
+                              'bg-yellow-500': producto.nivelCriticidad === 'MEDIO',
+                              'bg-green-500': producto.nivelCriticidad === 'BAJO'
+                            }"
+                          >
+                            {{ producto.nivelCriticidad }}
+                          </span>
+                        </td>
+                        <td class="px-4 py-2">{{ producto.razon }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </p-card>
+
+            <!-- Botones de Acción -->
+            <div class="flex gap-4 justify-center">
+              <button
+                pButton
+                label="Vista Previa PDF"
+                icon="pi pi-eye"
+                (click)="previsualizarPDFInventario()"
+                class="p-button-secondary"
+              ></button>
+
+              <button
+                pButton
+                label="Descargar PDF"
+                icon="pi pi-download"
+                (click)="descargarPDFInventario()"
+                class="p-button-primary"
+              ></button>
+            </div>
+          </div>
+        }
+
+        <!-- Mensaje Sin Datos -->
+        @if (!datosInventario() && !cargando()) {
+          <p-message severity="info" text="Seleccione una categoría (opcional) y genere el reporte" />
+        }
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>

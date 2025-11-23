@@ -4,31 +4,34 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { FloatLabel } from 'primeng/floatlabel';
 import { InputOtp } from 'primeng/inputotp';
-import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Card } from 'primeng/card';
+import { PasswordModule } from 'primeng/password';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PasswordRecoveryService } from '../../../../core/services/password-recovery.service';
 import { PasswordRecoveryResponse } from '../../../../core/models/password-recovery.models';
+import { MessageModule } from 'primeng/message';
 
 type RecoveryStep = 'email' | 'otp' | 'password' | 'success';
 
 @Component({
   selector: 'app-password-recovery',
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     ButtonModule,
     InputTextModule,
-    FloatLabel,
+    
     InputOtp,
-    Message,
-    ProgressSpinner,
-    Card
+    PasswordModule,
+    ToastModule,
+    ProgressSpinnerModule,
+    MessageModule
   ],
   templateUrl: './password-recovery.html',
-  styleUrls: ['./password-recovery.css']
+  providers: [MessageService]
 })
 export class PasswordRecoveryComponent {
   // Señales de estado
