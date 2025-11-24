@@ -212,4 +212,16 @@ public class KardexControlador {
         Integer saldo = kardexService.calcularSaldoActualProducto(productoId);
         return ResponseEntity.ok(saldo);
     }
+
+    @Operation(summary = "Obtener últimos movimientos para dashboard", description = "Retorna los N movimientos más recientes ordenados por fecha")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Movimientos obtenidos exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Parámetro de límite inválido")
+    })
+    @GetMapping("/dashboard/ultimos")
+    public ResponseEntity<List<KardexResponse>> obtenerUltimosMovimientosDashboard(
+            @Parameter(description = "Cantidad de movimientos a retornar") @RequestParam(defaultValue = "10") @Min(1) int limit) {
+        List<KardexResponse> response = kardexService.obtenerUltimosMovimientos(limit);
+        return ResponseEntity.ok(response);
+    }
 }

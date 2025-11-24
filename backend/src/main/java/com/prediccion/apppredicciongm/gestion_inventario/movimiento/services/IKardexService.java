@@ -222,4 +222,14 @@ public interface IKardexService {
          * @return Saldo neto actual del producto
          */
         Integer calcularSaldoActualProducto(Integer productoId);
+
+        /**
+         * Obtiene los N movimientos más recientes para mostrar en el dashboard.
+         * 
+         * Retorna los últimos movimientos ordenados por fecha descendente.
+         * 
+         * @param limit Cantidad máxima de movimientos a retornar
+         * @return Lista de los últimos N movimientos
+         */
+        List<KardexResponse> obtenerUltimosMovimientos(int limit);
 }

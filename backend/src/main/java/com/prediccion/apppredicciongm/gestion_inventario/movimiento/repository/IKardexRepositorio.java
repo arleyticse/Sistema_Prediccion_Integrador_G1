@@ -107,6 +107,9 @@ public interface IKardexRepositorio extends JpaRepository<Kardex, Long> {
     @Query("SELECT k FROM Kardex k WHERE k.producto.productoId = :productoId AND k.costoUnitario IS NOT NULL ORDER BY k.fechaMovimiento DESC")
     List<Kardex> findHistorialPreciosByProducto(@Param("productoId") Integer productoId);
     
+    // Obtener todos los movimientos ordenados por fecha descendente (para dashboard)
+    Page<Kardex> findAllByOrderByFechaMovimientoDesc(Pageable pageable);
+    
     // Métodos adicionales para análisis de estacionalidad
     @Query("SELECT DISTINCT k.producto.productoId FROM Kardex k")
     List<Long> findDistinctProductIds();

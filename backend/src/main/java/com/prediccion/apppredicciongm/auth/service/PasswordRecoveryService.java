@@ -36,7 +36,7 @@ public class PasswordRecoveryService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     
-    @Value("${resend.otp.expiration:10}")
+    @Value("${otp.expiration.minutes:10}")
     private int otpExpirationMinutes;
 
     private static final SecureRandom RANDOM = new SecureRandom();

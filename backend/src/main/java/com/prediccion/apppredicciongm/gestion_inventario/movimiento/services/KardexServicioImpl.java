@@ -367,4 +367,26 @@ public class KardexServicioImpl implements IKardexService {
             throw new RuntimeException("Error al restaurar el movimiento: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<KardexResponse> obtenerUltimosMovimientos(int limit) {
+        log.info("Obteniendo los últimos {} movimientos para dashboard", limit);
+        
+        try {
+            PageRequest pageRequest = PageRequest.of(0, limit);
+            Page<Kardex> movimientos = kardexRepositorio.findAllByOrderByFechaMovimientoDesc(pageRequest);
+            
+            List<KardexResponse> response = movimientos.getContent().stream()
+                    .map(kardexMapper::toResponse)
+                    .collect(Collectors.toList());
+            
+            log.debug("Se obtuvieron {} movimientos recientes", response.size());
+            return response;
+            
+        } catch (Exception e) {
+            log.error("Error al obtener últimos movimientos: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al obtener los últimos movimientos: " + e.getMessage(), e);
+        }
+    }
 }

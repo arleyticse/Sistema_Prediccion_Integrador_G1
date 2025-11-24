@@ -1,16 +1,20 @@
 package com.prediccion.apppredicciongm.auth.service;
 
-import com.resend.*;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.CreateEmailOptions;
-import com.resend.services.emails.model.CreateEmailResponse;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.UnsupportedEncodingException;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 /**
- * Servicio para envío de correos electrónicos usando Resend API.
- * 
+ * Servicio para envío de correos electrónicos mediante JavaMail (SMTP).
+ *
  * @author Sistema de Predicción
  * @version 1.0
  * @since 2025-11-19
@@ -19,36 +23,35 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EmailService {
 
-    private final Resend resend;
+    private final JavaMailSender mailSender;
     private final String fromEmail;
 
-    public EmailService(
-            @Value("${resend.api.key}") String apiKey,
-            @Value("${resend.from.email}") String fromEmail) {
-        this.resend = new Resend(apiKey);
+    public EmailService(JavaMailSender mailSender,
+                        @Value("${spring.mail.username}") String fromEmail) {
+        this.mailSender = mailSender;
         this.fromEmail = fromEmail;
     }
 
     /**
      * Envía un código OTP al email especificado
+     * @throws UnsupportedEncodingException 
      */
-    public boolean sendPasswordResetEmail(String toEmail, String code, String userName) {
+    public boolean sendPasswordResetEmail(String toEmail, String code, String userName) throws UnsupportedEncodingException {
         try {
             String htmlContent = buildPasswordResetEmailTemplate(code, userName);
 
-            CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(fromEmail)
-                    .to(toEmail)
-                    .subject("Recuperación de Contraseña - Código de Verificación")
-                    .html(htmlContent)
-                    .build();
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail, "Global Market S.A.C");
+            helper.setTo(toEmail);
+            helper.setSubject("Recuperación de Contraseña - Código de Verificación");
+            helper.setText(htmlContent, true);
 
-            CreateEmailResponse response = resend.emails().send(params);
-            
-            log.info("Email de recuperación enviado exitosamente a: {} - ID: {}", toEmail, response.getId());
+            mailSender.send(message);
+            log.info("Email de recuperación enviado exitosamente a: {}", toEmail);
             return true;
 
-        } catch (ResendException e) {
+        } catch (MessagingException | MailException e) {
             log.error("Error al enviar email de recuperación a {}: {}", toEmail, e.getMessage(), e);
             return false;
         }
