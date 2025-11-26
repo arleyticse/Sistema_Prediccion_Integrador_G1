@@ -331,6 +331,33 @@ public class OrdenCompraControlador {
     }
 
     /**
+     * Recibir una orden con cantidades entregadas por detalle.
+     * Endpoint: POST /api/ordenes/{ordenId}/recibir
+     */
+    @PostMapping("/{ordenId}/recibir")
+    @Operation(summary = "Recibir orden",
+               description = "Marca una orden como recibida (parcial o completa) y registra entradas en kardex")
+    public ResponseEntity<Void> recibirOrden(
+            @PathVariable Long ordenId,
+            @RequestBody com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.request.RecibirOrdenRequest request) {
+
+        log.info("[ORDEN] POST /{}/recibir - Recepción de orden", ordenId);
+
+        try {
+            ordenService.recibirOrden(ordenId, request);
+            log.info("[ORDEN] Orden recibida: {}", ordenId);
+            return ResponseEntity.noContent().build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("[ORDEN] Recepción inválida: {} - {}", ordenId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            log.error("[ORDEN] Error al recibir orden: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
      * Obtiene todas las órdenes en estado BORRADOR pendientes de aprobación.
      *
      * Endpoint: GET /api/ordenes/borradores

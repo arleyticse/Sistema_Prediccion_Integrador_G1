@@ -22,12 +22,12 @@ import { Popover } from 'primeng/popover';
 import { TabsModule } from 'primeng/tabs';
 import { TimelineModule } from 'primeng/timeline';
 import { PrediccionesService } from '../../service/predicciones.service';
+import { AuthService } from '../../../../core/services/auth';
 import { AyudaContextualService } from '../../service/ayuda-contextual.service';
 import { PrediccionResponse, EstadoPrediccion } from '../../models/PrediccionResponse';
 import { GenerarPrediccionRequest, AlgoritmoInfo } from '../../models/GenerarPrediccionRequest';
 import { OptimizacionResponse, CalcularOptimizacionRequest } from '../../models/OptimizacionResponse';
 import { ProductoResponse } from '../../../productos/models/ProductoResponse';
-import type { RecomendacionAlgoritmo } from '../../models/RecomendacionAlgoritmo';
 
 interface AlgoritmoCard {
   codigo: string;
@@ -79,6 +79,7 @@ export class PrediccionesComponent {
 
   // Servicios inyectados
   private prediccionesService = inject(PrediccionesService);
+  private authService = inject(AuthService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
   ayudaService = inject(AyudaContextualService); // Público para usar en template
@@ -88,28 +89,26 @@ export class PrediccionesComponent {
   productos = signal<ProductoResponse[]>([]);
   algoritmos = signal<AlgoritmoCard[]>([]);
   prediccionSeleccionada = signal<PrediccionResponse | null>(null);
-  
+
   // Optimización EOQ/ROP
   optimizacionActual = signal<OptimizacionResponse | null>(null);
   loadingOptimizacion = signal<boolean>(false);
   optimizacionCalculada = signal<boolean>(false);
-  
+
   // Map para guardar optimizaciones por predicción (evita que se comparta entre predicciones)
   private optimizacionesPorPrediccion = new Map<number, OptimizacionResponse>();
-  
-  // Modo automático
+
+  // Modo automático (AUTO vs selección manual de algoritmo)
   modoAutomatico = signal<boolean>(true);
-  recomendacion = signal<RecomendacionAlgoritmo | null>(null);
-  cargandoRecomendacion = signal<boolean>(false);
   productoTieneDatosSuficientes = signal<boolean>(true);
   mensajeValidacionProducto = signal<string>('');
-  
+
   // Dialogs y loading
   dialogGenerarVisible = signal<boolean>(false);
   dialogDetalleVisible = signal<boolean>(false);
   loading = signal<boolean>(false);
   loadingPrediccion = signal<boolean>(false);
-  
+
   // Paginación
   first = signal<number>(0);
   rows = signal<number>(10);
@@ -118,7 +117,7 @@ export class PrediccionesComponent {
 
   // Paso actual del wizard
   pasoActual = signal<number>(1);
-  
+
   // Formulario de generación
   generarForm = new FormGroup({
     producto: new FormControl<ProductoResponse | null>(null, Validators.required),
@@ -131,8 +130,8 @@ export class PrediccionesComponent {
   // Los costos y tiempos se obtienen automáticamente del producto en la BD
   optimizacionForm = new FormGroup({
     nivelServicioDeseado: new FormControl<number>(0.95, [
-      Validators.required, 
-      Validators.min(0.80), 
+      Validators.required,
+      Validators.min(0.80),
       Validators.max(0.99)
     ])
   });
@@ -141,9 +140,9 @@ export class PrediccionesComponent {
   recomendacionesInteligentes = computed(() => {
     const pred = this.prediccionSeleccionada();
     if (!pred) return [];
-    
-    const recomendaciones: Array<{icon: string, color: string, titulo: string, descripcion: string}> = [];
-    
+
+    const recomendaciones: Array<{ icon: string, color: string, titulo: string, descripcion: string }> = [];
+
     // Recomendación de estado
     if (pred.estado === 'ACTIVA') {
       recomendaciones.push({
@@ -160,13 +159,13 @@ export class PrediccionesComponent {
         descripcion: 'El horizonte de tiempo ha sido superado. Genera una nueva predicción para datos actualizados.'
       });
     }
-    
+
     // Recomendación de calidad
     if (pred.calidadPrediccion === 'EXCELENTE' || pred.calidadPrediccion === 'BUENA') {
       recomendaciones.push({
         icon: 'pi-star-fill',
         color: '#3b82f6',
-        titulo: `📊 Calidad ${pred.calidadPrediccion}`,
+        titulo: `Calidad ${pred.calidadPrediccion}`,
         descripcion: `Alta confiabilidad con MAPE de ${pred.mape?.toFixed(2)}%. Puedes confiar en esta predicción para decisiones estratégicas.`
       });
     } else if (pred.calidadPrediccion === 'ACEPTABLE') {
@@ -177,7 +176,7 @@ export class PrediccionesComponent {
         descripcion: `MAPE de ${pred.mape?.toFixed(2)}%. Úsala con precaución y valida con datos adicionales.`
       });
     }
-    
+
     // Recomendación de patrones
     if (pred.tieneEstacionalidad) {
       recomendaciones.push({
@@ -187,7 +186,7 @@ export class PrediccionesComponent {
         descripcion: 'El producto tiene variaciones cíclicas. Considera ajustar inventario según temporadas.'
       });
     }
-    
+
     if (pred.tieneTendencia) {
       recomendaciones.push({
         icon: 'pi-chart-line',
@@ -196,7 +195,7 @@ export class PrediccionesComponent {
         descripcion: 'La demanda muestra crecimiento/decrecimiento consistente. Planifica con margen adicional.'
       });
     }
-    
+
     // Recomendación de acción
     if (pred.estado === 'ACTIVA' && (pred.calidadPrediccion === 'EXCELENTE' || pred.calidadPrediccion === 'BUENA')) {
       recomendaciones.push({
@@ -206,7 +205,7 @@ export class PrediccionesComponent {
         descripcion: `Genera una orden de compra por ${pred.demandaPredichaTotal} unidades para cubrir los próximos ${pred.horizonteTiempo} días.`
       });
     }
-    
+
     return recomendaciones;
   });
 
@@ -219,18 +218,18 @@ export class PrediccionesComponent {
 
     const historicos = prediccion.datosHistoricos;
     const predichos = prediccion.valoresPredichos;
-    
+
     // Generar labels (fechas)
     const labels: string[] = [];
     const hoy = new Date();
-    
+
     // Labels para históricos
     for (let i = historicos.length - 1; i >= 0; i--) {
       const fecha = new Date(hoy);
       fecha.setDate(fecha.getDate() - i);
       labels.push(fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
     }
-    
+
     // Labels para predichos
     for (let i = 1; i <= predichos.length; i++) {
       const fecha = new Date(hoy);
@@ -320,7 +319,7 @@ export class PrediccionesComponent {
   constructor() {
     this.cargarDatos();
     this.inicializarAlgoritmos();
-    
+
     // Effect para actualizar valores por defecto cuando cambia el algoritmo
     effect(() => {
       const algoritmo = this.generarForm.get('algoritmo')?.value;
@@ -347,17 +346,27 @@ export class PrediccionesComponent {
       {
         codigo: 'AUTO',
         nombre: 'Selección Automática',
-        descripcion: 'El sistema analiza tus datos y selecciona automáticamente el mejor algoritmo (ARIMA, Random Forest o Gradient Boosting) según patrones detectados.',
+        descripcion: 'El sistema analiza tus datos y selecciona automáticamente el mejor algoritmo según patrones detectados.',
         icono: 'pi pi-sparkles',
         color: '#8b5cf6',
         usoCaso: 'Recomendado para todos los productos - detección inteligente',
-        minimosDatos: 30,
+        minimosDatos: 10,
         recomendado: true
+      },
+      {
+        codigo: 'LINEAR_REGRESSION',
+        nombre: 'Regresión Lineal',
+        descripcion: 'Regresión con mínimos cuadrados ordinarios (OLS). Ideal para productos con demanda estable y tendencia clara.',
+        icono: 'pi pi-minus',
+        color: '#06b6d4',
+        usoCaso: 'Productos estables: arroz, azúcar, sal, aceite',
+        minimosDatos: 10,
+        recomendado: false
       },
       {
         codigo: 'ARIMA',
         nombre: 'ARIMA',
-        descripcion: 'Auto-Regressive Integrated Moving Average. Excelente para series con tendencias y estacionalidad compleja.',
+        descripcion: 'Series temporales con autocorrelación. Excelente para tendencias y estacionalidad compleja.',
         icono: 'pi pi-chart-line',
         color: '#3b82f6',
         usoCaso: 'Productos con patrones estacionales y tendencias',
@@ -370,18 +379,18 @@ export class PrediccionesComponent {
         descripcion: 'Ensemble de árboles de decisión. Robusto ante datos ruidosos y relaciones no lineales.',
         icono: 'pi pi-sitemap',
         color: '#10b981',
-        usoCaso: 'Productos con demanda volátil o patrones complejos',
+        usoCaso: 'Bebidas, snacks, productos de limpieza',
         minimosDatos: 30,
         recomendado: false
       },
       {
         codigo: 'GRADIENT_BOOSTING',
         nombre: 'Gradient Boosting',
-        descripcion: 'Aprendizaje por refuerzo gradual. Alta precisión con ajuste fino de errores.',
+        descripcion: 'Máxima precisión para demanda errática. Ideal para productos perecederos.',
         icono: 'pi pi-chart-bar',
         color: '#f59e0b',
-        usoCaso: 'Productos con alta rotación que requieren máxima precisión',
-        minimosDatos: 30,
+        usoCaso: 'Pan, lácteos, frutas, verduras',
+        minimosDatos: 20,
         recomendado: false
       }
     ]);
@@ -395,7 +404,7 @@ export class PrediccionesComponent {
   private cargarPredicciones(): void {
     this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
-    
+
     this.prediccionesService.obtenerPredicciones(page, this.rows()).subscribe({
       next: (response) => {
         this.predicciones.set(response.content);
@@ -436,25 +445,23 @@ export class PrediccionesComponent {
     });
     this.pasoActual.set(1);
     this.modoAutomatico.set(true);
-    this.recomendacion.set(null);
     this.productoTieneDatosSuficientes.set(true);
     this.mensajeValidacionProducto.set('');
-    
-    // Resetear algoritmos recomendados
+
+    // Resetear algoritmos recomendados - AUTO siempre es el recomendado por defecto
     const algoritmos = this.algoritmos();
     const reseteados = algoritmos.map(alg => ({
       ...alg,
       recomendado: alg.codigo === 'AUTO'
     }));
     this.algoritmos.set(reseteados);
-    
+
     this.dialogGenerarVisible.set(true);
   }
 
   closeDialogGenerar(): void {
     this.dialogGenerarVisible.set(false);
     this.pasoActual.set(1);
-    this.recomendacion.set(null);
   }
 
   siguientePaso(): void {
@@ -504,16 +511,18 @@ export class PrediccionesComponent {
           this.cargarPredicciones();
           this.closeDialogGenerar();
           this.loadingPrediccion.set(false);
-          
+
           // Mapear calidad de SMILE ML a formato PrediccionResponse
-          let calidadMapeada: 'EXCELENTE' | 'BUENA' | 'ACEPTABLE' | 'POBRE' = 'ACEPTABLE';
+          // El backend usa: EXCELENTE, BUENA, REGULAR, POBRE
+          let calidadMapeada: 'EXCELENTE' | 'BUENA' | 'REGULAR' | 'POBRE' = 'REGULAR';
           switch (response.metricas.calificacionCalidad) {
             case 'EXCELENTE': calidadMapeada = 'EXCELENTE'; break;
             case 'BUENA': calidadMapeada = 'BUENA'; break;
-            case 'REGULAR': calidadMapeada = 'ACEPTABLE'; break;
-            case 'MALA': calidadMapeada = 'POBRE'; break;
+            case 'REGULAR': calidadMapeada = 'REGULAR'; break;
+            case 'MALA': 
+            case 'POBRE': calidadMapeada = 'POBRE'; break;
           }
-          
+
           // Mapear respuesta de SMILE ML a PrediccionResponse para visualización
           const prediccionMapeada: PrediccionResponse = {
             prediccionId: response.prediccionId,
@@ -535,7 +544,7 @@ export class PrediccionesComponent {
             advertencias: response.advertencias,
             recomendaciones: response.recomendaciones
           };
-          
+
           // Mostrar detalles automáticamente
           this.verDetalle(prediccionMapeada);
         },
@@ -554,7 +563,7 @@ export class PrediccionesComponent {
   verDetalle(prediccion: PrediccionResponse): void {
     this.prediccionSeleccionada.set(prediccion);
     this.dialogDetalleVisible.set(true);
-    
+
     // Cargar optimización guardada para esta predicción específica
     const optimizacionGuardada = this.optimizacionesPorPrediccion.get(prediccion.prediccionId);
     if (optimizacionGuardada) {
@@ -564,7 +573,7 @@ export class PrediccionesComponent {
       this.optimizacionActual.set(null);
       this.optimizacionCalculada.set(false);
     }
-    
+
     // Resetear formulario con valor por defecto
     this.optimizacionForm.reset({
       nivelServicioDeseado: 0.95
@@ -620,7 +629,7 @@ export class PrediccionesComponent {
       next: (response) => {
         // Guardar optimización en el Map por predicción
         this.optimizacionesPorPrediccion.set(prediccion.prediccionId, response);
-        
+
         this.optimizacionActual.set(response);
         this.optimizacionCalculada.set(true);
         this.messageService.add({
@@ -720,7 +729,8 @@ export class PrediccionesComponent {
     switch (calidad) {
       case 'EXCELENTE': return '#10b981'; // green
       case 'BUENA': return '#3b82f6'; // blue
-      case 'ACEPTABLE': return '#f59e0b'; // yellow
+      case 'REGULAR': 
+      case 'ACEPTABLE': return '#f59e0b'; // yellow - soporta ambos nombres
       case 'POBRE': return '#ef4444'; // red
       default: return '#6b7280'; // gray
     }
@@ -730,7 +740,8 @@ export class PrediccionesComponent {
     switch (calidad) {
       case 'EXCELENTE': return 'pi pi-check-circle';
       case 'BUENA': return 'pi pi-thumbs-up';
-      case 'ACEPTABLE': return 'pi pi-exclamation-circle';
+      case 'REGULAR':
+      case 'ACEPTABLE': return 'pi pi-exclamation-circle'; // soporta ambos nombres
       case 'POBRE': return 'pi pi-times-circle';
       default: return 'pi pi-info-circle';
     }
@@ -742,76 +753,25 @@ export class PrediccionesComponent {
   }
 
   /**
-   * Callback cuando se selecciona un producto en el paso 1
+   * Callback cuando se selecciona un producto en el paso 1.
+   * Ya no solicita recomendación - el usuario puede elegir AUTO o manual.
    */
   onProductoSeleccionado(productoId: number | undefined): void {
     if (!productoId) {
-      this.recomendacion.set(null);
       this.productoTieneDatosSuficientes.set(true);
       this.mensajeValidacionProducto.set('');
       return;
     }
 
-    // Solicitar recomendación para validar datos suficientes
-    this.solicitarRecomendacion(productoId);
-  }
-
-  /**
-   * Solicita una recomendación automática al backend
-   */
-  private solicitarRecomendacion(productoId: number): void {
-    this.cargandoRecomendacion.set(true);
-    this.recomendacion.set(null);
+    // El producto está seleccionado, permitimos avanzar directamente
+    // La validación de datos se hará al momento de generar la predicción
     this.productoTieneDatosSuficientes.set(true);
     this.mensajeValidacionProducto.set('');
-
-    this.prediccionesService.obtenerRecomendacion(productoId).subscribe({
-      next: (rec) => {
-        this.recomendacion.set(rec);
-        this.productoTieneDatosSuficientes.set(true);
-        this.mensajeValidacionProducto.set('');
-        
-        // Actualizar algoritmo recomendado dinámicamente
-        this.actualizarAlgoritmoRecomendado(rec.algoritmo);
-        
-        if (this.modoAutomatico()) {
-          this.aplicarRecomendacion(rec);
-        }
-        
-        this.cargandoRecomendacion.set(false);
-        
-        // Mensaje de éxito con la confianza
-        const confianzaPorcentaje = (rec.confianza * 100).toFixed(0);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Análisis Completado',
-          detail: `Recomendación generada con ${confianzaPorcentaje}% de confianza`,
-          life: 3000
-        });
-      },
-      error: (error) => {
-        this.recomendacion.set(null);
-        this.cargandoRecomendacion.set(false);
-        this.productoTieneDatosSuficientes.set(false);
-        
-        const mensaje = error.status === 400 
-          ? 'Datos insuficientes. Se necesitan al menos 7 registros de venta.'
-          : 'No se pudo analizar el producto. Intenta con otro producto.';
-        
-        this.mensajeValidacionProducto.set(mensaje);
-        
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Análisis No Disponible',
-          detail: mensaje,
-          life: 5000
-        });
-      }
-    });
   }
 
   /**
-   * Actualiza el algoritmo recomendado según el análisis del backend
+   * Actualiza el algoritmo recomendado visualmente en la lista.
+   * Ahora AUTO siempre es el recomendado por defecto.
    */
   private actualizarAlgoritmoRecomendado(algoritmoRecomendado: string): void {
     const algoritmos = this.algoritmos();
@@ -823,29 +783,16 @@ export class PrediccionesComponent {
   }
 
   /**
-   * Aplica la recomendación al formulario
-   */
-  private aplicarRecomendacion(rec: RecomendacionAlgoritmo): void {
-    this.generarForm.patchValue({
-      algoritmo: rec.algoritmo,
-      ...rec.parametros
-    }, { emitEvent: false });
-  }
-
-  /**
-   * Alterna entre modo automático y manual
+   * Alterna entre modo automático y manual.
+   * En modo automático se usa AUTO, en manual el usuario elige.
    */
   toggleModo(): void {
-    // El valor ya cambió por el ngModel, solo necesitamos reaccionar
     const nuevoModo = this.modoAutomatico();
 
-    if (nuevoModo && this.recomendacion()) {
-      // Si volvemos a automático y ya hay recomendación, aplicarla
-      this.aplicarRecomendacion(this.recomendacion()!);
-    } else if (nuevoModo && this.generarForm.get('producto')?.value?.productoId) {
-      // Si volvemos a automático y hay producto seleccionado, solicitar recomendación
-      const productoId = this.generarForm.get('producto')!.value!.productoId;
-      this.solicitarRecomendacion(productoId);
+    if (nuevoModo) {
+      // Modo automático: establecer algoritmo AUTO
+      this.generarForm.patchValue({ algoritmo: 'AUTO' }, { emitEvent: false });
+      this.actualizarAlgoritmoRecomendado('AUTO');
     }
   }
 
@@ -854,26 +801,22 @@ export class PrediccionesComponent {
    */
   puedeAvanzar(): boolean {
     const paso = this.pasoActual();
-    
+
     switch (paso) {
       case 1:
-        // Paso 1: Debe tener producto, horizonte de tiempo y datos suficientes
+        // Paso 1: Debe tener producto y horizonte de tiempo
         const tieneProducto = !!this.generarForm.get('producto')?.value;
         const tieneHorizonte = !!this.generarForm.get('horizonteTiempo')?.value;
-        return tieneProducto && tieneHorizonte && this.productoTieneDatosSuficientes();
-      
+        return tieneProducto && tieneHorizonte;
+
       case 2:
-        // Paso 2: Si es automático, debe tener recomendación; si es manual, debe tener algoritmo
-        if (this.modoAutomatico()) {
-          return !!this.recomendacion();
-        } else {
-          return !!this.generarForm.get('algoritmo')?.value;
-        }
-      
+        // Paso 2: Debe tener algoritmo seleccionado (AUTO por defecto en modo automático)
+        return !!this.generarForm.get('algoritmo')?.value;
+
       case 3:
         // Paso 3: Formulario debe ser válido
         return this.generarForm.valid;
-      
+
       default:
         return false;
     }
@@ -892,7 +835,7 @@ export class PrediccionesComponent {
    */
   obtenerTooltipSiguiente(): string {
     const paso = this.pasoActual();
-    
+
     if (paso === 1) {
       if (!this.generarForm.get('producto')?.value) {
         return 'Selecciona un producto para continuar';
@@ -900,22 +843,16 @@ export class PrediccionesComponent {
       if (!this.generarForm.get('horizonteTiempo')?.value) {
         return 'Ingresa el horizonte de tiempo';
       }
-      if (!this.productoTieneDatosSuficientes()) {
-        return 'El producto seleccionado no cumple con los mínimos registros para hacer la predicción';
-      }
       return 'Continuar al siguiente paso';
     }
-    
+
     if (paso === 2) {
-      if (this.modoAutomatico() && !this.recomendacion()) {
-        return 'Esperando recomendación del sistema';
-      }
-      if (!this.modoAutomatico() && !this.generarForm.get('algoritmo')?.value) {
+      if (!this.generarForm.get('algoritmo')?.value) {
         return 'Selecciona un algoritmo para continuar';
       }
       return 'Continuar al siguiente paso';
     }
-    
+
     return 'Continuar';
   }
 }

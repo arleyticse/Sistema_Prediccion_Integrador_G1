@@ -51,6 +51,18 @@ export class OrdenesCompraService {
     return this.http.delete<void>(`${this.baseUrl}/${ordenId}`);
   }
 
+  recibirOrden(ordenId: number, request: any): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${ordenId}/recibir`, request);
+  }
+
+  obtenerOrdenesBorrador(): Observable<OrdenCompraResponse[]> {
+    return this.http.get<OrdenCompraResponse[]>(`${this.baseUrl}/borradores`);
+  }
+
+  aprobarOrdenesBorrador(ordenIds: number[]): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/aprobar-borrador`, ordenIds);
+  }
+
   obtenerPredicciones(page: number = 0, size: number = 10): Observable<Page<PrediccionResponse>> {
     const params = new HttpParams()
       .set('page', page.toString())

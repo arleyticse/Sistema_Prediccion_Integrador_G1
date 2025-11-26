@@ -1,5 +1,6 @@
 package com.prediccion.apppredicciongm.gestion_prediccion.prediccion.enums;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  * @since 2025-11-05
  */
 @Getter
+@JsonFormat(shape = JsonFormat.Shape.STRING)
 public enum EstadoPrediccion {
     
     /**

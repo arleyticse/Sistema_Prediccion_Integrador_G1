@@ -2,8 +2,11 @@ package com.prediccion.apppredicciongm.auth.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +20,7 @@ import com.prediccion.apppredicciongm.auth.dto.ForgotPasswordRequest;
 import com.prediccion.apppredicciongm.auth.dto.VerifyOtpRequest;
 import com.prediccion.apppredicciongm.auth.dto.ResetPasswordRequest;
 import com.prediccion.apppredicciongm.auth.models.SeguridadUsuario;
+import com.prediccion.apppredicciongm.auth.service.AccountLockService;
 import com.prediccion.apppredicciongm.auth.service.IUsuarioService;
 import com.prediccion.apppredicciongm.auth.service.PasswordRecoveryService;
 import com.prediccion.apppredicciongm.models.Usuario;
@@ -30,6 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -38,7 +43,12 @@ import java.util.Map;
  * Maneja las operaciones de login, registro, recuperación de contraseña
  * y actualización de contraseñas. Genera tokens JWT para las peticiones autenticadas.
  * 
- * @version 1.0
+ * Incluye:
+ * - Control de intentos fallidos con bloqueo de cuenta
+ * - Desbloqueo de cuenta mediante código OTP
+ * - Expiración automática de sesiones inactivas
+ * 
+ * @version 1.1
  * @since 1.0
  */
 @RestController
@@ -56,12 +66,17 @@ public class AutentificacionControlador {
     private final PasswordEncoder codificadorContrasena;
     private final RefreshTokenService refreshTokenService;
     private final PasswordRecoveryService passwordRecoveryService;
+    private final AccountLockService accountLockService;
+
+    @Value("${security.max-intentos-fallidos:5}")
+    private int maxIntentosFallidos;
 
     /**
      * Inicia sesión de un usuario.
      * 
-     * Autentica al usuario con sus credenciales y devuelve un token JWT
-     * junto con sus datos de perfil.
+     * Autentica al usuario con sus credenciales y devuelve un token JWT.
+     * Implementa control de intentos fallidos y bloqueo de cuenta.
+     * Las sesiones inactivas expiran automáticamente (no bloquean nuevos logins).
      * 
      * @param solicitud Credenciales del usuario (email y contraseña)
      * @return Token JWT y datos del usuario autenticado
@@ -70,11 +85,24 @@ public class AutentificacionControlador {
     @Operation(summary = "Iniciar sesión", description = "Autentica al usuario y devuelve un token JWT junto con sus datos")
     @jakarta.transaction.Transactional
     public ResponseEntity<?> iniciarSesion(@RequestBody AuthRequest solicitud) {
+        String email = solicitud.getEmail().toLowerCase().trim();
+        
         try {
-            log.info("Intento de autenticación para usuario: {}", solicitud.getEmail());
+            log.info("Intento de autenticación para usuario: {}", email);
 
+            // Verificar si la cuenta está bloqueada
+            if (accountLockService.estaCuentaBloqueada(email)) {
+                log.warn("[SEGURIDAD] Intento de login en cuenta bloqueada: {}", email);
+                Map<String, Object> response = new HashMap<>();
+                response.put("error", "CUENTA_BLOQUEADA");
+                response.put("message", "Tu cuenta ha sido bloqueada por múltiples intentos fallidos. " +
+                        "Usa la opción 'Desbloquear cuenta' para recibir un código de verificación.");
+                return ResponseEntity.status(423).body(response); // 423 Locked
+            }
+
+            // Intentar autenticación
             Authentication autenticacion = manejadorAutenticacion.authenticate(
-                    new UsernamePasswordAuthenticationToken(solicitud.getEmail(), solicitud.getClave()));
+                    new UsernamePasswordAuthenticationToken(email, solicitud.getClave()));
 
             SecurityContextHolder.getContext().setAuthentication(autenticacion);
 
@@ -83,14 +111,9 @@ public class AutentificacionControlador {
             Usuario usuario = usuarioServicio.obtenerUsuarioPorCorreo(detallesUsuario.getUsername())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // Verificar si ya tiene sesión activa
-            if (Boolean.TRUE.equals(usuario.getActivo())) {
-                log.warn("Intento de inicio de sesión duplicado para usuario: {}", usuario.getEmail());
-                return ResponseEntity.status(409).body("El usuario ya tiene una sesión activa.");
-            }
-
-            // Marcar usuario como activo
-            usuarioServicio.actualizarEstadoActivo(usuario.getEmail(), true);
+            // Login exitoso: reiniciar intentos fallidos y marcar como activo
+            accountLockService.reiniciarIntentosFallidos(email);
+            usuarioServicio.actualizarEstadoActivo(email, true);
 
             String tokenJwt = utilitarioJwt.generarToken(detallesUsuario);
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(usuario.getEmail());
@@ -105,8 +128,37 @@ public class AutentificacionControlador {
                     .rol(usuario.getRol())
                     .build());
 
+        } catch (LockedException e) {
+            log.warn("[SEGURIDAD] Cuenta bloqueada: {}", email);
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", "CUENTA_BLOQUEADA");
+            response.put("message", "Tu cuenta está bloqueada. Usa 'Desbloquear cuenta'.");
+            return ResponseEntity.status(423).body(response);
+            
+        } catch (BadCredentialsException e) {
+            // Registrar intento fallido
+            boolean cuentaBloqueada = accountLockService.registrarIntentoFallido(email);
+            int intentosRestantes = accountLockService.obtenerIntentosRestantes(email);
+            
+            Map<String, Object> response = new HashMap<>();
+            
+            if (cuentaBloqueada) {
+                log.warn("[SEGURIDAD] Cuenta bloqueada tras múltiples intentos: {}", email);
+                response.put("error", "CUENTA_BLOQUEADA");
+                response.put("message", "Tu cuenta ha sido bloqueada por seguridad. " +
+                        "Usa 'Desbloquear cuenta' para recibir un código de verificación.");
+                return ResponseEntity.status(423).body(response);
+            }
+            
+            log.warn("[SEGURIDAD] Credenciales inválidas para: {} ({} intentos restantes)", 
+                    email, intentosRestantes);
+            response.put("error", "CREDENCIALES_INVALIDAS");
+            response.put("message", "Credenciales inválidas. Te quedan " + intentosRestantes + " intentos.");
+            response.put("intentosRestantes", intentosRestantes);
+            return ResponseEntity.status(401).body(response);
+            
         } catch (Exception e) {
-            log.error("Error de autenticación para usuario {}: {}", solicitud.getEmail(), e.getMessage(), e);
+            log.error("Error de autenticación para usuario {}: {}", email, e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error de autenticación: " + e.getMessage());
         }
     }
@@ -277,6 +329,60 @@ public class AutentificacionControlador {
     public ResponseEntity<Map<String, Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         log.info("Solicitud de restablecimiento de contraseña para: {}", request.getEmail());
         Map<String, Object> response = passwordRecoveryService.resetPassword(request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Solicita código OTP para desbloquear cuenta.
+     * 
+     * Envía un código de 6 dígitos al email del usuario para desbloquear
+     * su cuenta después de múltiples intentos fallidos.
+     * 
+     * @param request Email del usuario
+     * @return Resultado de la operación
+     */
+    @PostMapping("/solicitar-desbloqueo")
+    @Operation(summary = "Solicitar desbloqueo", description = "Envía código OTP para desbloquear cuenta bloqueada")
+    public ResponseEntity<Map<String, Object>> solicitarDesbloqueo(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("[SEGURIDAD] Solicitud de desbloqueo para: {}", request.getEmail());
+        Map<String, Object> response = accountLockService.solicitarDesbloqueo(request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Desbloquea la cuenta usando código OTP.
+     * 
+     * Verifica el código OTP y desbloquea la cuenta del usuario,
+     * reiniciando el contador de intentos fallidos.
+     * 
+     * @param request Email y código OTP
+     * @return Resultado de la operación
+     */
+    @PostMapping("/desbloquear-cuenta")
+    @Operation(summary = "Desbloquear cuenta", description = "Desbloquea la cuenta usando código OTP")
+    public ResponseEntity<Map<String, Object>> desbloquearCuenta(@Valid @RequestBody VerifyOtpRequest request) {
+        log.info("[SEGURIDAD] Intento de desbloqueo para: {}", request.getEmail());
+        Map<String, Object> response = accountLockService.desbloquearCuenta(request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Verifica el estado de bloqueo de una cuenta.
+     * 
+     * @param email Email del usuario
+     * @return Estado de la cuenta
+     */
+    @GetMapping("/estado-cuenta")
+    @Operation(summary = "Estado de cuenta", description = "Verifica si la cuenta está bloqueada")
+    public ResponseEntity<Map<String, Object>> estadoCuenta(@RequestParam String email) {
+        Map<String, Object> response = new HashMap<>();
+        boolean bloqueada = accountLockService.estaCuentaBloqueada(email.toLowerCase().trim());
+        int intentosRestantes = accountLockService.obtenerIntentosRestantes(email.toLowerCase().trim());
+        
+        response.put("bloqueada", bloqueada);
+        response.put("intentosRestantes", intentosRestantes);
+        response.put("maxIntentos", maxIntentosFallidos);
+        
         return ResponseEntity.ok(response);
     }
 }

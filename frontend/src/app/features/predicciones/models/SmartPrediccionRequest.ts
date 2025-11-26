@@ -8,7 +8,7 @@
  */
 export interface SmartPrediccionRequest {
   idProducto: number;
-  algoritmoSeleccionado: 'AUTO' | 'ARIMA' | 'RANDOM_FOREST' | 'GRADIENT_BOOSTING';
+  algoritmoSeleccionado: 'AUTO' | 'LINEAR_REGRESSION' | 'ARIMA' | 'RANDOM_FOREST' | 'GRADIENT_BOOSTING';
   horizonteTiempo: number;
   detectarEstacionalidad?: boolean;
   generarOrdenCompra?: boolean;
@@ -25,7 +25,7 @@ export interface SmartPrediccionResponse {
   codigoProducto: string;
   
   // Algoritmo utilizado
-  algoritmoUtilizado: 'ARIMA' | 'RANDOM_FOREST' | 'GRADIENT_BOOSTING';
+  algoritmoUtilizado: 'LINEAR_REGRESSION' | 'ARIMA' | 'RANDOM_FOREST' | 'GRADIENT_BOOSTING';
   horizonteTiempo: number;
   
   // Datos para gráficos
@@ -64,7 +64,7 @@ export interface MetricasPrediccion {
   mape: number;
   rmse: number;
   r2?: number;
-  calificacionCalidad: 'EXCELENTE' | 'BUENA' | 'REGULAR' | 'MALA';
+  calificacionCalidad: 'EXCELENTE' | 'BUENA' | 'REGULAR' | 'POBRE' | 'MALA';
   nivelConfianza: number;
   descripcion: string;
 }
@@ -83,7 +83,7 @@ export interface ConfiguracionAutomatica {
  * Información de algoritmos Smile ML disponibles
  */
 export interface AlgoritmoSmileInfo {
-  codigo: 'ARIMA' | 'RANDOM_FOREST' | 'GRADIENT_BOOSTING' | 'AUTO';
+  codigo: 'ARIMA' | 'LINEAR_REGRESSION' | 'RANDOM_FOREST' | 'GRADIENT_BOOSTING' | 'AUTO';
   nombre: string;
   descripcion: string;
   ventajas: string[];

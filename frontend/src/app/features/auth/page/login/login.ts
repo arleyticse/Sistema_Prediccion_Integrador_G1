@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MessageService } from 'primeng/api';
@@ -9,6 +9,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import { DialogModule } from 'primeng/dialog';
+import { InputOtpModule } from 'primeng/inputotp';
 import { AuthService } from '../../../../core/services/auth';
 
 @Component({
@@ -17,13 +19,16 @@ import { AuthService } from '../../../../core/services/auth';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     RouterLink,
     ToastModule,
     CardModule,
     InputTextModule,
     PasswordModule,
     ButtonModule,
-    DividerModule
+    DividerModule,
+    DialogModule,
+    InputOtpModule
   ],
   providers: [MessageService],
   templateUrl: './login.html',
@@ -41,6 +46,15 @@ export default class LoginComponent {
   // Signals
   cargando = signal(false);
   mostrarContrasenia = signal(false);
+  
+  // Signals para desbloqueo de cuenta
+  mostrarDialogoDesbloqueo = signal(false);
+  emailBloqueado = signal('');
+  codigoOtp = signal('');
+  enviandoCodigo = signal(false);
+  verificandoCodigo = signal(false);
+  codigoEnviado = signal(false);
+  intentosRestantes = signal(5);
 
   // Form
   loginForm: FormGroup;
@@ -50,8 +64,8 @@ export default class LoginComponent {
 
   constructor() {
     this.loginForm = this.fb.group({
-      email: ['jose@gmail.com', [Validators.required, Validators.email]],
-      clave: ['contraseña123', [Validators.required, Validators.minLength(6)]]
+      email: ['', [Validators.required, Validators.email]],
+      clave: ['', [Validators.required, Validators.minLength(6)]]
     });
 
     // Si ya está autenticado, redirigir
@@ -92,11 +106,37 @@ export default class LoginComponent {
         
         // Redirect después de 1 segundo
         setTimeout(() => {
-          this.router.navigate([this.returnUrl]);
+          const queryParams = response.rol === 'GERENTE' ? { showBorradores: true } : {};
+          this.router.navigate([this.returnUrl], { queryParams: queryParams });
         }, 1000);
       },
       error: (error) => {
         this.cargando.set(false);
+        
+        // Manejar cuenta bloqueada (HTTP 423)
+        if (error.status === 423) {
+          this.emailBloqueado.set(email);
+          this.mostrarDialogoDesbloqueo.set(true);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Cuenta Bloqueada',
+            detail: 'Tu cuenta ha sido bloqueada. Usa el código OTP para desbloquearla.',
+            life: 5000
+          });
+          return;
+        }
+        
+        // Manejar credenciales inválidas con intentos restantes
+        if (error.status === 401 && error.error?.intentosRestantes !== undefined) {
+          this.intentosRestantes.set(error.error.intentosRestantes);
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Credenciales Inválidas',
+            detail: `Contraseña incorrecta. Te quedan ${error.error.intentosRestantes} intentos.`,
+            life: 5000
+          });
+          return;
+        }
         
         let errorMsg = 'Error al iniciar sesión';
         
@@ -104,7 +144,9 @@ export default class LoginComponent {
           errorMsg = 'Email o contraseña incorrectos';
         } else if (error.status === 0) {
           errorMsg = 'No se puede conectar al servidor';
-        } else if (error.error) {
+        } else if (error.error?.message) {
+          errorMsg = error.error.message;
+        } else if (typeof error.error === 'string') {
           errorMsg = error.error;
         }
 
@@ -116,6 +158,103 @@ export default class LoginComponent {
         });
       }
     });
+  }
+
+  /**
+   * Solicitar código OTP para desbloquear cuenta
+   */
+  solicitarCodigoDesbloqueo() {
+    this.enviandoCodigo.set(true);
+    
+    this.authService.solicitarDesbloqueo(this.emailBloqueado()).subscribe({
+      next: (response: any) => {
+        this.enviandoCodigo.set(false);
+        if (response.success) {
+          this.codigoEnviado.set(true);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Código Enviado',
+            detail: 'Revisa tu correo electrónico para obtener el código.',
+            life: 5000
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: response.message || 'No se pudo enviar el código.',
+            life: 5000
+          });
+        }
+      },
+      error: (error) => {
+        this.enviandoCodigo.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error al enviar el código. Intenta nuevamente.',
+          life: 5000
+        });
+      }
+    });
+  }
+
+  /**
+   * Verificar código OTP y desbloquear cuenta
+   */
+  desbloquearCuenta() {
+    if (!this.codigoOtp() || this.codigoOtp().length !== 6) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validación',
+        detail: 'Ingresa el código de 6 dígitos.',
+        life: 3000
+      });
+      return;
+    }
+
+    this.verificandoCodigo.set(true);
+
+    this.authService.desbloquearCuenta(this.emailBloqueado(), this.codigoOtp()).subscribe({
+      next: (response: any) => {
+        this.verificandoCodigo.set(false);
+        if (response.success) {
+          this.mostrarDialogoDesbloqueo.set(false);
+          this.codigoOtp.set('');
+          this.codigoEnviado.set(false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Cuenta Desbloqueada',
+            detail: 'Tu cuenta ha sido desbloqueada. Ya puedes iniciar sesión.',
+            life: 5000
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: response.message || 'Código incorrecto.',
+            life: 5000
+          });
+        }
+      },
+      error: (error) => {
+        this.verificandoCodigo.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error al verificar el código. Intenta nuevamente.',
+          life: 5000
+        });
+      }
+    });
+  }
+
+  /**
+   * Cerrar diálogo de desbloqueo
+   */
+  cerrarDialogoDesbloqueo() {
+    this.mostrarDialogoDesbloqueo.set(false);
+    this.codigoOtp.set('');
+    this.codigoEnviado.set(false);
   }
 
   /**

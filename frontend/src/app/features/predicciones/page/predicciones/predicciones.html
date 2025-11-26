@@ -9,13 +9,15 @@
           <p class="page-subtitle">Algoritmos avanzados de series temporales para optimizar inventario</p>
         </div>
       </div>
-      <button 
-        pButton 
-        label="Nueva Predicción" 
-        icon="pi pi-plus" 
-        (click)="showDialogGenerar()"
-        class="p-button-raised p-button-success">
-      </button>
+      <div class="header-actions">
+        <button 
+          pButton 
+          label="Nueva Predicción" 
+          icon="pi pi-sparkles" 
+          (click)="showDialogGenerar()"
+          class="p-button-raised p-button-success">
+        </button>
+      </div>
     </div>
   </div>
 
@@ -77,11 +79,15 @@
             <span class="badge-horizonte">{{ prediccion.horizonteTiempo }} días</span>  
           </td>
           <td class="text-center">
-            <p-chip 
-              [label]="prediccion.estado" 
-              [style]="{'background-color': getSeverityEstado(prediccion.estado), 'color': '#fff'}"
-              [icon]="prediccion.estado === 'ACTIVA' ? 'pi pi-check-circle' : 'pi pi-clock'">
-            </p-chip>
+            @if (prediccion.estado) {
+              <p-chip 
+                [label]="prediccion.estado" 
+                [style]="{'background-color': getSeverityEstado(prediccion.estado), 'color': '#fff'}"
+                [icon]="prediccion.estado === 'ACTIVA' ? 'pi pi-check-circle' : prediccion.estado === 'FALLIDA' ? 'pi pi-times-circle' : 'pi pi-clock'">
+              </p-chip>
+            } @else {
+              <span class="text-muted">N/A</span>
+            }
           </td>
           <td class="text-center">
             @if (prediccion.calidadPrediccion) {
@@ -272,90 +278,39 @@
 
           <!-- MODO AUTOMÁTICO -->
           @if (modoAutomatico()) {
-            @if (cargandoRecomendacion()) {
-              <div class="flex flex-col items-center justify-center p-12 bg-white rounded-xl border border-gray-200">
-                <i class="pi pi-spin pi-spinner text-5xl text-blue-500 mb-4"></i>
-                <h4 class="text-lg font-semibold text-gray-800 mb-2">Analizando patrones de demanda...</h4>
-                <p class="text-sm text-gray-500 text-center max-w-md">
-                  Estamos detectando tendencias, estacionalidad y volatilidad en tus datos históricos
-                </p>
-              </div>
-            }
-            
-            @if (recomendacion() && !cargandoRecomendacion()) {
-              <div class="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-500 rounded-xl shadow-md">
-                <div class="flex items-start gap-4">
-                  <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <i class="pi pi-check-circle text-green-600 text-3xl"></i>
-                  </div>
-                  <div class="flex-1">
-                    <h4 class="text-xl font-bold text-green-900 m-0 mb-3">Recomendación del Sistema</h4>
-                    <p class="text-sm text-green-800 leading-relaxed m-0 mb-4">
-                      {{ recomendacion()!.justificacion }}
-                    </p>
+            <div class="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-400 rounded-xl shadow-md">
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <i class="pi pi-sparkles text-purple-600 text-3xl"></i>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-xl font-bold text-purple-900 m-0 mb-3">Selección Automática de Algoritmo</h4>
+                  <p class="text-sm text-purple-800 leading-relaxed m-0 mb-4">
+                    El sistema analizará tus datos históricos y seleccionará automáticamente el mejor algoritmo de Machine Learning 
+                    entre <strong>ARIMA</strong>, <strong>Random Forest</strong>, <strong>Gradient Boosting</strong> y <strong>Regresión Lineal</strong>.
+                  </p>
+                  
+                  <div class="flex flex-wrap items-center gap-4">
+                    <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
+                      <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
+                      <span class="text-sm font-bold text-purple-900">AUTO (Selección Inteligente)</span>
+                    </div>
                     
-                    <div class="flex flex-wrap items-center gap-4">
-                      <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-green-200">
-                        <span class="text-xs text-green-700 font-medium block mb-1">Algoritmo Recomendado</span>
-                        <span class="text-sm font-bold text-green-900">
-                          {{ obtenerNombreAlgoritmo(recomendacion()!.algoritmo) }}
-                        </span>
-                      </div>
-                      
-                      <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-green-200">
-                        <span class="text-xs text-green-700 font-medium block mb-1">Nivel de Confianza</span>
-                        <div class="flex items-center gap-2">
-                          <div class="w-24 h-2 bg-green-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-green-600 rounded-full transition-all duration-500" 
-                                 [style.width.%]="recomendacion()!.confianza * 100"></div>
-                          </div>
-                          <span class="text-sm font-bold text-green-800">
-                            {{ (recomendacion()!.confianza * 100).toFixed(0) }}%
-                          </span>
-                        </div>
-                      </div>
-                      
-                      @if (recomendacion()!.parametros) {
-                        <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-green-200">
-                          <span class="text-xs text-green-700 font-medium block mb-1">Parámetros Optimizados</span>
-                          <div class="flex gap-2 flex-wrap">
-                            @for (param of Object.entries(recomendacion()!.parametros); track param[0]) {
-                              <span class="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full font-medium">
-                                {{ param[0] }}: {{ param[1] }}
-                              </span>
-                            }
-                          </div>
-                        </div>
-                      }
+                    <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
+                      <span class="text-xs text-purple-700 font-medium block mb-1">Framework</span>
+                      <span class="text-sm font-bold text-purple-900">SMILE ML v3.1.1</span>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-4 p-3 bg-purple-100 rounded-lg">
+                    <div class="flex items-center gap-2 text-sm text-purple-800">
+                      <i class="pi pi-info-circle"></i>
+                      <span>El sistema comparará varios modelos y elegirá el de menor error (MAPE) para tu producto.</span>
                     </div>
                   </div>
                 </div>
               </div>
-            }
-
-            @if (!recomendacion() && !cargandoRecomendacion() && !productoTieneDatosSuficientes()) {
-              <div class="flex flex-col items-center justify-center p-12 bg-red-50 rounded-xl border-2 border-red-300">
-                <i class="pi pi-exclamation-triangle text-5xl text-red-500 mb-4"></i>
-                <h4 class="text-xl font-bold text-red-700 mb-2">Análisis No Disponible</h4>
-                <p class="text-base text-red-600 text-center max-w-md mb-4">
-                  {{ mensajeValidacionProducto() }}
-                </p>
-                <div class="flex items-center gap-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-lg">
-                  <i class="pi pi-info-circle"></i>
-                  <span>El producto seleccionado no tiene suficientes registros históricos</span>
-                </div>
-              </div>
-            }
-
-            @if (!recomendacion() && !cargandoRecomendacion() && productoTieneDatosSuficientes()) {
-              <div class="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-xl border border-gray-200">
-                <i class="pi pi-info-circle text-5xl text-gray-400 mb-4"></i>
-                <h4 class="text-lg font-semibold text-gray-700 mb-2">Sin Análisis Disponible</h4>
-                <p class="text-sm text-gray-500 text-center max-w-md">
-                  Selecciona un producto en el paso anterior para obtener una recomendación automática
-                </p>
-              </div>
-            }
+            </div>
           }
 
           <!-- MODO MANUAL -->
@@ -776,7 +731,13 @@
                    tooltipPosition="top"></i>
               </div>
             </div>
-            <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ prediccionSeleccionada()!.mae | number:'1.2-2' }}</div>
+            <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+              @if (prediccionSeleccionada()?.mae !== null && prediccionSeleccionada()?.mae !== undefined) {
+                {{ prediccionSeleccionada()!.mae | number:'1.2-2' }}
+              } @else {
+                <span class="text-gray-400">N/A</span>
+              }
+            </div>
             <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">Error Absoluto Medio</div>
           </div>
 
@@ -792,7 +753,13 @@
                    tooltipPosition="top"></i>
               </div>
             </div>
-            <div class="text-2xl font-bold text-green-900 dark:text-green-100">{{ prediccionSeleccionada()!.mape | number:'1.2-2' }}%</div>
+            <div class="text-2xl font-bold text-green-900 dark:text-green-100">
+              @if (prediccionSeleccionada()?.mape !== null && prediccionSeleccionada()?.mape !== undefined) {
+                {{ prediccionSeleccionada()!.mape | number:'1.2-2' }}%
+              } @else {
+                <span class="text-gray-400">N/A</span>
+              }
+            </div>
             <div class="text-xs text-green-600 dark:text-green-400 mt-1">Error Porcentual Medio</div>
           </div>
 
@@ -808,28 +775,39 @@
                    tooltipPosition="top"></i>
               </div>
             </div>
-            <div class="text-2xl font-bold text-orange-900 dark:text-orange-100">{{ prediccionSeleccionada()!.rmse | number:'1.2-2' }}</div>
+            <div class="text-2xl font-bold text-orange-900 dark:text-orange-100">
+              @if (prediccionSeleccionada()?.rmse !== null && prediccionSeleccionada()?.rmse !== undefined) {
+                {{ prediccionSeleccionada()!.rmse | number:'1.2-2' }}
+              } @else {
+                <span class="text-gray-400">N/A</span>
+              }
+            </div>
             <div class="text-xs text-orange-600 dark:text-orange-400 mt-1">Raíz Error Cuadrático</div>
           </div>
 
           <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl p-4 border border-purple-200 dark:border-purple-700">
             <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center" [style.background-color]="getColorAlgoritmo(prediccionSeleccionada()!.algoritmo)">
-                <i [class]="getIconCalidad(prediccionSeleccionada()!.calidadPrediccion)" class="text-white"></i>
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center" 
+                   [style.background-color]="getSeverityCalidad(prediccionSeleccionada()?.calidadPrediccion)">
+                <i [class]="getIconCalidad(prediccionSeleccionada()?.calidadPrediccion)" class="text-white"></i>
               </div>
               <div class="flex items-center gap-1">
                 <span class="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Calidad</span>
                 <i class="pi pi-info-circle text-purple-400 dark:text-purple-500 text-xs cursor-help" 
-                   pTooltip="Calidad de la Predicción: Evaluación general basada en todas las métricas. ALTA = confiable para decisiones, MEDIA = usar con precaución, BAJA = alta variabilidad, considerar revisar datos o usar otro algoritmo."
+                   pTooltip="Calidad de la Predicción: Evaluación general basada en MAPE. EXCELENTE (<10%) = alta confiabilidad, BUENA (10-20%) = confiable, REGULAR (20-30%) = usar con precaución, POBRE (>30%) = revisar datos."
                    tooltipPosition="top"></i>
               </div>
             </div>
             <div class="flex items-center">
-              <p-chip 
-                [label]="prediccionSeleccionada()!.calidadPrediccion || 'N/A'"
-                [style]="{'background-color': getSeverityCalidad(prediccionSeleccionada()!.calidadPrediccion), 'color': '#fff'}"
-                styleClass="font-semibold">
-              </p-chip>
+              @if (prediccionSeleccionada()?.calidadPrediccion) {
+                <p-chip 
+                  [label]="prediccionSeleccionada()!.calidadPrediccion"
+                  [style]="{'background-color': getSeverityCalidad(prediccionSeleccionada()!.calidadPrediccion), 'color': '#fff'}"
+                  styleClass="font-semibold">
+                </p-chip>
+              } @else {
+                <span class="text-gray-400 text-lg font-medium">Sin calcular</span>
+              }
             </div>
           </div>
         </div>

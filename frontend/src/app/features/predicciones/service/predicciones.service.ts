@@ -7,7 +7,6 @@ import { OptimizacionResponse, CalcularOptimizacionRequest } from '../models/Opt
 import { ProductoResponse } from '../../productos/models/ProductoResponse';
 import { Page } from '../../../shared/models/Page';
 import { environment } from '../../../environments/environment';
-import type { RecomendacionAlgoritmo } from '../models/RecomendacionAlgoritmo';
 import { SmartPrediccionRequest, SmartPrediccionResponse } from '../models/SmartPrediccionRequest';
 
 @Injectable({
@@ -94,13 +93,6 @@ export class PrediccionesService {
       .set('size', size.toString());
     
     return this.http.get<Page<ProductoResponse>>(`${this.productosUrl}`, { params });
-  }
-
-  /**
-   * Obtiene una recomendación automática de algoritmo basada en el análisis de datos históricos.
-   */
-  obtenerRecomendacion(productoId: number): Observable<RecomendacionAlgoritmo> {
-    return this.http.get<RecomendacionAlgoritmo>(`${this.baseUrl}/recomendar/${productoId}`);
   }
 
   /**
@@ -202,6 +194,8 @@ export class PrediccionesService {
     const params = new HttpParams().set('minimoRegistros', minimoRegistros.toString());
     return this.http.get<any>(`${this.smartBaseUrl}/validar-datos/${productoId}`, { params });
   }
+
+
 
   /**
    * Obtiene el estado del servicio de predicción inteligente.

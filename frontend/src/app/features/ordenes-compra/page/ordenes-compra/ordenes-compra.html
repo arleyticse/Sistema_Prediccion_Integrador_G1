@@ -168,6 +168,15 @@
                     pTooltip="Confirmar orden"
                     (onClick)="confirmarOrden(rowData)" />
                 }
+                @if (rowData.estadoOrden === 'ENVIADA' || rowData.estadoOrden === 'APROBADA' || rowData.estadoOrden === 'EN_TRANSITO') {
+                  <p-button 
+                    icon="pi pi-download" 
+                    [rounded]="true" 
+                    [text]="true" 
+                    severity="success"
+                    pTooltip="Marcar recibida"
+                    (onClick)="marcarRecibida(rowData)" />
+                }
                 @if (rowData.estadoOrden === 'PENDIENTE' || rowData.estadoOrden === 'BORRADOR') {
                   <p-button 
                     icon="pi pi-times" 

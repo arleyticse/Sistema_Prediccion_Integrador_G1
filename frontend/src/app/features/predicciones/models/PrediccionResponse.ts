@@ -39,7 +39,7 @@ export interface PrediccionResponse {
   mae?: number;
   mape?: number;
   rmse?: number;
-  calidadPrediccion?: 'EXCELENTE' | 'BUENA' | 'ACEPTABLE' | 'POBRE';
+  calidadPrediccion?: 'EXCELENTE' | 'BUENA' | 'REGULAR' | 'ACEPTABLE' | 'POBRE';
   advertencias?: string[];
   recomendaciones?: string[];
   tieneTendencia?: boolean;

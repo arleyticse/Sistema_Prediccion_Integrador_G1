@@ -225,6 +225,43 @@ export class OrdenesCompraComponent {
     });
   }
 
+  marcarRecibida(orden: OrdenCompraResponse): void {
+    this.confirmationService.confirm({
+      message: `¿Confirmar recepción de la orden ${orden.numeroOrden}? (marcar como recibida)`,
+      header: 'Recepción de Orden',
+      icon: 'pi pi-download',
+      accept: () => {
+        this.loading.set(true);
+        // Obtener detalles completos para calcular cantidades pendientes
+        this.ordenPdfService.obtenerDatosOrden(orden.ordenCompraId).subscribe({
+          next: (res) => {
+            const detalles = res.detalles.map(d => ({
+              detalleId: (d as any).detalleId ?? null,
+              cantidadRecibida: (d.cantidadSolicitada ?? 0) - (d.cantidadRecibida ?? 0)
+            })).filter((d:any) => d.cantidadRecibida > 0);
+
+            const request = { detalles, numeroDocumentoProveedor: null, observaciones: null };
+            this.ordenesService.recibirOrden(orden.ordenCompraId, request).subscribe({
+              next: () => {
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Orden marcada como recibida' });
+                this.cargarOrdenes();
+                this.loading.set(false);
+              },
+              error: () => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo marcar como recibida' });
+                this.loading.set(false);
+              }
+            });
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron obtener detalles de la orden' });
+            this.loading.set(false);
+          }
+        });
+      }
+    });
+  }
+
   cancelarOrden(orden: OrdenCompraResponse): void {
     this.confirmationService.confirm({
       message: `¿Cancelar la orden ${orden.numeroOrden}?`,

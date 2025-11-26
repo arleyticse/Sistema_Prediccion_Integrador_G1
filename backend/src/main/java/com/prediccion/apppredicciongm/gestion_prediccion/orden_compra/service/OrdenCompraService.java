@@ -24,12 +24,15 @@ import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.repository
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.repository.IPrediccionRepositorio;
 import com.prediccion.apppredicciongm.repository.IProveedorRepositorio;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.response.*;
-import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.errors.OrdenCompraNoEncontradaException;
-import com.prediccion.apppredicciongm.models.Inventario.Producto;
 import com.prediccion.apppredicciongm.gestion_configuracion.service.ConfiguracionEmpresaService;
 import com.prediccion.apppredicciongm.models.ConfiguracionEmpresa;
 
 import java.util.stream.Collectors;
+import com.prediccion.apppredicciongm.gestion_inventario.movimiento.services.IKardexService;
+import com.prediccion.apppredicciongm.gestion_inventario.movimiento.dto.request.KardexCreateRequest;
+import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.request.RecibirOrdenRequest;
+import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.request.DetalleRecibidoRequest;
+import com.prediccion.apppredicciongm.enums.TipoMovimiento;
 
 /**
  * Servicio principal para órdenes de compra automáticas
@@ -44,6 +47,7 @@ public class OrdenCompraService implements IOrdenCompraService {
     private final IPrediccionRepositorio prediccionRepositorio;
     private final IProveedorRepositorio proveedorRepositorio;
     private final ConfiguracionEmpresaService configuracionEmpresaService;
+    private final IKardexService kardexService;
 
     @Override
     public OrdenCompra generarOrdenAutomatica(Integer prediccionId) {
@@ -114,6 +118,67 @@ public class OrdenCompraService implements IOrdenCompraService {
             log.error("[ORDEN][ERROR] Orden no encontrada: {}", ordenId);
             throw new RuntimeException("Orden no encontrada: " + ordenId);
         }
+    }
+
+    @Override
+    public void recibirOrden(Long ordenId, RecibirOrdenRequest request) {
+        log.info("[ORDEN][RECEPCION] Recibiendo orden ID: {}", ordenId);
+
+        OrdenCompra orden = ordenCompraRepositorio.findById(ordenId)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada: " + ordenId));
+
+        // Validar estados permitidos
+        if (orden.getEstadoOrden() == EstadoOrdenCompra.CANCELADA ||
+                orden.getEstadoOrden() == EstadoOrdenCompra.BORRADOR) {
+            throw new IllegalArgumentException("No se puede recibir una orden en estado: " + orden.getEstadoOrden());
+        }
+
+        // Recibir cada detalle
+        for (DetalleRecibidoRequest detalleRecibido : request.getDetalles()) {
+            Long detalleId = detalleRecibido.getDetalleId();
+            Integer cantidadRecibida = detalleRecibido.getCantidadRecibida();
+
+            DetalleOrdenCompra detalle = orden.getDetalles().stream()
+                    .filter(d -> d.getDetalleId().equals(detalleId))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Detalle no encontrado: " + detalleId));
+
+            int pendiente = detalle.getCantidadSolicitada() - (detalle.getCantidadRecibida() == null ? 0 : detalle.getCantidadRecibida());
+            if (cantidadRecibida == null || cantidadRecibida <= 0) {
+                continue; // ignorar cero
+            }
+            if (cantidadRecibida > pendiente) {
+                throw new IllegalArgumentException("Cantidad recibida mayor a la solicitada para detalle " + detalleId);
+            }
+
+            // Registrar movimiento kardex por la cantidad recibida
+            KardexCreateRequest kardexReq = KardexCreateRequest.builder()
+                    .productoId(detalle.getProducto().getProductoId())
+                    .tipoMovimiento(TipoMovimiento.ENTRADA_COMPRA)
+                    .cantidad(cantidadRecibida)
+                    .proveedorId(orden.getProveedor() != null ? orden.getProveedor().getProveedorId() : null)
+                    .numeroDocumento(request.getNumeroDocumentoProveedor())
+                    .tipoDocumento("FACTURA")
+                    .motivo("Recepción orden: " + orden.getNumeroOrden())
+                    .observaciones(request.getObservaciones())
+                    .build();
+
+            kardexService.registrarMovimiento(kardexReq);
+
+            // Actualizar cantidad recibida en detalle
+            Integer actual = detalle.getCantidadRecibida() == null ? 0 : detalle.getCantidadRecibida();
+            detalle.setCantidadRecibida(actual + cantidadRecibida);
+        }
+
+        // Determinar estado final de la orden
+        boolean todosRecibidos = orden.getDetalles().stream()
+                .allMatch(d -> d.getCantidadRecibida() != null && d.getCantidadRecibida() >= d.getCantidadSolicitada());
+
+        orden.setEstadoOrden(todosRecibidos ? EstadoOrdenCompra.RECIBIDA_COMPLETA : EstadoOrdenCompra.RECIBIDA_PARCIAL);
+        orden.setFechaEntregaReal(java.time.LocalDate.now());
+        ordenCompraRepositorio.save(orden);
+
+        log.info("[ORDEN][RECEPCION] Orden {} procesada: estado {}", ordenId, orden.getEstadoOrden());
     }
 
     @Override

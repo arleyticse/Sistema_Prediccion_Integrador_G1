@@ -139,4 +139,14 @@ public interface IOrdenCompraService {
      *         si no se encuentra la orden
      */
     OrdenCompra obtenerOrdenPorId(Long ordenId);
+
+    /**
+     * Marca una orden como recibida (parcial o completa) y registra entradas en kardex.
+     * Valida que la orden esté en un estado válido (APROBADA/ENVIADA/EN_TRANSITO) y que
+     * las cantidades recibidas no excedan las solicitadas.
+     *
+     * @param ordenId ID de la orden
+     * @param request Detalle de cantidades recibidas por detalle
+     */
+    void recibirOrden(Long ordenId, com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.request.RecibirOrdenRequest request);
 }

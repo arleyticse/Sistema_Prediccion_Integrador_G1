@@ -1057,7 +1057,7 @@ public class SmartPredictorServiceImpl implements ISmartPredictorService {
             
             // Agregar info de preprocesamiento si se aplicó
             if (seAplicoPreprocesamiento) {
-                razon.append("📊 PREPROCESAMIENTO APLICADO: ");
+                razon.append("PREPROCESAMIENTO APLICADO: ");
                 if (serieOriginal.length != serieProcesada.length) {
                     razon.append("Agregación semanal (")
                             .append(serieOriginal.length).append("→").append(serieProcesada.length)

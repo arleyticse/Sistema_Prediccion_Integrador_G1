@@ -60,6 +60,8 @@ export interface DetalleProductoOrdenDTO {
   cantidadSolicitada: number;
   precioUnitario: number;
   subtotal: number;
+  detalleId?: number;
+  cantidadRecibida?: number;
 }
 
 @Injectable({

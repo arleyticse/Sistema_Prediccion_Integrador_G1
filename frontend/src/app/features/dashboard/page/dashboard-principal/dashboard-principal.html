@@ -149,6 +149,41 @@
     </p-card>
   </div>
 
+  <!-- Órdenes por Aprobar (solo GERENTE) -->
+  <div class="mb-6" *ngIf="esGerente() && borradores().length > 0">
+    <p-card class="shadow-lg bg-surface-0 dark:bg-surface-800">
+      <ng-template pTemplate="header">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-200 dark:border-surface-700">
+          <div class="flex items-center gap-3">
+            <i class="pi pi-shopping-cart text-2xl text-purple-600 dark:text-purple-400"></i>
+            <div>
+              <h2 class="text-xl font-bold text-surface-900 dark:text-surface-0">
+                Órdenes por Aprobar
+              </h2>
+              <p class="text-sm text-surface-600 dark:text-surface-400 mt-1">
+                Ordenes en estado BORRADOR que requieren aprobación
+              </p>
+            </div>
+          </div>
+          <p-badge [value]="borradores().length.toString()" severity="info" size="large"></p-badge>
+        </div>
+      </ng-template>
+
+      <div class="p-4">
+        <div *ngFor="let o of borradores().slice(0,5)" class="flex items-center justify-between border-b py-2">
+          <div>
+            <div class="font-semibold">{{ o.numeroOrden }}</div>
+            <div class="text-sm text-gray-600">{{ o.proveedorNombre }}</div>
+          </div>
+          <div class="flex gap-2 bg-white">
+            <p-button label="Ver" class="p-button-sm p-button-text" (onClick)="navegarAOrdenes()"></p-button>
+            <p-button icon="pi pi-check" label="Aprobar" class="p-button-sm" (onClick)="aprobarOrden(o.ordenCompraId)"></p-button>
+          </div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
   <!-- Gráficos -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <!-- Gráfico de Alertas por Tipo -->
@@ -246,3 +281,29 @@
     </div>
   </p-card>
 </div>
+
+<!-- Modal: listar borradores (aparece al iniciar sesión si es GERENTE) -->
+<p-dialog header="Órdenes en BORRADOR" [visible]="borradoresModalVisible()" (visibleChange)="borradoresModalVisible.set($event)" [modal]="true" [style]="{ width: '40rem' }">
+  <div *ngIf="borradores().length > 0; else noBorradores">
+    <div class="p-grid">
+      <div class="p-col-12" *ngFor="let o of borradores()">
+        <div class="flex justify-between items-center p-2 border-b">
+          <div>
+            <div class="font-semibold">{{ o.numeroOrden }} <small class="text-sm">- {{ o.proveedorNombre }}</small></div>
+            <div class="text-sm text-gray-600">Fecha: {{ formatDate(o.fechaOrden) }}</div>
+          </div>
+          <div class="flex gap-2">
+            <p-button label="Ver" class="p-button-sm p-button-text" (onClick)="navegarAOrdenes()"></p-button>
+            <p-button icon="pi pi-check" label="Aprobar" class="p-button-sm p-button-success" (onClick)="aprobarOrden(o.ordenCompraId); borradoresModalVisible.set(false)"></p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 text-right">
+      <p-button label="Cerrar" class="p-button-secondary ml-2" (onClick)="borradoresModalVisible.set(false)"></p-button>
+    </div>
+  </div>
+  <ng-template #noBorradores>
+    <div class="text-center p-3">No hay órdenes pendientes para aprobar</div>
+  </ng-template>
+</p-dialog>

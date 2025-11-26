@@ -160,4 +160,27 @@ export class AuthService {
     }
     return null;
   }
+
+  /**
+   * Solicitar código OTP para desbloquear cuenta bloqueada
+   */
+  solicitarDesbloqueo(email: string) {
+    return this.http.post<{success: boolean; message: string}>(`${this.apiUrl}/solicitar-desbloqueo`, { email });
+  }
+
+  /**
+   * Desbloquear cuenta usando código OTP
+   */
+  desbloquearCuenta(email: string, code: string) {
+    return this.http.post<{success: boolean; message: string}>(`${this.apiUrl}/desbloquear-cuenta`, { email, code });
+  }
+
+  /**
+   * Verificar estado de bloqueo de una cuenta
+   */
+  verificarEstadoCuenta(email: string) {
+    return this.http.get<{bloqueada: boolean; intentosRestantes: number; maxIntentos: number}>(
+      `${this.apiUrl}/estado-cuenta?email=${encodeURIComponent(email)}`
+    );
+  }
 }

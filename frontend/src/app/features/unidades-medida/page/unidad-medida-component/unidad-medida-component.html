@@ -1,5 +1,3 @@
-<p>Seccion de Unidad de Medida</p>
-
 <div class="mb-4 flex justify-end">
     <p-button (click)="showDialog()" label="Nueva Unidad de Medida" icon="pi pi-plus" />
 </div>
@@ -57,7 +55,7 @@
     @if (loading()) {
     <!-- Skeleton Loading State -->
     <div class="space-y-3">
-        <p-skeleton height="3rem" styleClass="mb-3"></p-skeleton>
+        <p-skeleton height="3rem" class="mb-3"></p-skeleton>
         @for (item of [1,2,3,4,5]; track item) {
         <div class="flex gap-3">
             <p-skeleton width="10%" height="2.5rem"></p-skeleton>

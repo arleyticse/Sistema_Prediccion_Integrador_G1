@@ -11,6 +11,15 @@
   <!-- Usuario y Logout -->
   <div class="flex items-center gap-4">
     @if (usuario()) {
+      @if (usuario()?.rol === 'GERENTE') {
+        <div class="mr-4" *ngIf="borradores().length > 0">
+          <button pButton icon="pi pi-shopping-cart" class="p-button-rounded p-button-text text-white" (click)="menu.toggle($event)" #menuButton></button>
+          @if (borradoresCount() > 0) {
+            <span class="p-badge p-mr-2 p-ml-1 p-badge-danger">{{borradoresCount()}}</span>
+          }
+          <p-menu #menu [model]="borradoresMenuItems" popup="true"></p-menu>
+        </div>
+      }
       <div class="flex items-center gap-2">
         <p-avatar
           [label]="initials()"

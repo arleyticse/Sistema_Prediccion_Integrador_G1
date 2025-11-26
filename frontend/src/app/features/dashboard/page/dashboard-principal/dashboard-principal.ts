@@ -8,7 +8,12 @@ import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TimelineModule } from 'primeng/timeline';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth';
+import { OrdenesCompraService } from '../../../ordenes-compra/service/ordenes-compra.service';
+import { OrdenCompraResponse } from '../../../ordenes-compra/models/OrdenCompraResponse';
+import { DialogModule } from 'primeng/dialog';
+import { CheckboxModule } from 'primeng/checkbox';
 import { AlertaInventarioService } from '../../../alertas-inventario/services/alerta-inventario.service';
 import { AlertaInventario } from '../../../alertas-inventario/models/AlertaInventario';
 import { MovimientoService } from '../../../movimientos/service/movimiento-service';
@@ -38,6 +43,8 @@ interface EstadisticaCard {
     DividerModule,
     SkeletonModule,
     TimelineModule
+    , DialogModule
+    , CheckboxModule
   ],
   templateUrl: './dashboard-principal.html',
   styleUrls: ['./dashboard-principal.css']
@@ -68,17 +75,76 @@ export default class DashboardPrincipalComponent implements OnInit {
       .slice(0, 5); // Solo los primeros 5
   });
 
+  // Órdenes BORRADOR
+  borradores = signal<OrdenCompraResponse[]>([]);
+  borradoresModalVisible = signal<boolean>(false);
+  borradorSeleccionados = signal<number[]>([]);
+
   constructor(
     private alertaService: AlertaInventarioService,
     private movimientoService: MovimientoService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
+    public ordenesService: OrdenesCompraService,
+    public authService: AuthService
   ) {
     this.configurarOpcionesGraficos();
+  }
+
+  esGerente = computed(() => (this.authService.getUsuario()?.rol ?? '') === 'GERENTE');
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('es-ES');
+  }
+
+  aprobarOrden(ordenId: number): void {
+    this.ordenesService.aprobarOrdenesBorrador([ordenId]).subscribe({
+      next: () => {
+        this.loadBorradores(false);
+        // notify navbar and other components
+        document.dispatchEvent(new CustomEvent('borradores-updated'));
+      },
+      error: () => {}
+    });
   }
 
   ngOnInit(): void {
     this.cargarDatosDashboard();
     this.cargarUltimosMovimientos();
+    // Cargar borradores si el usuario es GERENTE
+    this.route.queryParams.subscribe(params => {
+      const showBorradores = params['showBorradores'] === 'true';
+      this.loadBorradores(showBorradores);
+    });
+  }
+
+  private loadBorradores(showModal: boolean = false): void {
+    const user = this.authService.getUsuario();
+    if (!user || user.rol !== 'GERENTE') return;
+    this.ordenesService.obtenerOrdenesBorrador().subscribe({
+      next: (res) => {
+        this.borradores.set(res || []);
+        if (showModal && (res || []).length > 0) {
+          this.borradoresModalVisible.set(true);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  aprobarSeleccionados(): void {
+    const ids = this.borradorSeleccionados();
+    if (ids.length === 0) return;
+    this.ordenesService.aprobarOrdenesBorrador(ids).subscribe({
+      next: () => {
+        // recargar borradores y cerrar modal
+        this.loadBorradores(false);
+        this.borradoresModalVisible.set(false);
+      },
+      error: () => {
+        // manejar error
+      }
+    });
   }
 
   private configurarOpcionesGraficos(): void {
