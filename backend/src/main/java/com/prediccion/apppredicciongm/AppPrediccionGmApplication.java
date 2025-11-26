@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * - Soporte para Spring Data Web con DTOs (evita exponer entidades JPA)
  * - Programación de tareas asincrónicas
  * - Ejecución asíncrona habilitada
- * 
+ * 0
  * @version 1.0
  * @since 1.0
  */

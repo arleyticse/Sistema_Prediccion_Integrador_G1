@@ -27,7 +27,8 @@ import java.util.Optional;
 
 /**
  * Servicio de normalización de demanda.
- * Procesa movimientos de kardex y genera registros de demanda agregados por día.
+ * Procesa movimientos de kardex y genera registros de demanda agregados por
+ * día.
  * 
  * Responsabilidades:
  * - Extrae SALIDA_VENTA del kardex (señal de demanda de cliente)
@@ -54,13 +55,15 @@ public class ReporteDemandaService implements IReporteDemandaService {
     /**
      * Cron job automático que se ejecuta todos los días a las 23:00.
      * Normaliza la demanda de los últimos 30 días para todos los productos.
+     * 
+     * Formato Spring Cron: segundos minutos horas día mes día-semana
      */
-    @Scheduled(cron = "0 23 * * * *")
+    @Scheduled(cron = "0 0 23 * * *")
     public void normalizarDemandaAutomatico() {
         log.info("[NORMALIZACION] Iniciando normalización automática de demanda...");
         try {
             int registrosProcessados = normalizarDemandaTodos(30);
-            log.info("[NORMALIZACION] Normalización automática completada. Registros procesados: {}", 
+            log.info("[NORMALIZACION] Normalización automática completada. Registros procesados: {}",
                     registrosProcessados);
         } catch (Exception e) {
             log.error("[NORMALIZACION] Error en normalización automática: {}", e.getMessage(), e);
@@ -77,7 +80,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
             throw new NormalizacionException("El producto no puede ser nulo");
         }
 
-        log.debug("Normalizando demanda para producto: {} (ID: {})", 
+        log.debug("Normalizando demanda para producto: {} (ID: {})",
                 producto.getNombre(), producto.getProductoId());
 
         if (diasProcesar < 1) {
@@ -99,7 +102,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
                     .filter(k -> k.getTipoMovimiento() == TipoMovimiento.SALIDA_VENTA && !k.isAnulado())
                     .toList();
 
-            log.debug("Encontrados {} movimientos SALIDA_VENTA para producto {}", 
+            log.debug("Encontrados {} movimientos SALIDA_VENTA para producto {}",
                     movimientosVenta.size(), producto.getNombre());
 
             // Agrupar por fecha
@@ -125,7 +128,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
                 if (existente.isPresent()) {
                     registro = existente.get();
                     registro.setCantidadHistorica(demanda);
-                    log.debug("Actualizando registro de demanda existente para {} en {}", 
+                    log.debug("Actualizando registro de demanda existente para {} en {}",
                             producto.getNombre(), fecha);
                 } else {
                     registro = new RegistroDemanda();
@@ -134,20 +137,20 @@ public class ReporteDemandaService implements IReporteDemandaService {
                     registro.setCantidadHistorica(demanda);
                     registro.setPeriodoRegistro(fecha.format(DateTimeFormatter.ofPattern("yyyy-MM")));
                     registrosCreados++;
-                    log.debug("Creando nuevo registro de demanda para {} en {}", 
+                    log.debug("Creando nuevo registro de demanda para {} en {}",
                             producto.getNombre(), fecha);
                 }
 
                 registroDemandaRepositorio.save(registro);
             }
 
-                log.info("[NORMALIZACION] Normalizados {} registros para producto: {} ({} registros nuevos)", 
+            log.info("[NORMALIZACION] Normalizados {} registros para producto: {} ({} registros nuevos)",
                     demandaPorFecha.size(), producto.getNombre(), registrosCreados);
 
             return demandaPorFecha.size();
 
         } catch (Exception e) {
-            log.error("Error normalizando demanda para producto {}: {}", 
+            log.error("Error normalizando demanda para producto {}: {}",
                     producto.getNombre(), e.getMessage(), e);
             throw new NormalizacionException(
                     "Error normalizando demanda para producto: " + producto.getNombre(), e);
@@ -162,20 +165,20 @@ public class ReporteDemandaService implements IReporteDemandaService {
     @Transactional
     public int normalizarDemandaTodos(int diasProcesar) {
         log.info("[OPTIMIZADO] Normalizando demanda para TODOS los productos. Días: {}", diasProcesar);
-        
+
         LocalDateTime fechaInicio = LocalDateTime.now().minusDays(diasProcesar);
         long inicio = System.currentTimeMillis();
 
         try {
             // Ejecutar normalización optimizada por lotes usando SQL nativo
             int registrosInsertados = normalizarDemandaMasivaOptimizada(fechaInicio);
-            
+
             long fin = System.currentTimeMillis();
             long duracion = fin - inicio;
-            
-            log.info("[OPTIMIZADO] Normalización masiva completada en {}ms. Registros procesados: {}", 
+
+            log.info("[OPTIMIZADO] Normalización masiva completada en {}ms. Registros procesados: {}",
                     duracion, registrosInsertados);
-            
+
             return registrosInsertados;
 
         } catch (Exception e) {
@@ -183,7 +186,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
             throw new NormalizacionException("Error en normalización masiva de demanda", e);
         }
     }
-    
+
     /**
      * Normalización masiva optimizada usando SQL nativo.
      * Procesa todos los productos en una sola operación batch.
@@ -191,36 +194,36 @@ public class ReporteDemandaService implements IReporteDemandaService {
     @Transactional
     private int normalizarDemandaMasivaOptimizada(LocalDateTime fechaInicio) {
         log.debug("[NORMALIZACION] Ejecutando normalización masiva optimizada desde: {}", fechaInicio);
-        
+
         try {
             // Obtener todos los movimientos de venta agrupados por producto y fecha
             List<Object[]> demandaAgrupada = kardexRepositorio.findDemandaAgrupadaPorProductoYFecha(fechaInicio);
-            
+
             log.info("[NORMALIZACION] Obtenidos {} registros agrupados de kardex", demandaAgrupada.size());
-            
+
             int registrosNuevos = 0;
             int registrosActualizados = 0;
             int batchSize = 100;
             int contador = 0;
-            
+
             for (Object[] fila : demandaAgrupada) {
                 Integer productoId = (Integer) fila[0];
                 LocalDate fecha = ((java.sql.Date) fila[1]).toLocalDate();
                 Long cantidad = ((Number) fila[2]).longValue();
-                
+
                 // Buscar producto
                 Optional<Producto> productoOpt = productoRepositorio.findById(productoId);
                 if (productoOpt.isEmpty()) {
                     log.warn("[NORMALIZACION] Advertencia: Producto no encontrado: {}", productoId);
                     continue;
                 }
-                
+
                 Producto producto = productoOpt.get();
-                
+
                 // Buscar registro existente
                 Optional<RegistroDemanda> existente = registroDemandaRepositorio
                         .findByProductoAndFecha(producto, fecha);
-                
+
                 RegistroDemanda registro;
                 if (existente.isPresent()) {
                     registro = existente.get();
@@ -234,26 +237,26 @@ public class ReporteDemandaService implements IReporteDemandaService {
                     registro.setPeriodoRegistro(fecha.format(DateTimeFormatter.ofPattern("yyyy-MM")));
                     registrosNuevos++;
                 }
-                
+
                 registroDemandaRepositorio.save(registro);
-                
+
                 contador++;
-                
+
                 // Flush cada batch para liberar memoria
                 if (contador % batchSize == 0) {
                     registroDemandaRepositorio.flush();
                     log.debug("💾 Batch procesado: {} registros", contador);
                 }
             }
-            
+
             // Flush final
             registroDemandaRepositorio.flush();
-            
-                log.info("[NORMALIZACION] Normalización masiva completada: {} nuevos, {} actualizados", 
+
+            log.info("[NORMALIZACION] Normalización masiva completada: {} nuevos, {} actualizados",
                     registrosNuevos, registrosActualizados);
-            
+
             return registrosNuevos + registrosActualizados;
-            
+
         } catch (Exception e) {
             log.error("[NORMALIZACION] Error en normalización masiva optimizada: {}", e.getMessage(), e);
             throw new NormalizacionException("Error en normalización masiva", e);
@@ -269,8 +272,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
         log.info("Procesando normalización manual: {}", request);
 
         try {
-            int diasProcesar = request.getDiasProcesar() != null ? 
-                    request.getDiasProcesar() : 30;
+            int diasProcesar = request.getDiasProcesar() != null ? request.getDiasProcesar() : 30;
 
             if (request.getProductoId() != null) {
                 // Normalizar producto específico
@@ -284,8 +286,8 @@ public class ReporteDemandaService implements IReporteDemandaService {
                     // Limpiar y recalcular
                     limpiarDemandaProducto(producto.get());
                     if (request.isNotificaciones()) {
-                    log.info("[NORMALIZACION] Registros de demanda limpiados para producto: {}", 
-                        producto.get().getNombre());
+                        log.info("[NORMALIZACION] Registros de demanda limpiados para producto: {}",
+                                producto.get().getNombre());
                     }
                 }
 
@@ -306,7 +308,6 @@ public class ReporteDemandaService implements IReporteDemandaService {
 
                 return normalizarDemandaTodos(diasProcesar);
             }
-
         } catch (NormalizacionException e) {
             log.error("Error en normalización manual: {}", e.getMessage(), e);
             throw e;
@@ -323,7 +324,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
         }
 
         long cantidad = registroDemandaRepositorio.countByProducto(producto);
-        log.debug("Cantidad de registros históricos para {}: {}", 
+        log.debug("Cantidad de registros históricos para {}: {}",
                 producto.getNombre(), cantidad);
         return cantidad;
     }
@@ -336,7 +337,7 @@ public class ReporteDemandaService implements IReporteDemandaService {
         long cantidad = obtenerCantidadDatosHistoricos(producto);
         boolean suficiente = cantidad >= 12;
 
-        log.debug("Validación de datos para {}: {} registros (suficiente: {})", 
+        log.debug("Validación de datos para {}: {} registros (suficiente: {})",
                 producto.getNombre(), cantidad, suficiente);
 
         return suficiente;
@@ -355,12 +356,12 @@ public class ReporteDemandaService implements IReporteDemandaService {
         try {
             long cantidadAntes = registroDemandaRepositorio.countByProducto(producto);
             registroDemandaRepositorio.deleteByProducto(producto);
-                log.warn("[NORMALIZACION] Demanda limpiada para {}: {} registros eliminados", 
+            log.warn("[NORMALIZACION] Demanda limpiada para {}: {} registros eliminados",
                     producto.getNombre(), cantidadAntes);
             return (int) cantidadAntes;
 
         } catch (Exception e) {
-            log.error("Error limpiando demanda para {}: {}", 
+            log.error("Error limpiando demanda para {}: {}",
                     producto.getNombre(), e.getMessage(), e);
             throw new NormalizacionException("Error limpiando demanda del producto", e);
         }

@@ -17,7 +17,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
- * Servicio para calcular el horizonte de prediccion optimo de forma inteligente.
+ * Servicio para calcular el horizonte de prediccion optimo de forma
+ * inteligente.
  * 
  * Analiza multiples factores para recomendar el periodo de prediccion ideal:
  * - Rotacion del producto (dias promedio entre ventas)
@@ -35,22 +36,22 @@ import java.util.List;
 public class HorizontePrediccionService {
 
     private final IKardexRepositorio kardexRepositorio;
-    
+
     // Constantes de configuracion
-    private static final int HORIZONTE_MINIMO_DIAS = 30;      // 1 mes
-    private static final int HORIZONTE_MAXIMO_DIAS = 365;     // 12 meses
-    private static final int HORIZONTE_DEFAULT_DIAS = 365;    // 12 meses por defecto
-    
+    private static final int HORIZONTE_MINIMO_DIAS = 30; // 1 mes
+    private static final int HORIZONTE_MAXIMO_DIAS = 365; // 12 meses
+    private static final int HORIZONTE_DEFAULT_DIAS = 365; // 12 meses por defecto
+
     // Constantes para autocorrelacion
     private static final int MAX_LAG_AUTOCORR = 30;
     private static final double UMBRAL_CORRELACION = 0.5;
     private static final int HORIZONTE_DEFAULT_PERIODOS = 5;
     private static final int MIN_DATOS_AUTOCORR = 14;
-    
+
     // Umbrales de rotacion (dias)
-    private static final int ROTACION_RAPIDA = 15;     // Vende cada 15 dias o menos
-    private static final int ROTACION_MEDIA = 45;      // Vende cada 45 dias
-    private static final int ROTACION_LENTA = 90;      // Vende cada 90 dias o mas
+    private static final int ROTACION_RAPIDA = 15; // Vende cada 15 dias o menos
+    private static final int ROTACION_MEDIA = 45; // Vende cada 45 dias
+    private static final int ROTACION_LENTA = 90; // Vende cada 90 dias o mas
 
     /**
      * Calcula el horizonte de prediccion optimo para una alerta.
@@ -70,7 +71,7 @@ public class HorizontePrediccionService {
 
             // 1. Calcular rotacion del producto
             Integer diasRotacion = calcularDiasRotacion(producto.getProductoId());
-            
+
             // 2. Obtener lead time del proveedor
             Integer leadTime = producto.getDiasLeadTime();
             if (leadTime == null || leadTime <= 0) {
@@ -80,14 +81,14 @@ public class HorizontePrediccionService {
             // 3. Calcular horizonte basado en rotacion
             int horizonteCalculado = calcularHorizontePorRotacion(diasRotacion, leadTime);
 
-            log.debug("Producto ID {}: Rotacion {} dias, Lead time {} dias, Horizonte {} dias", 
-                producto.getProductoId(), diasRotacion, leadTime, horizonteCalculado);
+            log.debug("Producto ID {}: Rotacion {} dias, Lead time {} dias, Horizonte {} dias",
+                    producto.getProductoId(), diasRotacion, leadTime, horizonteCalculado);
 
             return horizonteCalculado;
 
         } catch (Exception e) {
-            log.error("Error calculando horizonte para alerta {}: {}", 
-                alerta.getAlertaId(), e.getMessage(), e);
+            log.error("Error calculando horizonte para alerta {}: {}",
+                    alerta.getAlertaId(), e.getMessage(), e);
             return HORIZONTE_DEFAULT_DIAS;
         }
     }
@@ -103,9 +104,8 @@ public class HorizontePrediccionService {
             // Obtener ultimos 6 meses de movimientos de salida
             LocalDate fechaInicio = LocalDate.now().minusMonths(6);
             List<Kardex> movimientos = kardexRepositorio
-                .findByProductoIdAndFechaMovimientoBetweenOrderByFechaMovimiento(
-                    productoId.longValue(), fechaInicio, LocalDate.now()
-                );
+                    .findByProductoIdAndFechaMovimientoBetweenOrderByFechaMovimiento(
+                            productoId.longValue(), fechaInicio, LocalDate.now());
 
             if (movimientos.isEmpty()) {
                 log.debug("Sin movimientos para producto {}, asumiendo rotacion media", productoId);
@@ -114,9 +114,9 @@ public class HorizontePrediccionService {
 
             // Filtrar solo salidas (ventas)
             List<Kardex> salidas = movimientos.stream()
-                .filter(k -> k.getTipoMovimiento() != null && 
-                           k.getTipoMovimiento().esSalida())
-                .toList();
+                    .filter(k -> k.getTipoMovimiento() != null &&
+                            k.getTipoMovimiento().esSalida())
+                    .toList();
 
             if (salidas.size() < 2) {
                 log.debug("Insuficientes salidas para producto {}, asumiendo rotacion media", productoId);
@@ -125,21 +125,22 @@ public class HorizontePrediccionService {
 
             // Calcular dias promedio entre ventas
             long diasTotales = ChronoUnit.DAYS.between(
-                salidas.get(0).getFechaMovimiento().toLocalDate(),
-                salidas.get(salidas.size() - 1).getFechaMovimiento().toLocalDate()
-            );
+                    salidas.get(0).getFechaMovimiento().toLocalDate(),
+                    salidas.get(salidas.size() - 1).getFechaMovimiento().toLocalDate());
 
             int diasPromedio = (int) (diasTotales / (salidas.size() - 1));
 
             // Limitar valores extremos
-            if (diasPromedio < 1) diasPromedio = 1;
-            if (diasPromedio > 180) diasPromedio = 180;
+            if (diasPromedio < 1)
+                diasPromedio = 1;
+            if (diasPromedio > 180)
+                diasPromedio = 180;
 
             return diasPromedio;
 
         } catch (Exception e) {
-            log.warn("Error calculando rotacion para producto {}: {}", 
-                productoId, e.getMessage());
+            log.warn("Error calculando rotacion para producto {}: {}",
+                    productoId, e.getMessage());
             return ROTACION_MEDIA;
         }
     }
@@ -156,7 +157,7 @@ public class HorizontePrediccionService {
      * Se ajusta considerando el lead time del proveedor.
      * 
      * @param diasRotacion Dias promedio de rotacion
-     * @param leadTime Lead time del proveedor
+     * @param leadTime     Lead time del proveedor
      * @return Horizonte en dias
      */
     private int calcularHorizontePorRotacion(Integer diasRotacion, Integer leadTime) {
@@ -221,8 +222,8 @@ public class HorizontePrediccionService {
         }
 
         int sumaHorizontes = alertas.stream()
-            .mapToInt(this::calcularHorizonteOptimo)
-            .sum();
+                .mapToInt(this::calcularHorizonteOptimo)
+                .sum();
 
         return sumaHorizontes / alertas.size();
     }
@@ -247,19 +248,19 @@ public class HorizontePrediccionService {
      * @return horizonte sugerido (número de períodos hacia adelante)
      */
     public int calcularHorizonteConAutocorrelacion(double[] serieHistorica) {
-        log.debug("Iniciando cálculo de horizonte con autocorrelación para serie de {} elementos", 
-                 serieHistorica != null ? serieHistorica.length : 0);
+        log.debug("Iniciando cálculo de horizonte con autocorrelación para serie de {} elementos",
+                serieHistorica != null ? serieHistorica.length : 0);
 
         // Validaciones básicas
         if (serieHistorica == null || serieHistorica.length < MIN_DATOS_AUTOCORR) {
-            log.warn("Serie histórica insuficiente (mínimo {} datos requeridos). Usando horizonte por defecto: {}", 
+            log.warn("Serie histórica insuficiente (mínimo {} datos requeridos). Usando horizonte por defecto: {}",
                     MIN_DATOS_AUTOCORR, HORIZONTE_DEFAULT_PERIODOS);
             return HORIZONTE_DEFAULT_PERIODOS;
         }
 
         // Verificar que la serie tenga variabilidad
         if (!tieneVariabilidad(serieHistorica)) {
-            log.warn("Serie histórica sin variabilidad (todos valores iguales). Usando horizonte por defecto: {}", 
+            log.warn("Serie histórica sin variabilidad (todos valores iguales). Usando horizonte por defecto: {}",
                     HORIZONTE_DEFAULT_PERIODOS);
             return HORIZONTE_DEFAULT_PERIODOS;
         }
@@ -276,8 +277,8 @@ public class HorizontePrediccionService {
             return horizonteSugerido;
 
         } catch (Exception e) {
-            log.error("Error al calcular horizonte con autocorrelación: {}. Usando horizonte por defecto: {}", 
-                     e.getMessage(), HORIZONTE_DEFAULT_PERIODOS);
+            log.error("Error al calcular horizonte con autocorrelación: {}. Usando horizonte por defecto: {}",
+                    e.getMessage(), HORIZONTE_DEFAULT_PERIODOS);
             return HORIZONTE_DEFAULT_PERIODOS;
         }
     }
@@ -307,7 +308,7 @@ public class HorizontePrediccionService {
      * Calcula la autocorrelación para un lag específico usando SMILE ML.
      * 
      * @param serie array de valores
-     * @param lag número de períodos de retraso
+     * @param lag   número de períodos de retraso
      * @return coeficiente de autocorrelación (-1 a 1)
      */
     private double calcularAutocorrelacion(double[] serie, int lag) {
@@ -329,12 +330,12 @@ public class HorizontePrediccionService {
      * Calcula la correlación entre una serie y su versión desplazada.
      * 
      * @param serie array de valores
-     * @param lag desplazamiento
+     * @param lag   desplazamiento
      * @return coeficiente de correlación
      */
     private double calcularCorrelacionConLag(double[] serie, int lag) {
         int n = serie.length - lag;
-        
+
         // Calcular medias
         double mediaX = 0.0;
         double mediaY = 0.0;
@@ -344,12 +345,12 @@ public class HorizontePrediccionService {
         }
         mediaX /= n;
         mediaY /= n;
-        
+
         // Calcular correlación
         double numerador = 0.0;
         double denomX = 0.0;
         double denomY = 0.0;
-        
+
         for (int i = 0; i < n; i++) {
             double diffX = serie[i] - mediaX;
             double diffY = serie[i + lag] - mediaY;
@@ -357,7 +358,7 @@ public class HorizontePrediccionService {
             denomX += diffX * diffX;
             denomY += diffY * diffY;
         }
-        
+
         double denominador = Math.sqrt(denomX * denomY);
         return denominador > 0.0 ? numerador / denominador : 0.0;
     }
@@ -387,7 +388,7 @@ public class HorizontePrediccionService {
 
         // Si encontramos un lag con buena correlación, usarlo
         if (mejorCorrelacion > UMBRAL_CORRELACION) {
-            log.info("Patrón detectado: Lag {} con correlación {}", 
+            log.info("Patrón detectado: Lag {} con correlación {}",
                     mejorLag, String.format("%.4f", mejorCorrelacion));
             return mejorLag;
         }
@@ -416,17 +417,17 @@ public class HorizontePrediccionService {
             CorrelacionLag siguiente = correlaciones.get(i + 1);
 
             // Verificar si es un pico local
-            if (actual.correlacion > anterior.correlacion && 
-                actual.correlacion > siguiente.correlacion &&
-                actual.correlacion > 0.3) {  // Umbral mínimo para pico
+            if (actual.correlacion > anterior.correlacion &&
+                    actual.correlacion > siguiente.correlacion &&
+                    actual.correlacion > 0.3) { // Umbral mínimo para pico
 
-                log.info("Pico detectado en lag {} con correlación {}", 
+                log.info("Pico detectado en lag {} con correlación {}",
                         actual.lag, String.format("%.4f", actual.correlacion));
                 return actual.lag;
             }
         }
 
-        log.info("No se detectaron patrones claros. Usando horizonte por defecto: {}", 
+        log.info("No se detectaron patrones claros. Usando horizonte por defecto: {}",
                 HORIZONTE_DEFAULT_PERIODOS);
         return HORIZONTE_DEFAULT_PERIODOS;
     }
