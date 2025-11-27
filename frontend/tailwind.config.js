@@ -19,7 +19,6 @@ module.exports = {
         text: {
           100: '#333333',
           200: '#5c5c5c',
-          // Dark mode variants
           'dark-100': '#f5f5f5',
           'dark-200': '#cccccc'
         },
@@ -27,7 +26,6 @@ module.exports = {
           100: '#ffffff',
           200: '#f5f5f5',
           300: '#cccccc',
-          // Dark mode variants
           'dark-100': '#0f172a', // slate-900
           'dark-200': '#1e293b', // slate-800
           'dark-300': '#334155'  // slate-700

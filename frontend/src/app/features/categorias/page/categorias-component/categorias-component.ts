@@ -14,6 +14,7 @@ import { MessageModule } from 'primeng/message';
 import { Dialog } from 'primeng/dialog';
 import { Toast } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface Column {
   field: keyof Categoria | 'acciones';
@@ -23,7 +24,7 @@ interface Column {
 
 @Component({
   selector: 'app-categorias-component',
-  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule, KeyFilterModule, MessageModule, ReactiveFormsModule, Dialog, Toast, SkeletonModule],
+  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule, KeyFilterModule, MessageModule, ReactiveFormsModule, Dialog, Toast, SkeletonModule, TooltipModule],
   templateUrl: './categorias-component.html',
   styleUrl: './categorias-component.css',
   providers: [ConfirmationService, MessageService]
@@ -36,9 +37,16 @@ export class CategoriasComponent {
   categoriaId = signal<number | null>(null);
   loading = signal<boolean>(false);
 
-  categoriaForm = new FormGroup({
-    nombre: new FormControl<string>('', Validators.required)
-  });
+  // RegExp que permite letras (incluye acentos y caracteres latinos extendidos) y espacios
+  /**
+   * `nameFilter` para validación completa (anclado): usado por `Validators.pattern`.
+   * `keyFilterPattern` para `pKeyFilter` debe ser un patrón de caracteres (sin ^ $)
+   * para que KeyFilter funcione sobre pulsaciones individuales.
+   */
+  nameFilter: RegExp = /^[A-Za-zÀ-ÿ ]+$/;
+  keyFilterPattern: RegExp = /[A-Za-zÀ-ÿ ]/;
+
+  categoriaForm!: FormGroup;
 
   cols: Column[] = [
     { field: 'categoriaId', header: 'ID' },
@@ -51,6 +59,11 @@ export class CategoriasComponent {
   private messageService = inject(MessageService);
 
   constructor() {
+    // Inicializar formulario con validación de patrón que permite espacios y letras acentuadas
+    this.categoriaForm = new FormGroup({
+      nombre: new FormControl<string>('', [Validators.required, Validators.pattern(this.nameFilter)])
+    });
+
     this.cargarCategorias();
   }
 

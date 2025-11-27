@@ -26,6 +26,11 @@ import { ImportacionCsvComponent } from '../../../../shared/components/importaci
 import { FloatLabel } from "primeng/floatlabel";
 import { SkeletonModule } from 'primeng/skeleton';
 import { Tooltip } from "primeng/tooltip";
+import { TimelineModule } from 'primeng/timeline';
+import { TagModule } from 'primeng/tag';
+import { CommonModule } from '@angular/common';
+import { KardexService } from '../../../kardex/services/kardex-service';
+import { KardexResponse, esEntrada, esSalida } from '../../../kardex/models/KardexResponse';
 
 interface Column {
   field: keyof ProductoResponse | 'acciones';
@@ -50,7 +55,10 @@ interface Column {
     ImportacionCsvComponent,
     FloatLabel,
     SkeletonModule,
-    Tooltip
+    Tooltip,
+    TimelineModule,
+    TagModule,
+    CommonModule
 ],
   templateUrl: './productos-component.html',
   styleUrl: './productos-component.css',
@@ -103,6 +111,13 @@ private readonly productoService = inject(ProductoService);
 private readonly categoriaService = inject(CategoriaServicio);
 private readonly unidadMedidaService = inject(UnidaMedidaService);
 private readonly proveedorService = inject(ProveedorService);
+private readonly kardexService = inject(KardexService);
+
+  // Kardex modal
+  kardexVisible = signal<boolean>(false);
+  kardexLoading = signal<boolean>(false);
+  movimientos = signal<KardexResponse[]>([]);
+  productoSeleccionadoKardex = signal<ProductoResponse | null>(null);
 
   constructor() {
     this.cargarDatos();
@@ -239,5 +254,57 @@ clearSearch(): void {
         });
       }
     });
+  }
+
+  // Métodos para el modal de Kardex
+  verKardex(producto: ProductoResponse): void {
+    this.productoSeleccionadoKardex.set(producto);
+    this.kardexVisible.set(true);
+    this.kardexLoading.set(true);
+    this.kardexService.obtenerMovimientosPorProducto(producto.productoId, 0, 20).subscribe({
+      next: (response) => {
+        this.movimientos.set(response.content);
+        this.kardexLoading.set(false);
+      },
+      error: () => {
+        this.movimientos.set([]);
+        this.kardexLoading.set(false);
+      }
+    });
+  }
+
+  cerrarKardex(): void {
+    this.kardexVisible.set(false);
+    this.productoSeleccionadoKardex.set(null);
+    this.movimientos.set([]);
+  }
+
+  esEntrada(tipo: string): boolean {
+    return esEntrada(tipo as any);
+  }
+
+  esSalida(tipo: string): boolean {
+    return esSalida(tipo as any);
+  }
+
+  getIconoTipo(tipo: string): string {
+    const iconos: Record<string, string> = {
+      'COMPRA': 'pi pi-shopping-cart',
+      'VENTA': 'pi pi-shopping-bag',
+      'DEVOLUCION_CLIENTE': 'pi pi-replay',
+      'DEVOLUCION_PROVEEDOR': 'pi pi-undo',
+      'AJUSTE_ENTRADA': 'pi pi-plus-circle',
+      'AJUSTE_SALIDA': 'pi pi-minus-circle',
+      'PRODUCCION': 'pi pi-cog',
+      'CONSUMO': 'pi pi-box',
+      'MERMA': 'pi pi-exclamation-triangle',
+      'TRANSFERENCIA_ENTRADA': 'pi pi-arrow-down',
+      'TRANSFERENCIA_SALIDA': 'pi pi-arrow-up'
+    };
+    return iconos[tipo] || 'pi pi-circle';
+  }
+
+  formatearTipo(tipo: string): string {
+    return tipo.replace(/_/g, ' ');
   }
 } 

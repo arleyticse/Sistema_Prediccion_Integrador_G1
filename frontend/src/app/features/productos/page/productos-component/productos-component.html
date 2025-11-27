@@ -174,6 +174,8 @@
             @for (col of columns; track col.field) {
             @if (col.field === 'acciones') {
             <td>
+                <p-button icon="pi pi-history" [rounded]="true" [text]="true" label="" severity="secondary"
+                    (onClick)="verKardex(rowData)" pTooltip="Ver Movimientos" tooltipPosition="top" />
                 <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="" severity="info"
                     (onClick)="editar(rowData)" pTooltip="Editar" tooltipPosition="top" />
                 <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="" severity="danger"
@@ -200,3 +202,132 @@
         [rowsPerPageOptions]="rowsPerPageOptions" />
 </div>
 <p-confirmDialog />
+
+<!-- Modal de Movimientos Kardex -->
+<p-dialog [visible]="kardexVisible()" (visibleChange)="kardexVisible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '60rem', maxHeight: '90vh' }" [contentStyle]="{ 'overflow-y': 'auto', 'padding': '1.5rem' }">
+    <ng-template #header>
+        <div class="flex items-center gap-3">
+            <i class="pi pi-history text-2xl text-primary-500"></i>
+            <div>
+                <h2 class="text-xl font-semibold m-0">Historial de Movimientos</h2>
+                @if (productoSeleccionadoKardex()) {
+                <p class="text-sm text-surface-500 m-0">{{ productoSeleccionadoKardex()?.nombre }}</p>
+                }
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="min-h-[300px]">
+        @if (kardexLoading()) {
+        <!-- Skeleton Loading -->
+        <div class="space-y-4">
+            @for (item of [1,2,3,4,5]; track item) {
+            <div class="flex gap-4 items-start">
+                <p-skeleton shape="circle" width="2.5rem" height="2.5rem"></p-skeleton>
+                <div class="flex-1">
+                    <p-skeleton width="40%" height="1.25rem" styleClass="mb-2"></p-skeleton>
+                    <p-skeleton width="80%" height="1rem"></p-skeleton>
+                </div>
+            </div>
+            }
+        </div>
+        } @else if (movimientos().length === 0) {
+        <!-- Estado vacío -->
+        <div class="flex flex-col items-center justify-center py-12 text-center">
+            <i class="pi pi-inbox text-6xl text-surface-300 mb-4"></i>
+            <h3 class="text-lg font-medium text-surface-600 mb-2">Sin movimientos</h3>
+            <p class="text-surface-500">Este producto aún no tiene movimientos registrados en el Kardex.</p>
+        </div>
+        } @else {
+        <!-- Timeline de movimientos -->
+        <p-timeline [value]="movimientos()" align="alternate" styleClass="w-full">
+            <ng-template #marker let-mov>
+                <span class="flex items-center justify-center w-10 h-10 rounded-full shadow-md"
+                    [ngClass]="{
+                        'bg-green-100 text-green-600': esEntrada(mov.tipoMovimiento),
+                        'bg-red-100 text-red-600': esSalida(mov.tipoMovimiento),
+                        'bg-blue-100 text-blue-600': !esEntrada(mov.tipoMovimiento) && !esSalida(mov.tipoMovimiento)
+                    }">
+                    <i [class]="getIconoTipo(mov.tipoMovimiento)"></i>
+                </span>
+            </ng-template>
+            <ng-template #content let-mov>
+                <div class="bg-surface-50 rounded-lg p-4 shadow-sm border border-surface-200 mb-4 hover:shadow-md transition-shadow">
+                    <!-- Header del movimiento -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <p-tag [value]="formatearTipo(mov.tipoMovimiento)" [rounded]="true" />
+                            @if (mov.numeroDocumento) {
+                            <span class="text-sm text-surface-500">
+                                {{ mov.numeroDocumento }}
+                            </span>
+                            }
+                        </div>
+                        <span class="text-sm text-surface-500">
+                            <i class="pi pi-calendar mr-1"></i>{{ mov.fechaMovimiento | date:'dd/MM/yyyy HH:mm' }}
+                        </span>
+                    </div>
+
+                    <!-- Detalles del movimiento -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div class="flex flex-col">
+                            <span class="text-surface-500 text-xs uppercase tracking-wide">Cantidad</span>
+                            <span class="font-semibold text-lg">
+                                {{ mov.cantidad }}
+                            </span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-surface-500 text-xs uppercase tracking-wide">Saldo</span>
+                            <span class="font-medium">{{ mov.saldoCantidad }}</span>
+                        </div>
+                        @if (mov.costoUnitario) {
+                        <div class="flex flex-col">
+                            <span class="text-surface-500 text-xs uppercase tracking-wide">Costo Unit.</span>
+                            <span class="font-medium">S/ {{ mov.costoUnitario | number:'1.2-2' }}</span>
+                        </div>
+                        }
+                        @if (mov.valorTotal) {
+                        <div class="flex flex-col">
+                            <span class="text-surface-500 text-xs uppercase tracking-wide">Valor Total</span>
+                            <span class="font-medium">S/ {{ mov.valorTotal | number:'1.2-2' }}</span>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- Información adicional -->
+                    @if (mov.motivo || mov.observaciones || mov.nombreProveedor || mov.lote) {
+                    <div class="mt-3 pt-3 border-t border-surface-200">
+                        <div class="flex flex-wrap gap-4 text-sm text-surface-600">
+                            @if (mov.nombreProveedor) {
+                            <span><i class="pi pi-building mr-1"></i>{{ mov.nombreProveedor }}</span>
+                            }
+                            @if (mov.lote) {
+                            <span><i class="pi pi-box mr-1"></i>Lote: {{ mov.lote }}</span>
+                            }
+                            @if (mov.nombreUsuario) {
+                            <span><i class="pi pi-user mr-1"></i>{{ mov.nombreUsuario }}</span>
+                            }
+                        </div>
+                        @if (mov.motivo) {
+                        <p class="mt-2 text-sm text-surface-600">
+                            <strong>Motivo:</strong> {{ mov.motivo }}
+                        </p>
+                        }
+                        @if (mov.observaciones) {
+                        <p class="mt-1 text-sm text-surface-500 italic">{{ mov.observaciones }}</p>
+                        }
+                    </div>
+                    }
+                </div>
+            </ng-template>
+        </p-timeline>
+        }
+    </div>
+
+    <ng-template #footer>
+        <div class="flex justify-end">
+            <p-button label="Cerrar" icon="pi pi-times" severity="secondary" (onClick)="cerrarKardex()" />
+        </div>
+    </ng-template>
+</p-dialog>

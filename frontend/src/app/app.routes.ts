@@ -13,7 +13,7 @@ export const routes: Routes = [
     {
         path: 'password-recovery',
         loadComponent: () =>
-            import('./features/auth/page/password-recovery/password-recovery').then(m => m.PasswordRecoveryComponent)
+            import('./features/auth/page/password-recovery/password-recovery').then(m => m.default)
     },
     {
         path: 'administracion',

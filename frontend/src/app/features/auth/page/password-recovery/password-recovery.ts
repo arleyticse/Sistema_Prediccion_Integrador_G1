@@ -17,13 +17,12 @@ type RecoveryStep = 'email' | 'otp' | 'password' | 'success';
 
 @Component({
   selector: 'app-password-recovery',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     ButtonModule,
     InputTextModule,
-    
+
     InputOtp,
     PasswordModule,
     ToastModule,
@@ -33,7 +32,7 @@ type RecoveryStep = 'email' | 'otp' | 'password' | 'success';
   templateUrl: './password-recovery.html',
   providers: [MessageService]
 })
-export class PasswordRecoveryComponent {
+export default class PasswordRecoveryComponent {
   // Señales de estado
   currentStep = signal<RecoveryStep>('email');
   loading = signal(false);

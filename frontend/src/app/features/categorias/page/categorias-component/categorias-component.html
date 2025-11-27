@@ -4,21 +4,23 @@
 
 <!-- Dialog modal no draggable -->
 <p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
-    [style]="{ width: '30rem', height: '15rem' }">
+    [style]="{ width: '30rem' }" [contentStyle]="{ 'padding': '1.25rem', 'overflow': 'visible' }">
     <ng-template #header>
         <h2 class="text-3xl">{{ isEditing() ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
     </ng-template>
 
-    <form [formGroup]="categoriaForm" (ngSubmit)="onSubmit()" class="min-h-[10rem]">
+    <form [formGroup]="categoriaForm" (ngSubmit)="onSubmit()" class="py-2">
         <div class="space-y-4">
-            <!-- Campo Nombre -->
             <div class="field">
                 <p-floatlabel>
-                    <input pInputText id="nombre" formControlName="nombre" pKeyFilter="alpha" class="w-full" />
+                    <input pInputText id="nombre" formControlName="nombre" [pKeyFilter]="keyFilterPattern" [pValidateOnly]="true" class="w-full" />
                     <label for="nombre">Nombre Categoria</label>
                 </p-floatlabel>
                 @if (categoriaForm.get('nombre')?.hasError('required') && categoriaForm.get('nombre')?.touched) {
                 <p-message severity="error" variant="simple" size="small">El nombre es requerido</p-message>
+                }
+                @if (categoriaForm.get('nombre')?.hasError('pattern') && categoriaForm.get('nombre')?.touched) {
+                <p-message severity="error" variant="simple" size="small">El nombre sólo puede contener letras y espacios</p-message>
                 }
             </div>
         </div>
@@ -61,10 +63,10 @@
                 @for (col of columns; track col.field) {
                 @if (col.field === 'acciones') {
                 <td>
-                    <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info"
-                        (onClick)="editar(rowData)" />
-                    <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger"
-                        (onClick)="eliminar(rowData)" />
+                    <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="" severity="info"
+                        (onClick)="editar(rowData)" pTooltip="Editar" tooltipPosition="top" />
+                    <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="" severity="danger"
+                        (onClick)="eliminar(rowData)" pTooltip="Eliminar" tooltipPosition="top" />
                 </td>
                 } @else {
                 <td>{{ rowData[col.field] }}</td>

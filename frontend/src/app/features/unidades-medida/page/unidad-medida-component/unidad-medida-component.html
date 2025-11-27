@@ -4,28 +4,31 @@
 
 <!-- Dialog modal no draggable -->
 <p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
-    [style]="{ width: '35rem',height: '15rem' }">
+    [style]="{ width: '35rem' }" [contentStyle]="{ 'padding': '1.25rem', 'overflow': 'visible' }">
     <ng-template #header>
         <h2 class="text-3xl">{{ isEditing() ? 'Editar Unidad de Medida' : 'Nueva Unidad de Medida' }}</h2>
     </ng-template>
 
-    <form [formGroup]="unidadForm" (ngSubmit)="onSubmit()" class="min-h-[12rem]">
+    <form [formGroup]="unidadForm" (ngSubmit)="onSubmit()" class="py-2">
         <div class="space-y-4">
             <!-- Nombre y Abreviatura en 2 columnas -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field">
                     <p-floatlabel>
-                        <input pInputText id="nombre" formControlName="nombre" pKeyFilter="alpha" class="w-full" />
+                        <input pInputText id="nombre" formControlName="nombre" [pKeyFilter]="keyFilterPatternName" [pValidateOnly]="true" class="w-full" />
                         <label for="nombre">Nombre</label>
                     </p-floatlabel>
                     @if (unidadForm.get('nombre')?.hasError('required') && unidadForm.get('nombre')?.touched) {
                     <p-message severity="error" variant="simple" size="small">El nombre es requerido</p-message>
                     }
+                    @if (unidadForm.get('nombre')?.hasError('pattern') && unidadForm.get('nombre')?.touched) {
+                    <p-message severity="error" variant="simple" size="small">El nombre sólo puede contener letras y espacios</p-message>
+                    }
                 </div>
 
                 <div class="field">
                     <p-floatlabel>
-                        <input pInputText id="abreviatura" formControlName="abreviatura" pKeyFilter="alphanum"
+                        <input pInputText id="abreviatura" formControlName="abreviatura" [pKeyFilter]="keyFilterPatternAbbrev" [pValidateOnly]="true"
                             class="w-full" />
                         <label for="abreviatura">Abreviatura</label>
                     </p-floatlabel>
@@ -80,10 +83,10 @@
                 @for (col of columns; track col.field) {
                 @if (col.field === 'acciones') {
                 <td>
-                    <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="Editar" severity="info"
-                        (onClick)="editar(rowData)" />
-                    <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="Eliminar" severity="danger"
-                        (onClick)="eliminar(rowData)" />
+                    <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" label="" severity="info"
+                        (onClick)="editar(rowData)" pTooltip="Editar" tooltipPosition="top" />
+                    <p-button icon="pi pi-trash" [rounded]="true" [text]="true" label="" severity="danger"
+                        (onClick)="eliminar(rowData)" pTooltip="Eliminar" tooltipPosition="top" />
                 </td>
                 } @else {
                 <td>{{ rowData[col.field] }}</td>

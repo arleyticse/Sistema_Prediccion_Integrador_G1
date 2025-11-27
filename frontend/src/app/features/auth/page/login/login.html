@@ -30,7 +30,8 @@
                         Correo Electrónico
                     </label>
                     <div class="relative">
-                        <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#cccccc] z-10"></i>
+                        <i
+                            class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#cccccc] z-10"></i>
                         <input pInputText type="email" formControlName="email" placeholder="ejemplo@correo.com"
                             class="w-full !pl-10 !py-3 !bg-[#ffffff]/50 dark:!bg-[#333333]/50 border-[#cccccc] dark:border-[#5c5c5c] focus:border-[#0077c2] text-[#333333] dark:text-[#ffffff] rounded-lg transition-all"
                             [class.!border-red-500]="hasFieldError('email')" />
@@ -49,7 +50,8 @@
                         Contraseña
                     </label>
                     <div class="relative">
-                        <i class="pi pi-lock absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#cccccc] z-10"></i>
+                        <i
+                            class="pi pi-lock absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#cccccc] z-10"></i>
                         <p-password formControlName="clave" placeholder="••••••••" [toggleMask]="true"
                             [feedback]="false" styleClass="w-full"
                             inputStyleClass="w-full !pl-10 !py-3 !bg-[#ffffff]/50 dark:!bg-[#333333]/50 border-[#cccccc] dark:border-[#5c5c5c] focus:border-[#0077c2] text-[#333333] dark:text-[#ffffff] rounded-lg transition-all">
@@ -65,8 +67,8 @@
 
                 <!-- Link recuperar contraseña -->
                 <div class="text-right">
-                    <a routerLink="/password-recovery" 
-                       class="text-sm text-[#0077c2] dark:text-[#59a5f5] hover:underline font-medium transition-colors">
+                    <a routerLink="/password-recovery"
+                        class="text-sm text-[#0077c2] dark:text-[#59a5f5] hover:underline font-medium transition-colors">
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>
@@ -88,15 +90,9 @@
 </div>
 
 <!-- Diálogo de Desbloqueo de Cuenta -->
-<p-dialog 
-    header="🔓 Desbloquear Cuenta" 
-    [(visible)]="mostrarDialogoDesbloqueo" 
-    [modal]="true" 
-    [closable]="true"
-    [style]="{width: '450px'}"
-    [contentStyle]="{padding: '1.5rem'}"
-    (onHide)="cerrarDialogoDesbloqueo()">
-    
+<p-dialog header="🔓 Desbloquear Cuenta" [(visible)]="mostrarDialogoDesbloqueo" [modal]="true" [closable]="true"
+    [style]="{width: '450px'}" [contentStyle]="{padding: '1.5rem'}" (onHide)="cerrarDialogoDesbloqueo()">
+
     <div class="space-y-6">
         <!-- Mensaje de alerta -->
         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
@@ -118,59 +114,41 @@
         </div>
 
         @if (!codigoEnviado()) {
-            <!-- Paso 1: Solicitar código -->
-            <div class="text-center space-y-4">
-                <p class="text-gray-600">
-                    Haz clic en el botón para recibir un código de verificación en tu correo electrónico.
-                </p>
-                <button pButton 
-                    type="button"
-                    label="Enviar Código de Desbloqueo"
-                    icon="pi pi-envelope"
-                    [loading]="enviandoCodigo()"
-                    (click)="solicitarCodigoDesbloqueo()"
-                    class="w-full !bg-[#0077c2] hover:!bg-[#59a5f5]">
+        <!-- Paso 1: Solicitar código -->
+        <div class="text-center space-y-4">
+            <p class="text-gray-600">
+                Haz clic en el botón para recibir un código de verificación en tu correo electrónico.
+            </p>
+            <button pButton type="button" label="Enviar Código de Desbloqueo" icon="pi pi-envelope"
+                [loading]="enviandoCodigo()" (click)="solicitarCodigoDesbloqueo()"
+                class="w-full !bg-[#0077c2] hover:!bg-[#59a5f5]">
+            </button>
+        </div>
+        } @else {
+        <!-- Paso 2: Ingresar código -->
+        <div class="space-y-4">
+            <p class="text-center text-gray-600">
+                Ingresa el código de 6 dígitos que enviamos a tu correo:
+            </p>
+
+            <div class="flex justify-center">
+                <p-inputOtp [(ngModel)]="codigoOtp" [length]="6" [integerOnly]="true" styleClass="gap-2">
+                </p-inputOtp>
+            </div>
+
+            <div class="flex gap-3">
+                <button pButton type="button" label="Reenviar Código" icon="pi pi-refresh" [loading]="enviandoCodigo()"
+                    (click)="solicitarCodigoDesbloqueo()" class="flex-1 p-button-outlined">
+                </button>
+                <button pButton type="button" label="Desbloquear" icon="pi pi-unlock" [loading]="verificandoCodigo()"
+                    (click)="desbloquearCuenta()" class="flex-1 !bg-green-600 hover:!bg-green-700">
                 </button>
             </div>
-        } @else {
-            <!-- Paso 2: Ingresar código -->
-            <div class="space-y-4">
-                <p class="text-center text-gray-600">
-                    Ingresa el código de 6 dígitos que enviamos a tu correo:
-                </p>
-                
-                <div class="flex justify-center">
-                    <p-inputOtp 
-                        [(ngModel)]="codigoOtp"
-                        [length]="6"
-                        [integerOnly]="true"
-                        styleClass="gap-2">
-                    </p-inputOtp>
-                </div>
 
-                <div class="flex gap-3">
-                    <button pButton 
-                        type="button"
-                        label="Reenviar Código"
-                        icon="pi pi-refresh"
-                        [loading]="enviandoCodigo()"
-                        (click)="solicitarCodigoDesbloqueo()"
-                        class="flex-1 p-button-outlined">
-                    </button>
-                    <button pButton 
-                        type="button"
-                        label="Desbloquear"
-                        icon="pi pi-unlock"
-                        [loading]="verificandoCodigo()"
-                        (click)="desbloquearCuenta()"
-                        class="flex-1 !bg-green-600 hover:!bg-green-700">
-                    </button>
-                </div>
-
-                <p class="text-center text-xs text-gray-500">
-                    El código expira en 10 minutos
-                </p>
-            </div>
+            <p class="text-center text-xs text-gray-500">
+                El código expira en 10 minutos
+            </p>
+        </div>
         }
     </div>
 </p-dialog>

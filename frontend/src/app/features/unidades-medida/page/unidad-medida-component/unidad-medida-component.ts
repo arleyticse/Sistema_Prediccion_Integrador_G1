@@ -14,6 +14,7 @@ import { MessageModule } from 'primeng/message';
 import { Dialog } from 'primeng/dialog';
 import { Toast } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface Column {
   field: keyof UnidadMedida | 'acciones';
@@ -21,7 +22,7 @@ interface Column {
 }
 @Component({
   selector: 'app-unidad-medida-component',
-  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule, KeyFilterModule, MessageModule, ReactiveFormsModule, Dialog, Toast, SkeletonModule],
+  imports: [TableModule, CommonModule, ButtonModule, ConfirmDialogModule, InputTextModule, FloatLabel, FormsModule, KeyFilterModule, MessageModule, ReactiveFormsModule, Dialog, Toast, SkeletonModule, TooltipModule],
   templateUrl: './unidad-medida-component.html',
   styleUrl: './unidad-medida-component.css',
   providers: [ConfirmationService, MessageService]
@@ -34,10 +35,14 @@ export class UnidadMedidaComponent {
   unidadMedidaId = signal<number | null>(null);
   loading = signal<boolean>(false);
 
-  unidadForm = new FormGroup({
-    nombre: new FormControl<string>('', Validators.required),
-    abreviatura: new FormControl<string>('', [Validators.required, Validators.minLength(1), Validators.maxLength(5)])
-  });
+  // Validación: nombre permite letras (incluye acentos) y espacios
+  nameFilter: RegExp = /^[A-Za-zÀ-ÿ ]+$/;
+  // Patrón para uso en pKeyFilter (por pulsación): clase de caracteres sin anclas
+  keyFilterPatternName: RegExp = /[A-Za-zÀ-ÿ ]/;
+  // Patrón para abreviatura (caracter por caracter)
+  keyFilterPatternAbbrev: RegExp = /[A-Za-z0-9]/;
+
+  unidadForm!: FormGroup;
 
   cols: Column[] = [
     { field: 'unidadMedidaId', header: 'ID' },
@@ -50,6 +55,12 @@ export class UnidadMedidaComponent {
   private messageService = inject(MessageService);
 
   constructor() {
+    // Inicializar formulario usando patrón para nombre
+    this.unidadForm = new FormGroup({
+      nombre: new FormControl<string>('', [Validators.required, Validators.pattern(this.nameFilter)]),
+      abreviatura: new FormControl<string>('', [Validators.required, Validators.minLength(1), Validators.maxLength(5)])
+    });
+
     this.cargarDatos();
   }
 
