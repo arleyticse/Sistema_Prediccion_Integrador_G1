@@ -7,7 +7,8 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth';
 import { RolePermissionsService } from '../../shared/services/role-permissions.service';
 import { Avatar } from "primeng/avatar";
-import { AccordionModule } from 'primeng/accordion';
+// Accordion removed: using Tailwind-based collapsible groups instead
+import { Menu as PrimeMenu } from 'primeng/menu';
 
 @Component({
   selector: 'app-management-layouts',
@@ -20,7 +21,7 @@ import { AccordionModule } from 'primeng/accordion';
     ButtonModule,
     CommonModule,
     Avatar,
-    AccordionModule
+    PrimeMenu
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -36,7 +37,7 @@ import { AccordionModule } from 'primeng/accordion';
           [class.w-80]="isExpanded()"
         >
         <!-- Logo Section -->
-        <div class="sticky top-0 bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 border-b border-slate-200 dark:border-slate-800 p-4 z-10 backdrop-blur-sm">
+        <div class="bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 border-b border-slate-200 dark:border-slate-800 p-6 backdrop-blur-sm">
           <div class="flex items-center justify-center">
             <div [class.w-16]="!isExpanded()" [class.w-64]="isExpanded()" class="h-16 transition-all duration-300">
               <img src="../../../assets/logo/Logo_NN.jpg" alt="Logo" class="w-full h-full object-contain" />
@@ -49,44 +50,50 @@ import { AccordionModule } from 'primeng/accordion';
              routerLinkActive="!bg-blue-100 !text-primary-100"
              [routerLinkActiveOptions]="{exact: true}"
              class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-200 group">
-            <i class="pi pi-fw pi-home text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"></i>
+            <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors">
+              <i class="pi pi-fw pi-home text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg"></i>
+            </div>
             @if (isExpanded()) { <span class="text-slate-700 dark:text-slate-200 font-medium transition-colors">Dashboard</span> }
           </a>
         </div>
 
-        <p-accordion [multiple]="true" [(value)]="activeAccordionIndex" class="bg-transparent border-none px-2">
-          <p-accordion-panel *ngFor="let group of menuGroups()" [value]="group.label">
-            <p-accordion-header>
+        <div class="space-y-2 px-2">
+          <div *ngFor="let group of menuGroups()">
+            <div
+              class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
+              (click)="toggleGroup(group.label)">
               <div class="flex items-center gap-3">
-                <i [class]="group.icon + ' text-blue-600 dark:text-blue-400 text-lg'"></i>
+                <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors">
+                  <i [class]="group.icon + ' text-blue-600 dark:text-blue-400 text-lg'"></i>
+                </div>
                 @if (isExpanded()) { <span class="text-slate-800 dark:text-slate-100 font-semibold">{{ group.label }}</span> }
               </div>
-            </p-accordion-header>
-            <p-accordion-content>
-              <ul class="space-y-1 mt-1">
-                <li *ngFor="let item of group.items">
-                  <a [routerLink]="item.routerLink" 
-                    routerLinkActive="bg-blue-100 text-primary-100"
-                     class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-200 group relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <i [class]="item.icon + ' text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors relative z-10'"></i>
-                    @if (isExpanded()) { <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors relative z-10">{{ item.label }}</span> }
-                  </a>
-                </li>
-              </ul>
-            </p-accordion-content>
-          </p-accordion-panel>
-        </p-accordion>
+            </div>
+            <ul *ngIf="activeAccordionIndex().includes(group.label)" class="mt-1 space-y-1 px-2">
+              <li *ngFor="let item of group.items">
+                <a [routerLink]="item.routerLink"
+                   routerLinkActive="bg-blue-100 text-primary-100"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-200 group relative overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md transition-colors relative z-10">
+                    <i [class]="item.icon + ' text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-base'"></i>
+                  </div>
+                  @if (isExpanded()) { <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors relative z-10">{{ item.label }}</span> }
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
       </aside>
 
       <main class="flex-1 overflow-auto bg-bg-100 dark:bg-bg-dark-100">
-        <div class="bg-white/95 dark:bg-bg-dark-200 shadow-sm border-b border-bg-200 dark:border-bg-dark-300 p-6 sticky top-0 z-20 backdrop-blur-sm">
+        <div class="bg-white/95 dark:bg-gray-900 shadow-sm border-b border-bg-200 dark:border-bg-dark-300 p-6 sticky top-0 z-20 backdrop-blur-sm">
           <div class="max-w-7xl flex items-center justify-between mx-auto">
             <div>
-              <h2 class="text-2xl font-bold bg-gradient-to-r from-[#0077c2] to-[#59a5f5] bg-clip-text text-transparent">Sistema de Predicción de Demanda</h2>
+              <h2 class="text-2xl font-bold bg-gradient-to-r from-[#0077c2] to-[#59a5f5] bg-clip-text text-transparent dark:from-[#59a5f5] dark:to-[#0077c2]">Sistema de Predicción de Demanda</h2>
               @if (currentRole()) {
                 <div class="flex items-center gap-2 mt-2">
-                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 border-blue-200">
                     <i [class]="'text-xs ' + roleService.getRoleInfo().icon + ' text-[#0077c2] dark:text-[#59a5f5]'"></i>
                     <span class="text-xs font-medium text-[#0077c2] dark:text-[#59a5f5]">
                       {{ roleService.getRoleInfo().name }}
@@ -96,29 +103,21 @@ import { AccordionModule } from 'primeng/accordion';
               }
             </div>
             <!-- Usuario y Logout -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 relative">
               @if (usuario()) {
-                <div class="flex items-center gap-3">
-                  <p-avatar
-                    [label]="initials()"
-                    styleClass="!bg-gradient-to-br !from-blue-600 !to-blue-800 !text-white !font-bold !shadow-lg"
-                    size="large"
-                    shape="circle"
-                  ></p-avatar>
-                  <div class="hidden sm:block">
-                    <p class="text-sm font-semibold text-text-100 dark:text-text-dark-100">{{ usuario()?.nombreCompleto }}</p>
-                    <p class="text-xs text-text-200 dark:text-text-dark-200">{{ usuario()?.rol }}</p>
-                  </div>
-                </div>
-
-                <button
-                  (click)="onLogout()"
-                  class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg text-white font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                  <span class="flex items-center gap-2">
-                    <i class="pi pi-sign-out"></i>
-                    Cerrar sesión
-                  </span>
-                </button>
+                <div class="flex items-center gap-3 cursor-pointer" (click)="menu.toggle($event)">
+                      <p-avatar
+                        [label]="initials()"
+                        styleClass="!bg-gradient-to-br !from-blue-600 !to-blue-800 !text-white !font-bold !shadow-lg dark:!from-blue-400 dark:!to-blue-600"
+                        size="large"
+                        shape="circle"
+                      ></p-avatar>
+                      <div class="hidden sm:block">
+                        <p class="text-sm font-semibold text-text-100 dark:text-text-dark-100">{{ usuario()?.nombreCompleto }}</p>
+                        <p class="text-xs text-text-200 dark:text-text-dark-200">{{ usuario()?.rol }}</p>
+                      </div>
+                    </div>
+                    <p-menu #menu [model]="profileMenu()" [popup]="true" appendTo="body"></p-menu>
               }
             </div>
           </div>
@@ -129,119 +128,20 @@ import { AccordionModule } from 'primeng/accordion';
       </main>
     </div>
     </div>
-  `,
-  styles: [`
-    :host ::ng-deep {
-      .p-accordion {
-        background: transparent;
-        border: none;
-      }
-      .p-accordion .p-accordion-header .p-accordion-header-link {
-        padding: 0.875rem 1rem;
-        border-radius: 0.75rem;
-        transition: all 0.2s ease;
-        margin-bottom: 0.25rem;
-      }
-      .p-accordion .p-accordion-header .p-accordion-header-link:hover {
-        background-color: rgb(239 246 255);
-        transform: translateX(2px);
-      }
-      .p-accordion .p-accordion-header .p-accordion-header-link:focus {
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-      }
-      .p-accordion .p-accordion-content {
-        padding: 0.25rem 0.5rem 0.75rem 0.5rem;
-        background: transparent;
-      }
-      
-      /* Active route styling */
-      a[routerLinkActive].bg-blue-600 i,
-      a[routerLinkActive].bg-blue-600 span {
-        color: white !important;
-      }
-    }
-
-    :host ::ng-deep .dark {
-      .p-accordion .p-accordion-header .p-accordion-header-link:hover {
-        background-color: rgb(30 41 59);
-      }
-      .p-accordion .p-accordion-header .p-accordion-header-link:focus {
-        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
-      }
-    }
-
-    /* Theme overrides mapped to CSS variables (palette) */
-    :host ::ng-deep {
-      /* Map common Tailwind utility classes to theme variables */
-      .text-blue-600 { color: var(--primary-100) !important; }
-      .text-blue-700 { color: var(--primary-200) !important; }
-      .from-blue-600 { color: var(--primary-100) !important; }
-      .to-blue-800 { color: var(--primary-200) !important; }
-      .bg-blue-50 { background-color: rgba(89,165,245,0.06) !important; }
-
-      /* Active link (routerLinkActive with important class) */
-      a[routerLinkActive].bg-blue-600,
-      a[routerLinkActive].bg-blue-600[routerLinkActive] {
-        background-color: var(--primary-100) !important;
-        color: var(--bg-100) !important;
-      }
-      a[routerLinkActive].bg-blue-600 i,
-      a[routerLinkActive].bg-blue-600 span {
-        color: var(--bg-100) !important;
-      }
-
-      /* Group hover mappings (Tailwind classes include colons; escape them) */
-      .group-hover\:text-blue-600:hover { color: var(--primary-100) !important; }
-      .dark\:group-hover\:text-blue-400:hover { color: var(--primary-200) !important; }
-
-      /* Avatar preset override to use theme gradients */
-      p-avatar .p-avatar {
-        background: linear-gradient(135deg, var(--primary-100), var(--primary-200)) !important;
-        color: var(--bg-100) !important;
-        box-shadow: 0 6px 18px rgba(0, 119, 194, 0.15) !important;
-      }
-
-      /* Title gradient text using palette */
-      h2 {
-        background: linear-gradient(90deg, var(--primary-100), var(--primary-200));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-      }
-
-      /* Links and groups hover accent */
-      .group:hover .group-hover\:text-blue-600,
-      .group:hover .group-hover\:text-blue-600 * {
-        color: var(--primary-100) !important;
-      }
-
-      /* Subtle background for active/hovered menu items */
-      a:hover, .p-accordion .p-accordion-header .p-accordion-header-link:hover {
-        background: linear-gradient(90deg, rgba(7,119,194,0.04), rgba(89,165,245,0.03)) !important;
-      }
-
-      /* Make separators and borders follow theme */
-      .border-slate-200 { border-color: var(--bg-300) !important; }
-      .dark\:border-slate-800 { border-color: rgba(12,18,28,0.65) !important; }
-
-      /* Improve logout button gradient using palette */
-      .logout-gradient {
-        background: linear-gradient(90deg, var(--accent-100), var(--accent-200)) !important;
-        color: var(--bg-100) !important;
-      }
-    }
-  `]
+  `
 })
 export class ManagementLayouts {
   private authService = inject(AuthService);
   public roleService = inject(RolePermissionsService);
   isExpanded = signal(false);
-  
+
   activeAccordionIndex = signal<string[]>([]);
   usuario = this.authService.usuario;
   currentRole = this.roleService.currentRole;
   permissions = this.roleService.currentPermissions;
-  
+
+  logoutMenuVisible = signal(false);
+
   constructor() {
     effect(() => {
       if (!this.isExpanded()) {
@@ -249,7 +149,7 @@ export class ManagementLayouts {
       }
     });
   }
-  
+
   initials = computed(() => {
     const user = this.usuario();
     if (!user) return '';
@@ -261,7 +161,7 @@ export class ManagementLayouts {
   menuItems = computed<MenuItem[]>(() => {
     const role = this.currentRole();
     const perms = this.permissions();
-    
+
     const baseMenu: MenuItem[] = [
       {
         label: 'Dashboard',
@@ -325,6 +225,67 @@ export class ManagementLayouts {
             routerLink: ['/administracion/ordenes-compra']
           }] : [])
         ]
+      },
+      {
+        label: 'Análisis y Predicción',
+        icon: 'pi pi-fw pi-chart-line',
+        items: [
+          // Predicciones - solo para ADMIN y GERENTE
+          ...(perms.canAccessPredictions ? [{
+            label: 'Predicciones',
+            icon: 'pi pi-fw pi-chart-bar',
+            routerLink: ['/administracion/predicciones'],
+            badgeSeverity: 'success' as const
+          }] : []),
+          // Reportes - solo para ADMIN y GERENTE
+          ...(perms.canAccessReports ? [{
+            label: 'Reportes',
+            icon: 'pi pi-fw pi-file-pdf',
+            disabled: !perms.canAccessReports
+          }] : [])
+        ]
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'Administración',
+        icon: 'pi pi-fw pi-cog',
+        items: [
+          ...(perms.canManageUsers ? [{
+            label: 'Gestión de Usuarios',
+            icon: 'pi pi-fw pi-users',
+            routerLink: ['/administracion/admin/usuarios']
+          }, {
+            label: 'Configuración Empresa',
+            icon: 'pi pi-fw pi-building',
+            routerLink: ['/administracion/admin/configuracion-empresa']
+          }] : [])
+        ]
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'Ayuda y Documentación',
+        icon: 'pi pi-fw pi-question-circle',
+        items: [
+          {
+            label: 'Guía de Uso',
+            icon: 'pi pi-fw pi-book',
+            disabled: true
+          },
+          {
+            label: 'Soporte Técnico',
+            icon: 'pi pi-fw pi-phone',
+            disabled: true
+          }
+        ]
+      },
+      {
+        label: 'Cerrar Sesión',
+        icon: 'pi pi-fw pi-sign-out',
+        command: () => this.onLogout()
       }
     ];
 
@@ -400,6 +361,13 @@ export class ManagementLayouts {
     return baseMenu;
   });
 
+  // Menu específico del perfil (solo Cerrar Sesión)
+  profileMenu = computed<MenuItem[]>(() => [{
+    label: 'Cerrar Sesión',
+    icon: 'pi pi-fw pi-sign-out',
+    command: () => this.onLogout()
+  }]);
+
   menuGroups = computed<any[]>(() => {
     const perms = this.permissions();
     const groups: any[] = [];
@@ -460,5 +428,22 @@ export class ManagementLayouts {
   });
   onLogout() {
     this.authService.logout();
+  }
+
+  toggleLogoutMenu() {
+    this.logoutMenuVisible.set(!this.logoutMenuVisible());
+  }
+
+  // Toggle a group label in the activeAccordionIndex signal
+  toggleGroup(label: string) {
+    const current = this.activeAccordionIndex();
+    const idx = current.indexOf(label);
+    if (idx > -1) {
+      const next = [...current];
+      next.splice(idx, 1);
+      this.activeAccordionIndex.set(next);
+    } else {
+      this.activeAccordionIndex.set([...current, label]);
+    }
   }
 }

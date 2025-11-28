@@ -59,7 +59,6 @@ interface AlgoritmoCard {
     CardModule,
     ChartModule,
     Tooltip,
-    Slider,
     Chip,
     ToggleSwitch,
     Popover,

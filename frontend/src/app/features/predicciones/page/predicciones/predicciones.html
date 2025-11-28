@@ -10,11 +10,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <button 
-          pButton 
-          label="Nueva Predicción" 
-          icon="pi pi-sparkles" 
-          (click)="showDialogGenerar()"
+        <button pButton label="Nueva Predicción" icon="pi pi-sparkles" (click)="showDialogGenerar()"
           class="p-button-raised p-button-success">
         </button>
       </div>
@@ -23,15 +19,9 @@
 
   <!-- Tabla de Predicciones -->
   <div class="table-card">
-    <p-table 
-      #dt
-      [value]="predicciones()" 
-      [loading]="loading()"
-      [lazy]="true"
-      [paginator]="false"
-      [tableStyle]="{ 'min-width': '70rem' }"
-      styleClass="p-datatable-gridlines p-datatable-sm">
-      
+    <p-table #dt [value]="predicciones()" [loading]="loading()" [lazy]="true" [paginator]="false"
+      [tableStyle]="{ 'min-width': '70rem' }" styleClass="p-datatable-gridlines p-datatable-sm">
+
       <ng-template #caption>
         <div class="table-header">
           <span class="table-title">
@@ -65,8 +55,7 @@
             </div>
           </td>
           <td class="text-center">
-            <p-chip 
-              [label]="prediccion.algoritmo" 
+            <p-chip [label]="prediccion.algoritmo"
               [style]="{'background-color': getColorAlgoritmo(prediccion.algoritmo), 'color': '#fff'}"
               icon="pi pi-chart-line">
             </p-chip>
@@ -76,28 +65,26 @@
             <span class="metric-unit">unidades</span>
           </td>
           <td class="text-center">
-            <span class="badge-horizonte">{{ prediccion.horizonteTiempo }} días</span>  
+            <span class="badge-horizonte">{{ prediccion.horizonteTiempo }} días</span>
           </td>
           <td class="text-center">
             @if (prediccion.estado) {
-              <p-chip 
-                [label]="prediccion.estado" 
-                [style]="{'background-color': getSeverityEstado(prediccion.estado), 'color': '#fff'}"
-                [icon]="prediccion.estado === 'ACTIVA' ? 'pi pi-check-circle' : prediccion.estado === 'FALLIDA' ? 'pi pi-times-circle' : 'pi pi-clock'">
-              </p-chip>
+            <p-chip [label]="prediccion.estado"
+              [style]="{'background-color': getSeverityEstado(prediccion.estado), 'color': '#fff'}"
+              [icon]="prediccion.estado === 'ACTIVA' ? 'pi pi-check-circle' : prediccion.estado === 'FALLIDA' ? 'pi pi-times-circle' : 'pi pi-clock'">
+            </p-chip>
             } @else {
-              <span class="text-muted">N/A</span>
+            <span class="text-muted">N/A</span>
             }
           </td>
           <td class="text-center">
             @if (prediccion.calidadPrediccion) {
-              <p-chip 
-                [label]="prediccion.calidadPrediccion" 
-                [style]="{'background-color': getSeverityCalidad(prediccion.calidadPrediccion), 'color': '#fff'}"
-                [icon]="getIconCalidad(prediccion.calidadPrediccion)">
-              </p-chip>
+            <p-chip [label]="prediccion.calidadPrediccion"
+              [style]="{'background-color': getSeverityCalidad(prediccion.calidadPrediccion), 'color': '#fff'}"
+              [icon]="getIconCalidad(prediccion.calidadPrediccion)">
+            </p-chip>
             } @else {
-              <span class="text-muted">N/A</span>
+            <span class="text-muted">N/A</span>
             }
           </td>
           <td class="text-center text-sm text-muted">
@@ -105,21 +92,11 @@
           </td>
           <td class="text-center">
             <div class="action-buttons">
-              <button 
-                pButton 
-                icon="pi pi-eye" 
-                class="p-button-rounded p-button-info p-button-sm p-button-text"
-                pTooltip="Ver detalles y gráficos"
-                tooltipPosition="top"
-                (click)="verDetalle(prediccion)">
+              <button pButton icon="pi pi-eye" class="p-button-rounded p-button-info p-button-sm p-button-text"
+                pTooltip="Ver detalles y gráficos" tooltipPosition="top" (click)="verDetalle(prediccion)">
               </button>
-              <button 
-                pButton 
-                icon="pi pi-trash" 
-                class="p-button-rounded p-button-danger p-button-sm p-button-text"
-                pTooltip="Eliminar predicción"
-                tooltipPosition="top"
-                (click)="eliminarPrediccion(prediccion)">
+              <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-sm p-button-text"
+                pTooltip="Eliminar predicción" tooltipPosition="top" (click)="eliminarPrediccion(prediccion)">
               </button>
             </div>
           </td>
@@ -131,11 +108,7 @@
           <td colspan="8" class="text-center empty-state">
             <i class="pi pi-chart-line empty-icon"></i>
             <p class="empty-text">No hay predicciones generadas aún</p>
-            <button 
-              pButton 
-              label="Generar primera predicción" 
-              icon="pi pi-plus" 
-              class="p-button-outlined"
+            <button pButton label="Generar primera predicción" icon="pi pi-plus" class="p-button-outlined"
               (click)="showDialogGenerar()">
             </button>
           </td>
@@ -143,30 +116,21 @@
       </ng-template>
     </p-table>
 
-    <p-paginator 
-      [first]="first()" 
-      [rows]="rows()" 
-      [totalRecords]="totalRecords()"
-      [rowsPerPageOptions]="rowsPerPageOptions"
-      (onPageChange)="onPageChange($event)"
-      styleClass="custom-paginator">
+    <p-paginator [first]="first()" [rows]="rows()" [totalRecords]="totalRecords()"
+      [rowsPerPageOptions]="rowsPerPageOptions" (onPageChange)="onPageChange($event)" styleClass="custom-paginator">
     </p-paginator>
   </div>
 
   <!-- Dialogs y otros componentes en siguiente mensaje -->
-  
+
   <!-- Dialog: Generar Predicción (Wizard 3 pasos) -->
-  <p-dialog 
-    [(visible)]="dialogGenerarVisible"
-    [modal]="true"
-    [draggable]="false"
-    [resizable]="false"
-    [style]="{width: '900px'}"
-    styleClass="overflow-hidden">
-    
+  <p-dialog [(visible)]="dialogGenerarVisible" [modal]="true" [draggable]="false" [resizable]="false"
+    [style]="{width: '900px'}" styleClass="overflow-hidden">
+
     <ng-template #header>
       <div class="flex items-center gap-3">
-        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600">
+        <div
+          class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600">
           <i class="pi pi-sparkles text-white text-xl"></i>
         </div>
         <div>
@@ -179,304 +143,294 @@
     <form [formGroup]="generarForm" class="min-h-[400px]">
       <!-- Paso 1: Seleccionar Producto -->
       @if (pasoActual() === 1) {
-        <div class="animate-fadeIn">
-          <div class="flex items-start gap-4 mb-6 p-4 bg-blue-50 rounded-lg">
-            <i class="pi pi-box text-blue-600 text-3xl"></i>
-            <div>
-              <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Selecciona el Producto</h3>
-              <p class="text-sm text-gray-600 m-0">Elige el producto para el cual deseas predecir la demanda futura</p>
-            </div>
-          </div>
-
-          <div class="space-y-6">
-            <div>
-              <label for="producto" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                Producto <span class="text-red-500">*</span>
-                <i class="pi pi-info-circle text-blue-500 text-sm cursor-help" 
-                   [pTooltip]="ayudaService.obtenerTooltipCampo('producto')"
-                   tooltipPosition="top"></i>
-              </label>
-              <p-select 
-                id="producto"
-                formControlName="producto" 
-                [options]="productos()"
-                optionLabel="nombre"
-                placeholder="Buscar producto..."
-                [filter]="true"
-                filterPlaceholder="Buscar..."
-                [showClear]="true"
-                styleClass="w-full"
-                (onChange)="onProductoSeleccionado($event.value?.productoId)">
-                <ng-template #selectedItem let-producto>
-                  <div class="flex items-center gap-2">
-                    <i class="pi pi-box text-gray-400"></i>
-                    <span class="font-medium">{{ producto.nombre }}</span>
-                  </div>
-                </ng-template>
-                <ng-template #item let-producto>
-                  <div class="flex flex-col py-2">
-                    <span class="font-medium text-gray-800">{{ producto.nombre }}</span>
-                    <span class="text-xs text-gray-500">{{ producto.categoria?.nombre || 'Sin categoría' }}</span>
-                  </div>
-                </ng-template>
-              </p-select>
-            </div>
-
-            <div>
-              <label for="horizonteTiempo" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                Horizonte de Predicción (días) <span class="text-red-500">*</span>
-                <i class="pi pi-info-circle text-blue-500 text-sm cursor-help" 
-                   [pTooltip]="ayudaService.obtenerTooltipCampo('horizontePrediccion')"
-                   tooltipPosition="top"></i>
-              </label>
-              <p-inputnumber 
-                id="horizonteTiempo"
-                formControlName="horizonteTiempo" 
-                [min]="1"
-                [max]="365"
-                [showButtons]="true"
-                suffix=" días"
-                styleClass="w-full">
-              </p-inputnumber>
-              <small class="flex items-center gap-2 mt-2 text-gray-500">
-                <i class="pi pi-lightbulb text-amber-500"></i>
-                {{ ayudaService.obtenerAyudaCampo('horizontePrediccion')?.recomendacion || 'Selecciona cuántos días en el futuro deseas predecir (recomendado: 7-90 días)' }}
-              </small>
-            </div>
+      <div class="animate-fadeIn">
+        <div class="flex items-start gap-4 mb-6 p-4 bg-blue-50 rounded-lg">
+          <i class="pi pi-box text-blue-600 text-3xl"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Selecciona el Producto</h3>
+            <p class="text-sm text-gray-600 m-0">Elige el producto para el cual deseas predecir la demanda futura</p>
           </div>
         </div>
+
+        <div class="space-y-6">
+          <div>
+            <label for="producto" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              Producto <span class="text-red-500">*</span>
+              <i class="pi pi-info-circle text-blue-500 text-sm cursor-help"
+                [pTooltip]="ayudaService.obtenerTooltipCampo('producto')" tooltipPosition="top"></i>
+            </label>
+            <p-select id="producto" formControlName="producto" [options]="productos()" optionLabel="nombre"
+              placeholder="Buscar producto..." [filter]="true" filterPlaceholder="Buscar..." [showClear]="true"
+              styleClass="w-full" (onChange)="onProductoSeleccionado($event.value?.productoId)">
+              <ng-template #selectedItem let-producto>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-box text-gray-400"></i>
+                  <span class="font-medium">{{ producto.nombre }}</span>
+                </div>
+              </ng-template>
+              <ng-template #item let-producto>
+                <div class="flex flex-col py-2">
+                  <span class="font-medium text-gray-800">{{ producto.nombre }}</span>
+                  <span class="text-xs text-gray-500">{{ producto.categoria?.nombre || 'Sin categoría' }}</span>
+                </div>
+              </ng-template>
+            </p-select>
+          </div>
+
+          <div>
+            <label for="horizonteTiempo" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              Horizonte de Predicción (días) <span class="text-red-500">*</span>
+              <i class="pi pi-info-circle text-blue-500 text-sm cursor-help"
+                [pTooltip]="ayudaService.obtenerTooltipCampo('horizontePrediccion')" tooltipPosition="top"></i>
+            </label>
+            <p-inputnumber id="horizonteTiempo" formControlName="horizonteTiempo" [min]="1" [max]="365"
+              [showButtons]="true" suffix=" días" styleClass="w-full">
+            </p-inputnumber>
+            <small class="flex items-center gap-2 mt-2 text-gray-500">
+              <i class="pi pi-lightbulb text-amber-500"></i>
+              {{ ayudaService.obtenerAyudaCampo('horizontePrediccion')?.recomendacion || 'Selecciona cuántos días en el
+              futuro deseas predecir (recomendado: 7-90 días)' }}
+            </small>
+          </div>
+        </div>
+      </div>
       }
 
       <!-- Paso 2: Seleccionar Algoritmo -->
       @if (pasoActual() === 2) {
-        <div class="animate-fadeIn">
-          <!-- Toggle de Modo -->
-          <div class="flex items-center justify-between p-5 mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1 flex items-center gap-2">
-                <i [class]="modoAutomatico() ? 'pi pi-sparkles text-blue-600' : 'pi pi-sliders-h text-gray-600'"></i>
-                {{ modoAutomatico() ? 'Modo Automático' : 'Modo Manual' }}
-                <i class="pi pi-info-circle text-blue-500 text-sm cursor-help ml-1" 
-                   [pTooltip]="ayudaService.obtenerTooltipCampo('modoAutomatico')"
-                   tooltipPosition="top"></i>
-              </h3>
-              <p class="text-sm text-gray-600 m-0">
-                @if (modoAutomatico()) {
-                  {{ ayudaService.obtenerAyudaCampo('modoAutomatico')?.ayuda?.automatico || 'El sistema analizará automáticamente tus datos históricos y recomendará el mejor algoritmo' }}
-                } @else {
-                  {{ ayudaService.obtenerAyudaCampo('modoAutomatico')?.ayuda?.manual || 'Selecciona y configura manualmente el algoritmo de predicción' }}
-                }
-              </p>
-            </div>
-            <p-toggleswitch 
-              [(ngModel)]="modoAutomatico" 
-              [ngModelOptions]="{standalone: true}"
-              (ngModelChange)="toggleModo()" 
-              styleClass="ml-4">
-            </p-toggleswitch>
-          </div>
-
-          <!-- MODO AUTOMÁTICO -->
-          @if (modoAutomatico()) {
-            <div class="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-400 rounded-xl shadow-md">
-              <div class="flex items-start gap-4">
-                <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-sparkles text-purple-600 text-3xl"></i>
-                </div>
-                <div class="flex-1">
-                  <h4 class="text-xl font-bold text-purple-900 m-0 mb-3">Selección Automática de Algoritmo</h4>
-                  <p class="text-sm text-purple-800 leading-relaxed m-0 mb-4">
-                    El sistema analizará tus datos históricos y seleccionará automáticamente el mejor algoritmo de Machine Learning 
-                    entre <strong>ARIMA</strong>, <strong>Random Forest</strong>, <strong>Gradient Boosting</strong> y <strong>Regresión Lineal</strong>.
-                  </p>
-                  
-                  <div class="flex flex-wrap items-center gap-4">
-                    <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
-                      <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
-                      <span class="text-sm font-bold text-purple-900">AUTO (Selección Inteligente)</span>
-                    </div>
-                    
-                    <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
-                      <span class="text-xs text-purple-700 font-medium block mb-1">Framework</span>
-                      <span class="text-sm font-bold text-purple-900">SMILE ML v3.1.1</span>
-                    </div>
-                  </div>
-                  
-                  <div class="mt-4 p-3 bg-purple-100 rounded-lg">
-                    <div class="flex items-center gap-2 text-sm text-purple-800">
-                      <i class="pi pi-info-circle"></i>
-                      <span>El sistema comparará varios modelos y elegirá el de menor error (MAPE) para tu producto.</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
-
-          <!-- MODO MANUAL -->
-          @if (!modoAutomatico()) {
-            <div class="flex items-start gap-4 mb-6 p-4 bg-indigo-50 rounded-lg">
-              <i class="pi pi-chart-line text-indigo-600 text-3xl"></i>
-              <div>
-                <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Elige el Algoritmo de Predicción</h3>
-                <p class="text-sm text-gray-600 m-0">Selecciona el algoritmo que mejor se adapte a las características de tu producto</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4">
-              @for (algoritmo of algoritmos(); track algoritmo.codigo) {
-                <div 
-                  class="relative border-2 rounded-xl p-5 cursor-pointer transition-all duration-300 hover:shadow-lg"
-                  [class.border-gray-200]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
-                  [class.bg-white]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
-                  [class.border-indigo-500]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
-                  [class.bg-indigo-50]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
-                  [class.shadow-md]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
-                  (click)="seleccionarAlgoritmo(algoritmo.codigo)">
-                  
-                  @if (algoritmo.recomendado) {
-                    <div class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-                      <i class="pi pi-star-fill"></i>
-                      Recomendado
-                    </div>
-                  }
-
-                  <div class="flex items-start gap-4">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-lg" [style.background-color]="algoritmo.color + '20'">
-                      <i [class]="algoritmo.icono" [style.color]="algoritmo.color" class="text-2xl"></i>
-                    </div>
-                    
-                    <div class="flex-1">
-                      <h4 class="text-lg font-bold text-gray-800 m-0 mb-2 flex items-center gap-2">
-                        {{ algoritmo.nombre }}
-                        <i class="pi pi-question-circle text-indigo-500 text-sm cursor-help" 
-                           [pTooltip]="ayudaService.obtenerAyudaAlgoritmo(algoritmo.codigo)?.cuando_usar || ''"
-                           tooltipPosition="top"></i>
-                      </h4>
-                      <p class="text-sm text-gray-600 m-0 mb-3">{{ algoritmo.descripcion }}</p>
-                      
-                      <div class="flex flex-wrap gap-3 text-xs">
-                        <div class="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full">
-                          <i class="pi pi-check-circle"></i>
-                          <span>{{ algoritmo.usoCaso }}</span>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full">
-                          <i class="pi pi-database"></i>
-                          <span>Mínimo {{ algoritmo.minimosDatos }} registros</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center">
-                      @if (generarForm.get('algoritmo')?.value === algoritmo.codigo) {
-                        <div class="flex items-center gap-2 text-indigo-600 font-semibold">
-                          <i class="pi pi-check-circle text-xl"></i>
-                          <span class="text-sm">Seleccionado</span>
-                        </div>
-                      } @else {
-                        <i class="pi pi-angle-right text-gray-400 text-xl"></i>
-                      }
-                    </div>
-                  </div>
-                </div>
+      <div class="animate-fadeIn">
+        <!-- Toggle de Modo -->
+        <div
+          class="flex items-center justify-between p-5 mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1 flex items-center gap-2">
+              <i [class]="modoAutomatico() ? 'pi pi-sparkles text-blue-600' : 'pi pi-sliders-h text-gray-600'"></i>
+              {{ modoAutomatico() ? 'Modo Automático' : 'Modo Manual' }}
+              <i class="pi pi-info-circle text-blue-500 text-sm cursor-help ml-1"
+                [pTooltip]="ayudaService.obtenerTooltipCampo('modoAutomatico')" tooltipPosition="top"></i>
+            </h3>
+            <p class="text-sm text-gray-600 m-0">
+              @if (modoAutomatico()) {
+              {{ ayudaService.obtenerAyudaCampo('modoAutomatico')?.ayuda?.automatico || 'El sistema analizará
+              automáticamente tus datos históricos y recomendará el mejor algoritmo' }}
+              } @else {
+              {{ ayudaService.obtenerAyudaCampo('modoAutomatico')?.ayuda?.manual || 'Selecciona y configura manualmente
+              el algoritmo de predicción' }}
               }
+            </p>
+          </div>
+          <p-toggleswitch [(ngModel)]="modoAutomatico" [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="toggleModo()" styleClass="ml-4">
+          </p-toggleswitch>
+        </div>
+
+        <!-- MODO AUTOMÁTICO -->
+        @if (modoAutomatico()) {
+        <div class="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-400 rounded-xl shadow-md">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+              <i class="pi pi-sparkles text-purple-600 text-3xl"></i>
             </div>
+            <div class="flex-1">
+              <h4 class="text-xl font-bold text-purple-900 m-0 mb-3">Selección Automática de Algoritmo</h4>
+              <p class="text-sm text-purple-800 leading-relaxed m-0 mb-4">
+                El sistema analizará tus datos históricos y seleccionará automáticamente el mejor algoritmo de Machine
+                Learning
+                entre <strong>ARIMA</strong>, <strong>Random Forest</strong>, <strong>Gradient Boosting</strong> y
+                <strong>Regresión Lineal</strong>.
+              </p>
+
+              <div class="flex flex-wrap items-center gap-4">
+                <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
+                  <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
+                  <span class="text-sm font-bold text-purple-900">AUTO (Selección Inteligente)</span>
+                </div>
+
+                <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
+                  <span class="text-xs text-purple-700 font-medium block mb-1">Framework</span>
+                  <span class="text-sm font-bold text-purple-900">SMILE ML v3.1.1</span>
+                </div>
+              </div>
+
+              <div class="mt-4 p-3 bg-purple-100 rounded-lg">
+                <div class="flex items-center gap-2 text-sm text-purple-800">
+                  <i class="pi pi-info-circle"></i>
+                  <span>El sistema comparará varios modelos y elegirá el de menor error (MAPE) para tu producto.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+        <!-- MODO MANUAL -->
+        @if (!modoAutomatico()) {
+        <div class="flex items-start gap-4 mb-6 p-4 bg-indigo-50 rounded-lg">
+          <i class="pi pi-chart-line text-indigo-600 text-3xl"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Elige el Algoritmo de Predicción</h3>
+            <p class="text-sm text-gray-600 m-0">Selecciona el algoritmo que mejor se adapte a las características de tu
+              producto</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+          @for (algoritmo of algoritmos(); track algoritmo.codigo) {
+          <div class="relative border-2 rounded-xl p-5 cursor-pointer transition-all duration-300 hover:shadow-lg"
+            [class.border-gray-200]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
+            [class.bg-white]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
+            [class.border-indigo-500]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
+            [class.bg-indigo-50]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
+            [class.shadow-md]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
+            (click)="seleccionarAlgoritmo(algoritmo.codigo)">
+
+            @if (algoritmo.recomendado) {
+            <div
+              class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+              <i class="pi pi-star-fill"></i>
+              Recomendado
+            </div>
+            }
+
+            <div class="flex items-start gap-4">
+              <div class="flex items-center justify-center w-14 h-14 rounded-lg"
+                [style.background-color]="algoritmo.color + '20'">
+                <i [class]="algoritmo.icono" [style.color]="algoritmo.color" class="text-2xl"></i>
+              </div>
+
+              <div class="flex-1">
+                <h4 class="text-lg font-bold text-gray-800 m-0 mb-2 flex items-center gap-2">
+                  {{ algoritmo.nombre }}
+                  <i class="pi pi-question-circle text-indigo-500 text-sm cursor-help"
+                    [pTooltip]="ayudaService.obtenerAyudaAlgoritmo(algoritmo.codigo)?.cuando_usar || ''"
+                    tooltipPosition="top"></i>
+                </h4>
+                <p class="text-sm text-gray-600 m-0 mb-3">{{ algoritmo.descripcion }}</p>
+
+                <div class="flex flex-wrap gap-3 text-xs">
+                  <div class="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{ algoritmo.usoCaso }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full">
+                    <i class="pi pi-database"></i>
+                    <span>Mínimo {{ algoritmo.minimosDatos }} registros</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center">
+                @if (generarForm.get('algoritmo')?.value === algoritmo.codigo) {
+                <div class="flex items-center gap-2 text-indigo-600 font-semibold">
+                  <i class="pi pi-check-circle text-xl"></i>
+                  <span class="text-sm">Seleccionado</span>
+                </div>
+                } @else {
+                <i class="pi pi-angle-right text-gray-400 text-xl"></i>
+                }
+              </div>
+            </div>
+          </div>
           }
         </div>
+        }
+      </div>
       }
 
       <!-- Paso 3: Confirmar y Configurar Opciones -->
       @if (pasoActual() === 3) {
-        <div class="animate-fadeIn">
-          <div class="flex items-start gap-4 mb-6 p-4 bg-purple-50 rounded-lg">
-            <i class="pi pi-check-square text-purple-600 text-3xl"></i>
-            <div>
-              <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Confirmar Configuración</h3>
-              <p class="text-sm text-gray-600 m-0">Revisa la configuración final antes de generar la predicción</p>
-            </div>
+      <div class="animate-fadeIn">
+        <div class="flex items-start gap-4 mb-6 p-4 bg-purple-50 rounded-lg">
+          <i class="pi pi-check-square text-purple-600 text-3xl"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Confirmar Configuración</h3>
+            <p class="text-sm text-gray-600 m-0">Revisa la configuración final antes de generar la predicción</p>
           </div>
+        </div>
 
-          <!-- Resumen de Configuración -->
-          <div class="border border-gray-200 rounded-xl p-6 bg-white mb-6">
-            <h4 class="text-base font-bold text-gray-800 m-0 mb-4 flex items-center gap-2">
-              <i class="pi pi-info-circle text-blue-500"></i>
-              Resumen de Predicción
-            </h4>
+        <!-- Resumen de Configuración -->
+        <div class="border border-gray-200 rounded-xl p-6 bg-white mb-6">
+          <h4 class="text-base font-bold text-gray-800 m-0 mb-4 flex items-center gap-2">
+            <i class="pi pi-info-circle text-blue-500"></i>
+            Resumen de Predicción
+          </h4>
 
-            <div class="grid grid-cols-2 gap-4">
-              <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-                <i class="pi pi-box text-blue-600 text-xl"></i>
-                <div class="flex-1">
-                  <span class="text-xs text-blue-700 font-medium block mb-1">Producto</span>
-                  <span class="text-sm font-bold text-blue-900">{{ generarForm.get('producto')?.value?.nombre }}</span>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
-                <i class="pi pi-sparkles text-purple-600 text-xl"></i>
-                <div class="flex-1">
-                  <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
-                  <span class="text-sm font-bold text-purple-900">{{ obtenerNombreAlgoritmo(generarForm.get('algoritmo')?.value || 'AUTO') }}</span>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
-                <i class="pi pi-calendar text-green-600 text-xl"></i>
-                <div class="flex-1">
-                  <span class="text-xs text-green-700 font-medium block mb-1">Horizonte</span>
-                  <span class="text-sm font-bold text-green-900">{{ generarForm.get('horizonteTiempo')?.value }} días</span>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
-                <i class="pi pi-chart-line text-amber-600 text-xl"></i>
-                <div class="flex-1">
-                  <span class="text-xs text-amber-700 font-medium block mb-1">Detección Estacional</span>
-                  <span class="text-sm font-bold text-amber-900">{{ generarForm.get('detectarEstacionalidad')?.value ? 'Activada' : 'Desactivada' }}</span>
-                </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+              <i class="pi pi-box text-blue-600 text-xl"></i>
+              <div class="flex-1">
+                <span class="text-xs text-blue-700 font-medium block mb-1">Producto</span>
+                <span class="text-sm font-bold text-blue-900">{{ generarForm.get('producto')?.value?.nombre }}</span>
               </div>
             </div>
-          </div>
 
-          <!-- Opción de Detección de Estacionalidad -->
-          <div class="border border-gray-200 rounded-xl p-6 bg-white">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex items-start gap-3 flex-1">
-                <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                  <i class="pi pi-chart-line text-indigo-600 text-lg"></i>
-                </div>
-                <div>
-                  <h4 class="text-base font-bold text-gray-800 m-0 mb-1">Detección Automática de Estacionalidad</h4>
-                  <p class="text-sm text-gray-600 m-0 mb-2">
-                    El sistema analizará tus datos históricos para identificar patrones estacionales (semanales, mensuales, anuales)
-                  </p>
-                  <div class="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
-                    <i class="pi pi-lightbulb text-amber-500"></i>
-                    <span>Recomendado para productos con variaciones cíclicas (helados, chocolates, panetón)</span>
-                  </div>
-                </div>
+            <div class="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+              <i class="pi pi-sparkles text-purple-600 text-xl"></i>
+              <div class="flex-1">
+                <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
+                <span class="text-sm font-bold text-purple-900">{{
+                  obtenerNombreAlgoritmo(generarForm.get('algoritmo')?.value || 'AUTO') }}</span>
               </div>
-              <p-toggleswitch 
-                formControlName="detectarEstacionalidad"
-                styleClass="ml-4">
-              </p-toggleswitch>
             </div>
-          </div>
 
-          <!-- Nota sobre SMILE ML -->
-          <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-            <div class="flex items-start gap-3">
-              <i class="pi pi-info-circle text-blue-600 text-xl flex-shrink-0"></i>
-              <div>
-                <h5 class="text-sm font-bold text-blue-900 m-0 mb-1">🤖 Predicción Inteligente con SMILE ML</h5>
-                <p class="text-xs text-blue-800 m-0">
-                  Los algoritmos SMILE ML se auto-configuran internamente sin necesidad de ajustar parámetros manuales.
-                  El sistema optimizará automáticamente los hiperparámetros para maximizar la precisión de la predicción.
-                </p>
+            <div class="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
+              <i class="pi pi-calendar text-green-600 text-xl"></i>
+              <div class="flex-1">
+                <span class="text-xs text-green-700 font-medium block mb-1">Horizonte</span>
+                <span class="text-sm font-bold text-green-900">{{ generarForm.get('horizonteTiempo')?.value }}
+                  días</span>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
+              <i class="pi pi-chart-line text-amber-600 text-xl"></i>
+              <div class="flex-1">
+                <span class="text-xs text-amber-700 font-medium block mb-1">Detección Estacional</span>
+                <span class="text-sm font-bold text-amber-900">{{ generarForm.get('detectarEstacionalidad')?.value ?
+                  'Activada' : 'Desactivada' }}</span>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- Opción de Detección de Estacionalidad -->
+        <div class="border border-gray-200 rounded-xl p-6 bg-white">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-chart-line text-indigo-600 text-lg"></i>
+              </div>
+              <div>
+                <h4 class="text-base font-bold text-gray-800 m-0 mb-1">Detección Automática de Estacionalidad</h4>
+                <p class="text-sm text-gray-600 m-0 mb-2">
+                  El sistema analizará tus datos históricos para identificar patrones estacionales (semanales,
+                  mensuales, anuales)
+                </p>
+                <div class="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                  <i class="pi pi-lightbulb text-amber-500"></i>
+                  <span>Recomendado para productos con variaciones cíclicas (helados, chocolates, panetón)</span>
+                </div>
+              </div>
+            </div>
+            <p-toggleswitch formControlName="detectarEstacionalidad" styleClass="ml-4">
+            </p-toggleswitch>
+          </div>
+        </div>
+
+        <!-- Nota sobre SMILE ML -->
+        <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+          <div class="flex items-start gap-3">
+            <i class="pi pi-info-circle text-blue-600 text-xl flex-shrink-0"></i>
+            <div>
+              <h5 class="text-sm font-bold text-blue-900 m-0 mb-1">🤖 Predicción Inteligente con SMILE ML</h5>
+              <p class="text-xs text-blue-800 m-0">
+                Los algoritmos SMILE ML se auto-configuran internamente sin necesidad de ajustar parámetros manuales.
+                El sistema optimizará automáticamente los hiperparámetros para maximizar la precisión de la predicción.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
       }
     </form>
 
@@ -484,47 +438,26 @@
       <div class="flex justify-between items-center w-full">
         <div class="flex items-center gap-3">
           @if (pasoActual() > 1) {
-            <button 
-              pButton 
-              label="Anterior" 
-              icon="pi pi-arrow-left" 
-              class="p-button-outlined p-button-secondary"
-              (click)="pasoAnterior()">
-            </button>
+          <button pButton label="Anterior" icon="pi pi-arrow-left" class="p-button-outlined p-button-secondary"
+            (click)="pasoAnterior()">
+          </button>
           }
-          
+
           <!-- Botón de Ayuda Contextual -->
-          <button 
-            pButton 
-            icon="pi pi-question-circle" 
-            label="Ayuda"
-            class="p-button-outlined p-button-help"
+          <button pButton icon="pi pi-question-circle" label="Ayuda" class="p-button-outlined p-button-help"
             (click)="ayudaPopover.toggle($event)">
           </button>
         </div>
 
-        @if (pasoActual() < 3) {
-          <button 
-            pButton 
-            label="Siguiente" 
-            icon="pi pi-arrow-right" 
-            iconPos="right"
-            [disabled]="!puedeAvanzar()"
-            [pTooltip]="obtenerTooltipSiguiente()"
-            tooltipPosition="top"
-            (click)="siguientePaso()">
+        @if (pasoActual() < 3) { <button pButton label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
+          [disabled]="!puedeAvanzar()" [pTooltip]="obtenerTooltipSiguiente()" tooltipPosition="top"
+          (click)="siguientePaso()">
           </button>
-        } @else {
-          <button 
-            pButton 
-            label="Generar Predicción" 
-            icon="pi pi-check" 
-            [loading]="loadingPrediccion()"
-            [disabled]="!generarForm.valid"
-            class="p-button-success"
-            (click)="onSubmit()">
+          } @else {
+          <button pButton label="Generar Predicción" icon="pi pi-check" [loading]="loadingPrediccion()"
+            [disabled]="!generarForm.valid" class="p-button-success" (click)="onSubmit()">
           </button>
-        }
+          }
       </div>
     </ng-template>
   </p-dialog>
@@ -533,706 +466,417 @@
   <p-popover #ayudaPopover>
     <div class="max-w-md p-1">
       @switch (pasoActual()) {
-        @case (1) {
-          <div class="space-y-3">
-            <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
-              <i class="pi pi-lightbulb text-yellow-500"></i>
-              Configuración Inicial
-            </h4>
-            <p class="text-sm text-gray-600 m-0">
-              {{ ayudaService.obtenerTooltipPaso(1) }}
-            </p>
-            
-            <div class="border-t pt-3">
-              <h5 class="text-sm font-semibold text-gray-700 mb-2">💡 Consejos útiles:</h5>
-              <ul class="text-xs text-gray-600 space-y-1 m-0 pl-4">
-                <li>El producto debe tener al menos <strong>7 registros de venta</strong></li>
-                <li>Un horizonte de <strong>7-30 días</strong> es ideal para planificación semanal/mensual</li>
-                <li>Para análisis a largo plazo, usa <strong>60-90 días</strong></li>
-              </ul>
-            </div>
-          </div>
-        }
-        
-        @case (2) {
-          <div class="space-y-3">
-            <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
-              <i class="pi pi-sparkles text-blue-500"></i>
-              Selección de Algoritmo
-            </h4>
-            <p class="text-sm text-gray-600 m-0">
-              {{ ayudaService.obtenerTooltipPaso(2) }}
-            </p>
-            
-            <div class="border-t pt-3">
-              <h5 class="text-sm font-semibold text-gray-700 mb-2">🤖 Modo Automático vs Manual:</h5>
-              <div class="space-y-2 text-xs text-gray-600">
-                <div class="flex gap-2">
-                  <i class="pi pi-check-circle text-green-500 mt-0.5"></i>
-                  <div>
-                    <strong>Automático:</strong> El sistema analiza patrones y recomienda el mejor algoritmo
-                  </div>
-                </div>
-                <div class="flex gap-2">
-                  <i class="pi pi-sliders-h text-purple-500 mt-0.5"></i>
-                  <div>
-                    <strong>Manual:</strong> Tú eliges el algoritmo según tu conocimiento del producto
-                  </div>
-                </div>
+      @case (1) {
+      <div class="space-y-3">
+        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
+          <i class="pi pi-lightbulb text-yellow-500"></i>
+          Configuración Inicial
+        </h4>
+        <p class="text-sm text-gray-600 m-0">
+          {{ ayudaService.obtenerTooltipPaso(1) }}
+        </p>
+
+        <div class="border-t pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 mb-2">💡 Consejos útiles:</h5>
+          <ul class="text-xs text-gray-600 space-y-1 m-0 pl-4">
+            <li>El producto debe tener al menos <strong>7 registros de venta</strong></li>
+            <li>Un horizonte de <strong>7-30 días</strong> es ideal para planificación semanal/mensual</li>
+            <li>Para análisis a largo plazo, usa <strong>60-90 días</strong></li>
+          </ul>
+        </div>
+      </div>
+      }
+
+      @case (2) {
+      <div class="space-y-3">
+        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
+          <i class="pi pi-sparkles text-blue-500"></i>
+          Selección de Algoritmo
+        </h4>
+        <p class="text-sm text-gray-600 m-0">
+          {{ ayudaService.obtenerTooltipPaso(2) }}
+        </p>
+
+        <div class="border-t pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 mb-2">🤖 Modo Automático vs Manual:</h5>
+          <div class="space-y-2 text-xs text-gray-600">
+            <div class="flex gap-2">
+              <i class="pi pi-check-circle text-green-500 mt-0.5"></i>
+              <div>
+                <strong>Automático:</strong> El sistema analiza patrones y recomienda el mejor algoritmo
               </div>
             </div>
-            
-            <div class="border-t pt-3">
-              <h5 class="text-sm font-semibold text-gray-700 mb-2">📊 Guía rápida de algoritmos:</h5>
-              <div class="space-y-2 text-xs">
-                <div class="p-2 bg-blue-50 rounded-lg">
-                  <strong class="text-blue-700">SMA:</strong>
-                  <span class="text-gray-600"> Ventas estables sin tendencias</span>
-                </div>
-                <div class="p-2 bg-green-50 rounded-lg">
-                  <strong class="text-green-700">SES:</strong>
-                  <span class="text-gray-600"> Tendencia creciente/decreciente</span>
-                </div>
-                <div class="p-2 bg-orange-50 rounded-lg">
-                  <strong class="text-orange-700">Holt-Winters:</strong>
-                  <span class="text-gray-600"> Patrones semanales/mensuales</span>
-                </div>
+            <div class="flex gap-2">
+              <i class="pi pi-sliders-h text-purple-500 mt-0.5"></i>
+              <div>
+                <strong>Manual:</strong> Tú eliges el algoritmo según tu conocimiento del producto
               </div>
             </div>
           </div>
-        }
-        
-        @case (3) {
-          <div class="space-y-3">
-            <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
-              <i class="pi pi-sliders-h text-purple-500"></i>
-              Ajuste de Parámetros
-            </h4>
-            <p class="text-sm text-gray-600 m-0">
-              {{ ayudaService.obtenerTooltipPaso(3) }}
-            </p>
-            
-            @switch (generarForm.get('algoritmo')?.value) {
-              @case ('simpleMovingAverageAlgorithm') {
-                <div class="border-t pt-3">
-                  <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetro Ventana:</h5>
-                  <div class="text-xs text-gray-600 space-y-2">
-                    <p class="m-0">
-                      {{ ayudaService.obtenerAyudaParametro('simpleMovingAverageAlgorithm', 'ventana')?.ayuda }}
-                    </p>
-                    <div class="bg-blue-50 p-2 rounded">
-                      <strong>Ejemplo:</strong> {{ ayudaService.obtenerAyudaParametro('simpleMovingAverageAlgorithm', 'ventana')?.ejemplo }}
-                    </div>
-                  </div>
-                </div>
-              }
-              
-              @case ('simpleExponentialSmoothingAlgorithm') {
-                <div class="border-t pt-3">
-                  <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetro Alpha (α):</h5>
-                  <div class="text-xs text-gray-600 space-y-2">
-                    <p class="m-0">
-                      {{ ayudaService.obtenerAyudaParametro('simpleExponentialSmoothingAlgorithm', 'alpha')?.ayuda }}
-                    </p>
-                    <div class="bg-green-50 p-2 rounded">
-                      <strong>Fórmula:</strong> {{ ayudaService.obtenerAyudaParametro('simpleExponentialSmoothingAlgorithm', 'alpha')?.formula }}
-                    </div>
-                  </div>
-                </div>
-              }
-              
-              @case ('holtWintersAlgorithm') {
-                <div class="border-t pt-3">
-                  <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetros Triple Exponencial:</h5>
-                  <div class="text-xs text-gray-600 space-y-2">
-                    <div class="flex items-start gap-2">
-                      <strong class="text-orange-600 min-w-[50px]">Alpha:</strong>
-                      <span>{{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'alpha')?.ayuda }}</span>
-                    </div>
-                    <div class="flex items-start gap-2">
-                      <strong class="text-orange-600 min-w-[50px]">Beta:</strong>
-                      <span>{{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'beta')?.ayuda }}</span>
-                    </div>
-                    <div class="flex items-start gap-2">
-                      <strong class="text-orange-600 min-w-[50px]">Gamma:</strong>
-                      <span>{{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'gamma')?.ayuda }}</span>
-                    </div>
-                    <div class="bg-orange-50 p-2 rounded">
-                      <strong>Periodo:</strong> {{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'periodo')?.ayuda }}
-                    </div>
-                  </div>
-                </div>
-              }
-            }
+        </div>
+
+        <div class="border-t pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 mb-2">📊 Guía rápida de algoritmos:</h5>
+          <div class="space-y-2 text-xs">
+            <div class="p-2 bg-blue-50 rounded-lg">
+              <strong class="text-blue-700">SMA:</strong>
+              <span class="text-gray-600"> Ventas estables sin tendencias</span>
+            </div>
+            <div class="p-2 bg-green-50 rounded-lg">
+              <strong class="text-green-700">SES:</strong>
+              <span class="text-gray-600"> Tendencia creciente/decreciente</span>
+            </div>
+            <div class="p-2 bg-orange-50 rounded-lg">
+              <strong class="text-orange-700">Holt-Winters:</strong>
+              <span class="text-gray-600"> Patrones semanales/mensuales</span>
+            </div>
           </div>
+        </div>
+      </div>
+      }
+
+      @case (3) {
+      <div class="space-y-3">
+        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
+          <i class="pi pi-sliders-h text-purple-500"></i>
+          Ajuste de Parámetros
+        </h4>
+        <p class="text-sm text-gray-600 m-0">
+          {{ ayudaService.obtenerTooltipPaso(3) }}
+        </p>
+
+        @switch (generarForm.get('algoritmo')?.value) {
+        @case ('simpleMovingAverageAlgorithm') {
+        <div class="border-t pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetro Ventana:</h5>
+          <div class="text-xs text-gray-600 space-y-2">
+            <p class="m-0">
+              {{ ayudaService.obtenerAyudaParametro('simpleMovingAverageAlgorithm', 'ventana')?.ayuda }}
+            </p>
+            <div class="bg-blue-50 p-2 rounded">
+              <strong>Ejemplo:</strong> {{ ayudaService.obtenerAyudaParametro('simpleMovingAverageAlgorithm',
+              'ventana')?.ejemplo }}
+            </div>
+          </div>
+        </div>
         }
+
+        @case ('simpleExponentialSmoothingAlgorithm') {
+        <div class="border-t pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetro Alpha (α):</h5>
+          <div class="text-xs text-gray-600 space-y-2">
+            <p class="m-0">
+              {{ ayudaService.obtenerAyudaParametro('simpleExponentialSmoothingAlgorithm', 'alpha')?.ayuda }}
+            </p>
+            <div class="bg-green-50 p-2 rounded">
+              <strong>Fórmula:</strong> {{ ayudaService.obtenerAyudaParametro('simpleExponentialSmoothingAlgorithm',
+              'alpha')?.formula }}
+            </div>
+          </div>
+        </div>
+        }
+
+        @case ('holtWintersAlgorithm') {
+        <div class="border-t pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetros Triple Exponencial:</h5>
+          <div class="text-xs text-gray-600 space-y-2">
+            <div class="flex items-start gap-2">
+              <strong class="text-orange-600 min-w-[50px]">Alpha:</strong>
+              <span>{{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'alpha')?.ayuda }}</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <strong class="text-orange-600 min-w-[50px]">Beta:</strong>
+              <span>{{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'beta')?.ayuda }}</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <strong class="text-orange-600 min-w-[50px]">Gamma:</strong>
+              <span>{{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'gamma')?.ayuda }}</span>
+            </div>
+            <div class="bg-orange-50 p-2 rounded">
+              <strong>Periodo:</strong> {{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'periodo')?.ayuda
+              }}
+            </div>
+          </div>
+        </div>
+        }
+        }
+      </div>
+      }
       }
     </div>
   </p-popover>
 
   <!-- Dialog: Ver Detalle de Predicción -->
-  <p-dialog 
-    [(visible)]="dialogDetalleVisible"
-    [modal]="true"
-    [draggable]="false"
-    [resizable]="false"
-    [style]="{width: '1100px', maxHeight: '90vh'}"
-    styleClass="overflow-hidden">
-    
+  <p-dialog [(visible)]="dialogDetalleVisible" [modal]="true" [draggable]="false" [resizable]="false"
+    [style]="{width: '1100px', maxHeight: '90vh'}" styleClass="overflow-hidden">
+
     <ng-template #header>
       <div class="flex items-center gap-3">
-        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600">
+        <div
+          class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600">
           <i class="pi pi-chart-bar text-white text-xl"></i>
         </div>
         <div>
           <h2 class="text-2xl font-bold text-gray-800 m-0">Detalles de la Predicción</h2>
           @if (prediccionSeleccionada()) {
-            <p class="text-sm text-gray-500 m-0">{{ prediccionSeleccionada()!.productoNombre }} - {{ prediccionSeleccionada()!.algoritmo }}</p>
+          <p class="text-sm text-gray-500 m-0">{{ prediccionSeleccionada()!.productoNombre }} - {{
+            prediccionSeleccionada()!.algoritmo }}</p>
           }
         </div>
       </div>
     </ng-template>
 
     @if (prediccionSeleccionada()) {
-      <div class="max-h-[70vh] overflow-y-auto">
-        
-        <!-- Tabs de Secciones -->
-        <p-tabs value="0">
-          <p-tablist>
-            <p-tab value="0">
-              <i class="pi pi-chart-line mr-2"></i>
-              Visualización
-            </p-tab>
-            <p-tab value="1">
-              <i class="pi pi-list-check mr-2"></i>
-              Recomendaciones
-            </p-tab>
-            <p-tab value="2">
-              <i class="pi pi-calculator mr-2"></i>
-              Optimización EOQ/ROP
-            </p-tab>
-          </p-tablist>
-          
-          <p-tabpanels>
-            <!-- Tab 1: Visualización y Métricas -->
-            <p-tabpanel value="0">
-              <div class="space-y-6 py-4">
-                <!-- Métricas de Calidad CON DARK MODE Y TOOLTIPS -->
-                <div class="grid grid-cols-4 gap-4">
-          <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-4 border border-blue-200 dark:border-blue-700">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-600 flex items-center justify-center">
-                <i class="pi pi-chart-line text-white"></i>
-              </div>
-              <div class="flex items-center gap-1">
-                <span class="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">MAE</span>
-                <i class="pi pi-info-circle text-blue-400 dark:text-blue-500 text-xs cursor-help" 
-                   pTooltip="Error Absoluto Medio: Promedio de los errores de predicción sin considerar el signo. Valores más bajos indican mayor precisión. Útil para entender el error típico en unidades reales."
-                   tooltipPosition="top"></i>
-              </div>
-            </div>
-            <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">
-              @if (prediccionSeleccionada()?.mae !== null && prediccionSeleccionada()?.mae !== undefined) {
-                {{ prediccionSeleccionada()!.mae | number:'1.2-2' }}
-              } @else {
-                <span class="text-gray-400">N/A</span>
-              }
-            </div>
-            <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">Error Absoluto Medio</div>
-          </div>
+    <div class="max-h-[70vh] overflow-y-auto">
 
-          <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-4 border border-green-200 dark:border-green-700">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-lg bg-green-500 dark:bg-green-600 flex items-center justify-center">
-                <i class="pi pi-percentage text-white"></i>
-              </div>
-              <div class="flex items-center gap-1">
-                <span class="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">MAPE</span>
-                <i class="pi pi-info-circle text-green-400 dark:text-green-500 text-xs cursor-help" 
-                   pTooltip="Error Porcentual Absoluto Medio: Error expresado como porcentaje de la demanda real. Ideal para comparar precisión entre productos de diferentes escalas. Menos de 10% se considera excelente, 10-20% bueno, más de 20% requiere atención."
-                   tooltipPosition="top"></i>
-              </div>
-            </div>
-            <div class="text-2xl font-bold text-green-900 dark:text-green-100">
-              @if (prediccionSeleccionada()?.mape !== null && prediccionSeleccionada()?.mape !== undefined) {
-                {{ prediccionSeleccionada()!.mape | number:'1.2-2' }}%
-              } @else {
-                <span class="text-gray-400">N/A</span>
-              }
-            </div>
-            <div class="text-xs text-green-600 dark:text-green-400 mt-1">Error Porcentual Medio</div>
-          </div>
+      <!-- Tabs de Secciones -->
+      <p-tabs value="0">
+        <p-tablist>
+          <p-tab value="0">
+            <i class="pi pi-chart-line mr-2"></i>
+            Visualización
+          </p-tab>
+          <p-tab value="1">
+            <i class="pi pi-list-check mr-2"></i>
+            Recomendaciones
+          </p-tab>
+        </p-tablist>
 
-          <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-4 border border-orange-200 dark:border-orange-700">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-lg bg-orange-500 dark:bg-orange-600 flex items-center justify-center">
-                <i class="pi pi-bolt text-white"></i>
-              </div>
-              <div class="flex items-center gap-1">
-                <span class="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">RMSE</span>
-                <i class="pi pi-info-circle text-orange-400 dark:text-orange-500 text-xs cursor-help" 
-                   pTooltip="Raíz del Error Cuadrático Medio: Penaliza más los errores grandes que el MAE. Sensible a valores atípicos y útil cuando queremos minimizar predicciones muy equivocadas. Cuanto más bajo, mejor."
-                   tooltipPosition="top"></i>
-              </div>
-            </div>
-            <div class="text-2xl font-bold text-orange-900 dark:text-orange-100">
-              @if (prediccionSeleccionada()?.rmse !== null && prediccionSeleccionada()?.rmse !== undefined) {
-                {{ prediccionSeleccionada()!.rmse | number:'1.2-2' }}
-              } @else {
-                <span class="text-gray-400">N/A</span>
-              }
-            </div>
-            <div class="text-xs text-orange-600 dark:text-orange-400 mt-1">Raíz Error Cuadrático</div>
-          </div>
-
-          <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl p-4 border border-purple-200 dark:border-purple-700">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center" 
-                   [style.background-color]="getSeverityCalidad(prediccionSeleccionada()?.calidadPrediccion)">
-                <i [class]="getIconCalidad(prediccionSeleccionada()?.calidadPrediccion)" class="text-white"></i>
-              </div>
-              <div class="flex items-center gap-1">
-                <span class="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Calidad</span>
-                <i class="pi pi-info-circle text-purple-400 dark:text-purple-500 text-xs cursor-help" 
-                   pTooltip="Calidad de la Predicción: Evaluación general basada en MAPE. EXCELENTE (<10%) = alta confiabilidad, BUENA (10-20%) = confiable, REGULAR (20-30%) = usar con precaución, POBRE (>30%) = revisar datos."
-                   tooltipPosition="top"></i>
-              </div>
-            </div>
-            <div class="flex items-center">
-              @if (prediccionSeleccionada()?.calidadPrediccion) {
-                <p-chip 
-                  [label]="prediccionSeleccionada()!.calidadPrediccion"
-                  [style]="{'background-color': getSeverityCalidad(prediccionSeleccionada()!.calidadPrediccion), 'color': '#fff'}"
-                  styleClass="font-semibold">
-                </p-chip>
-              } @else {
-                <span class="text-gray-400 text-lg font-medium">Sin calcular</span>
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Gráfico de Predicción -->
-        @if (chartData()) {
-          <div class="bg-white border border-gray-200 rounded-xl p-6">
-            <div class="flex items-center gap-3 mb-4">
-              <i class="pi pi-chart-line text-blue-600 text-xl"></i>
-              <h3 class="text-lg font-bold text-gray-800 m-0">Visualización de la Predicción</h3>
-            </div>
-            <div class="h-[400px]">
-              <p-chart type="line" [data]="chartData()!" [options]="chartOptions"></p-chart>
-            </div>
-          </div>
-        }
-
-        <!-- Indicadores de Patrones -->
-        @if (prediccionSeleccionada()!.tieneTendencia || prediccionSeleccionada()!.tieneEstacionalidad) {
-          <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
-            <div class="flex items-center gap-3 mb-4">
-              <i class="pi pi-info-circle text-blue-600 text-xl"></i>
-              <h3 class="text-base font-bold text-gray-800 m-0">Patrones Detectados</h3>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              @if (prediccionSeleccionada()!.tieneTendencia) {
-                <p-chip label="Tendencia Detectada" icon="pi pi-arrow-up" [style]="{'background-color': '#3b82f6', 'color': '#fff'}"></p-chip>
-              }
-              @if (prediccionSeleccionada()!.tieneEstacionalidad) {
-                <p-chip label="Estacionalidad Detectada" icon="pi pi-calendar" [style]="{'background-color': '#10b981', 'color': '#fff'}"></p-chip>
-              }
-            </div>
-          </div>
-        }
-
-        <!-- Advertencias -->
-        @if (prediccionSeleccionada()!.advertencias && prediccionSeleccionada()!.advertencias!.length > 0) {
-          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
-            <div class="flex items-center gap-3 mb-4">
-              <i class="pi pi-exclamation-triangle text-yellow-600 text-xl"></i>
-              <h3 class="text-base font-bold text-gray-800 m-0">Advertencias</h3>
-            </div>
-            <ul class="space-y-2 m-0 pl-4">
-              @for (advertencia of prediccionSeleccionada()!.advertencias; track $index) {
-                <li class="flex items-start gap-2 text-sm text-gray-700">
-                  <i class="pi pi-exclamation-circle text-yellow-500 mt-1"></i>
-                  <span>{{ advertencia }}</span>
-                </li>
-              }
-            </ul>
-          </div>
-        }
-
-        <!-- Recomendaciones del backend -->
-        @if (prediccionSeleccionada()!.recomendaciones && prediccionSeleccionada()!.recomendaciones!.length > 0) {
-          <div class="bg-green-50 border border-green-200 rounded-xl p-5">
-            <div class="flex items-center gap-3 mb-4">
-              <i class="pi pi-lightbulb text-green-600 text-xl"></i>
-              <h3 class="text-base font-bold text-gray-800 m-0">Recomendaciones del Sistema</h3>
-            </div>
-            <ul class="space-y-2 m-0 pl-4">
-              @for (recomendacion of prediccionSeleccionada()!.recomendaciones; track $index) {
-                <li class="flex items-start gap-2 text-sm text-gray-700">
-                  <i class="pi pi-check-circle text-green-500 mt-1"></i>
-                  <span>{{ recomendacion }}</span>
-                </li>
-              }
-            </ul>
-          </div>
-        }
-              </div>
-            </p-tabpanel>
-
-            <!-- Tab 2: Recomendaciones Inteligentes -->
-            <p-tabpanel value="1">
-              <div class="py-4">
-                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6 mb-6">
-                  <div class="flex items-center gap-3 mb-2">
-                    <i class="pi pi-sparkles text-blue-600 text-2xl"></i>
-                    <h3 class="text-lg font-bold text-gray-800 m-0">Análisis Inteligente de la Predicción</h3>
+        <p-tabpanels>
+          <!-- Tab 1: Visualización y Métricas -->
+          <p-tabpanel value="0">
+            <div class="space-y-6 py-4">
+              <!-- Métricas de Calidad CON DARK MODE Y TOOLTIPS -->
+              <div class="grid grid-cols-4 gap-4">
+                <div
+                  class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-4 border border-blue-200 dark:border-blue-700">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-600 flex items-center justify-center">
+                      <i class="pi pi-chart-line text-white"></i>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <span
+                        class="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide">MAE</span>
+                      <i class="pi pi-info-circle text-blue-400 dark:text-blue-500 text-xs cursor-help"
+                        pTooltip="Error Absoluto Medio: Promedio de los errores de predicción sin considerar el signo. Valores más bajos indican mayor precisión. Útil para entender el error típico en unidades reales."
+                        tooltipPosition="top"></i>
+                    </div>
                   </div>
-                  <p class="text-sm text-gray-600 m-0">
-                    Recomendaciones contextuales basadas en el estado, calidad y patrones detectados en la predicción.
-                  </p>
+                  <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    @if (prediccionSeleccionada()?.mae !== null && prediccionSeleccionada()?.mae !== undefined) {
+                    {{ prediccionSeleccionada()!.mae | number:'1.2-2' }}
+                    } @else {
+                    <span class="text-gray-400">N/A</span>
+                    }
+                  </div>
+                  <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">Error Absoluto Medio</div>
                 </div>
 
-                <!-- Timeline de Recomendaciones -->
-                <p-timeline [value]="recomendacionesInteligentes()" align="left" class="custom-timeline">
-                  <ng-template pTemplate="content" let-recomendacion>
-                    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                      <div class="flex items-start gap-4">
-                        <div 
-                          class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
-                          [style.background-color]="recomendacion.color + '20'"
-                          [style.border]="'2px solid ' + recomendacion.color">
-                          <i 
-                            [class]="'pi ' + recomendacion.icon + ' text-lg'"
-                            [style.color]="recomendacion.color"></i>
-                        </div>
-                        <div class="flex-1">
-                          <h4 class="text-base font-bold text-gray-800 mb-2 m-0">{{ recomendacion.titulo }}</h4>
-                          <p class="text-sm text-gray-600 leading-relaxed m-0">{{ recomendacion.descripcion }}</p>
-                        </div>
-                      </div>
+                <div
+                  class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-4 border border-green-200 dark:border-green-700">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-lg bg-green-500 dark:bg-green-600 flex items-center justify-center">
+                      <i class="pi pi-percentage text-white"></i>
                     </div>
-                  </ng-template>
-                </p-timeline>
+                    <div class="flex items-center gap-1">
+                      <span
+                        class="text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wide">MAPE</span>
+                      <i class="pi pi-info-circle text-green-400 dark:text-green-500 text-xs cursor-help"
+                        pTooltip="Error Porcentual Absoluto Medio: Error expresado como porcentaje de la demanda real. Ideal para comparar precisión entre productos de diferentes escalas. Menos de 10% se considera excelente, 10-20% bueno, más de 20% requiere atención."
+                        tooltipPosition="top"></i>
+                    </div>
+                  </div>
+                  <div class="text-2xl font-bold text-green-900 dark:text-green-100">
+                    @if (prediccionSeleccionada()?.mape !== null && prediccionSeleccionada()?.mape !== undefined) {
+                    {{ prediccionSeleccionada()!.mape | number:'1.2-2' }}%
+                    } @else {
+                    <span class="text-gray-400">N/A</span>
+                    }
+                  </div>
+                  <div class="text-xs text-green-600 dark:text-green-400 mt-1">Error Porcentual Medio</div>
+                </div>
 
-                <!-- Info adicional -->
-                <div class="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5">
-                  <div class="flex items-start gap-3">
-                    <i class="pi pi-info-circle text-blue-500 text-lg mt-1"></i>
-                    <div>
-                      <p class="text-sm font-semibold text-gray-800 mb-1 m-0">💡 Tip:</p>
-                      <p class="text-sm text-gray-600 m-0">
-                        Estas recomendaciones se actualizan automáticamente según el estado y características de tu predicción. 
-                        Úsalas para tomar decisiones informadas sobre inventario y compras.
-                      </p>
+                <div
+                  class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-4 border border-orange-200 dark:border-orange-700">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-lg bg-orange-500 dark:bg-orange-600 flex items-center justify-center">
+                      <i class="pi pi-bolt text-white"></i>
                     </div>
+                    <div class="flex items-center gap-1">
+                      <span
+                        class="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide">RMSE</span>
+                      <i class="pi pi-info-circle text-orange-400 dark:text-orange-500 text-xs cursor-help"
+                        pTooltip="Raíz del Error Cuadrático Medio: Penaliza más los errores grandes que el MAE. Sensible a valores atípicos y útil cuando queremos minimizar predicciones muy equivocadas. Cuanto más bajo, mejor."
+                        tooltipPosition="top"></i>
+                    </div>
+                  </div>
+                  <div class="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                    @if (prediccionSeleccionada()?.rmse !== null && prediccionSeleccionada()?.rmse !== undefined) {
+                    {{ prediccionSeleccionada()!.rmse | number:'1.2-2' }}
+                    } @else {
+                    <span class="text-gray-400">N/A</span>
+                    }
+                  </div>
+                  <div class="text-xs text-orange-600 dark:text-orange-400 mt-1">Raíz Error Cuadrático</div>
+                </div>
+
+                <div
+                  class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl p-4 border border-purple-200 dark:border-purple-700">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                      [style.background-color]="getSeverityCalidad(prediccionSeleccionada()?.calidadPrediccion)">
+                      <i [class]="getIconCalidad(prediccionSeleccionada()?.calidadPrediccion)" class="text-white"></i>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <span
+                        class="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">Calidad</span>
+                      <i class="pi pi-info-circle text-purple-400 dark:text-purple-500 text-xs cursor-help"
+                        pTooltip="Calidad de la Predicción: Evaluación general basada en MAPE. EXCELENTE (<10%) = alta confiabilidad, BUENA (10-20%) = confiable, REGULAR (20-30%) = usar con precaución, POBRE (>30%) = revisar datos."
+                        tooltipPosition="top"></i>
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    @if (prediccionSeleccionada()?.calidadPrediccion) {
+                    <p-chip [label]="prediccionSeleccionada()!.calidadPrediccion"
+                      [style]="{'background-color': getSeverityCalidad(prediccionSeleccionada()!.calidadPrediccion), 'color': '#fff'}"
+                      styleClass="font-semibold">
+                    </p-chip>
+                    } @else {
+                    <span class="text-gray-400 text-lg font-medium">Sin calcular</span>
+                    }
                   </div>
                 </div>
               </div>
-            </p-tabpanel>
 
-            <!-- Tab 3: Optimización EOQ/ROP -->
-            <p-tabpanel value="2">
-              <div class="py-4">
-                @if (!optimizacionCalculada()) {
-                  
-                  <!-- Información del Producto (desde BD) -->
-                  @if (prediccionSeleccionada()?.producto) {
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 mb-4 border border-blue-200 dark:border-blue-700">
-                      <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-                        <i class="pi pi-database text-blue-600 dark:text-blue-400"></i>
-                        Datos del Producto (Base de Datos)
-                      </h3>
-                      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Los siguientes valores se usarán automáticamente para el cálculo de optimización:
-                      </p>
-                      
-                      <div class="grid grid-cols-2 gap-4">
-                        <!-- Costo Unitario -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
-                          <div class="flex items-center gap-2 mb-2">
-                            <i class="pi pi-tag text-green-600 dark:text-green-400"></i>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">COSTO UNITARIO</span>
-                          </div>
-                          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                            S/. {{ prediccionSeleccionada()?.producto?.costoAdquisicion?.toFixed(2) || 'N/A' }}
-                          </p>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Precio de compra por unidad</p>
-                        </div>
+              <!-- Gráfico de Predicción -->
+              @if (chartData()) {
+              <div class="bg-white border border-gray-200 rounded-xl p-6">
+                <div class="flex items-center gap-3 mb-4">
+                  <i class="pi pi-chart-line text-blue-600 text-xl"></i>
+                  <h3 class="text-lg font-bold text-gray-800 m-0">Visualización de la Predicción</h3>
+                </div>
+                <div class="h-[400px]">
+                  <p-chart type="line" [data]="chartData()!" [options]="chartOptions"></p-chart>
+                </div>
+              </div>
+              }
 
-                        <!-- Costo de Pedido -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
-                          <div class="flex items-center gap-2 mb-2">
-                            <i class="pi pi-dollar text-blue-600 dark:text-blue-400"></i>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">COSTO DE PEDIDO</span>
-                          </div>
-                          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                            S/. {{ prediccionSeleccionada()?.producto?.costoPedido?.toFixed(2) || 'N/A' }}
-                          </p>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Costo administrativo por pedido</p>
-                        </div>
-
-                        <!-- Costo de Almacenamiento -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
-                          <div class="flex items-center gap-2 mb-2">
-                            <i class="pi pi-warehouse text-orange-600 dark:text-orange-400"></i>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">COSTO ALMACENAMIENTO ANUAL</span>
-                          </div>
-                          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                            S/. {{ prediccionSeleccionada()?.producto?.costoMantenimientoAnual?.toFixed(2) || 'N/A' }}
-                          </p>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Por unidad al año</p>
-                        </div>
-
-                        <!-- Lead Time -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
-                          <div class="flex items-center gap-2 mb-2">
-                            <i class="pi pi-clock text-red-600 dark:text-red-400"></i>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">TIEMPO DE ENTREGA</span>
-                          </div>
-                          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                            {{ prediccionSeleccionada()?.producto?.diasLeadTime || 'N/A' }}
-                            <span class="text-sm font-normal text-gray-600 dark:text-gray-400">días</span>
-                          </p>
-                          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Lead time del proveedor</p>
-                        </div>
-                      </div>
-                    </div>
+              <!-- Indicadores de Patrones -->
+              @if (prediccionSeleccionada()!.tieneTendencia || prediccionSeleccionada()!.tieneEstacionalidad) {
+              <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-4">
+                  <i class="pi pi-info-circle text-blue-600 text-xl"></i>
+                  <h3 class="text-base font-bold text-gray-800 m-0">Patrones Detectados</h3>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  @if (prediccionSeleccionada()!.tieneTendencia) {
+                  <p-chip label="Tendencia Detectada" icon="pi pi-arrow-up"
+                    [style]="{'background-color': '#3b82f6', 'color': '#fff'}"></p-chip>
                   }
-                  
-                  <!-- Formulario de Parámetros (SIMPLIFICADO CON MEJORES DESCRIPCIONES) -->
-                  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-4 border border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
-                      <i class="pi pi-sliders-h text-purple-600 dark:text-purple-400"></i>
-                      Configuración de Optimización
-                    </h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      Seleccione el nivel de servicio que desea mantener. Esto determinará su stock de seguridad.
-                    </p>
-                    
-                    <form [formGroup]="optimizacionForm">
-                      <!-- Nivel de Servicio -->
-                      <div class="form-field">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                          <i class="pi pi-shield text-purple-600 dark:text-purple-400"></i>
-                          Nivel de Servicio Deseado: 
-                          <span class="text-lg font-bold text-purple-600 dark:text-purple-400 ml-2">
-                            {{ formatNivelServicio(optimizacionForm.value.nivelServicioDeseado || 0.95) }}
-                          </span>
-                          <i class="pi pi-question-circle text-gray-400 dark:text-gray-500 ml-1 cursor-help" 
-                             pTooltip="Probabilidad de NO quedarse sin stock durante el período de reabastecimiento. Un nivel del 95% significa que evitarás el quiebre de stock el 95% del tiempo."
-                             tooltipPosition="top"></i>
-                        </label>
-                        
-                        <p-slider 
-                          formControlName="nivelServicioDeseado"
-                          [min]="0.80"
-                          [max]="0.99"
-                          [step]="0.01"
-                          styleClass="w-full mb-3">
-                        </p-slider>
-                        
-                        <!-- Guía Visual Mejorada -->
-                        <div class="grid grid-cols-3 gap-3 mt-4">
-                          <!-- 80% - Bajo Costo -->
-                          <div class="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg p-3 text-center">
-                            <div class="flex items-center justify-center gap-2 mb-2">
-                              <i class="pi pi-circle-fill text-yellow-500 text-xs"></i>
-                              <span class="font-bold text-yellow-700 dark:text-yellow-400">80%</span>
-                            </div>
-                            <p class="text-xs font-medium text-yellow-800 dark:text-yellow-300 mb-1">Minimiza Inventario</p>
-                            <p class="text-xs text-yellow-600 dark:text-yellow-500">Mayor riesgo de quiebre de stock</p>
-                          </div>
-                          
-                          <!-- 95% - Recomendado -->
-                          <div class="bg-green-50 dark:bg-green-900/20 border-2 border-green-400 dark:border-green-600 rounded-lg p-3 text-center ring-2 ring-green-500 dark:ring-green-400">
-                            <div class="flex items-center justify-center gap-2 mb-2">
-                              <i class="pi pi-check-circle text-green-600 dark:text-green-400 text-sm"></i>
-                              <span class="font-bold text-green-700 dark:text-green-400">95%</span>
-                            </div>
-                            <p class="text-xs font-medium text-green-800 dark:text-green-300 mb-1">Balance Óptimo</p>
-                            <p class="text-xs text-green-600 dark:text-green-500">Disponibilidad vs. Costo (Recomendado)</p>
-                          </div>
-                          
-                          <!-- 99% - Máxima Seguridad -->
-                          <div class="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-3 text-center">
-                            <div class="flex items-center justify-center gap-2 mb-2">
-                              <i class="pi pi-shield text-blue-600 dark:text-blue-400 text-sm"></i>
-                              <span class="font-bold text-blue-700 dark:text-blue-400">99%</span>
-                            </div>
-                            <p class="text-xs font-medium text-blue-800 dark:text-blue-300 mb-1">Máxima Seguridad</p>
-                            <p class="text-xs text-blue-600 dark:text-blue-500">Mayor inversión en inventario</p>
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-
-                    <div class="mt-6 flex justify-end">
-                      <button 
-                        pButton 
-                        label="Calcular Optimización" 
-                        icon="pi pi-calculator"
-                        [loading]="loadingOptimizacion()"
-                        [disabled]="optimizacionForm.invalid"
-                        (click)="calcularOptimizacion()"
-                        class="p-button-lg p-button-success">
-                      </button>
-                    </div>
-                  </div>
-                } @else {
-                  <!-- Resultados de Optimización CON DARK MODE -->
-                  <div class="space-y-4">
-                    <!-- Cards de Métricas Principales -->
-                    <div class="grid grid-cols-3 gap-4">
-                      <!-- EOQ -->
-                      <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-6 border-2 border-blue-200 dark:border-blue-700">
-                        <div class="flex items-center justify-between mb-2">
-                          <i class="pi pi-box text-blue-600 dark:text-blue-400 text-3xl"></i>
-                          <p-chip label="EOQ" styleClass="bg-blue-600 dark:bg-blue-500"></p-chip>
-                        </div>
-                        <div class="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-1">
-                          {{ optimizacionActual()?.cantidadEconomicaPedido | number:'1.0-0' }}
-                        </div>
-                        <div class="text-sm text-blue-700 dark:text-blue-300">Cantidad Económica de Pedido</div>
-                        <div class="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                          Realizar {{ optimizacionActual()?.numeroOptimoPedidos | number:'1.1-1' }} pedidos/año
-                        </div>
-                      </div>
-
-                      <!-- ROP -->
-                      <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-6 border-2 border-orange-200 dark:border-orange-700">
-                        <div class="flex items-center justify-between mb-2">
-                          <i class="pi pi-bell text-orange-600 dark:text-orange-400 text-3xl"></i>
-                          <p-chip label="ROP" styleClass="bg-orange-600 dark:bg-orange-500"></p-chip>
-                        </div>
-                        <div class="text-3xl font-bold text-orange-900 dark:text-orange-100 mb-1">
-                          {{ optimizacionActual()?.puntoReorden | number:'1.0-0' }}
-                        </div>
-                        <div class="text-sm text-orange-700 dark:text-orange-300">Punto de Reorden</div>
-                        <div class="text-xs text-orange-600 dark:text-orange-400 mt-2">
-                          Stock seguridad: {{ optimizacionActual()?.stockSeguridad | number:'1.0-0' }} unidades
-                        </div>
-                      </div>
-
-                      <!-- Costo Total -->
-                      <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-6 border-2 border-green-200 dark:border-green-700">
-                        <div class="flex items-center justify-between mb-2">
-                          <i class="pi pi-dollar text-green-600 dark:text-green-400 text-3xl"></i>
-                          <p-chip label="Costos" styleClass="bg-green-600 dark:bg-green-500"></p-chip>
-                        </div>
-                        <div class="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">
-                          S/. {{ optimizacionActual()?.costoTotalAnual | number:'1.0-0' }}
-                        </div>
-                        <div class="text-sm text-green-700 dark:text-green-300">Costo Total Anual</div>
-                        <div class="text-xs text-green-600 dark:text-green-400 mt-2">
-                          Ordenamiento + Almacenamiento + Stock Seguridad
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Tabla de Desglose CON DARK MODE -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                      <h4 class="text-md font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-                        <i class="pi pi-list text-purple-600 dark:text-purple-400"></i>
-                        Desglose de Métricas
-                      </h4>
-                      
-                      <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-3">
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Demanda Anual:</span>
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ optimizacionActual()?.demandaAnual | number:'1.0-0' }} unidades</span>
-                          </div>
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Demanda Diaria:</span>
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ optimizacionActual()?.demandaDiaria | number:'1.1-1' }} unidades/día</span>
-                          </div>
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Ciclo Óptimo:</span>
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ optimizacionActual()?.cicloOptimoDias | number:'1.0-0' }} días</span>
-                          </div>
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Stock Máximo:</span>
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ optimizacionActual()?.stockMaximo | number:'1.0-0' }} unidades</span>
-                          </div>
-                        </div>
-
-                        <div class="space-y-3">
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Costo Ordenamiento:</span>
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">${{ optimizacionActual()?.costoOrdenamiento | number:'1.0-0' }}</span>
-                          </div>
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Costo Almacenamiento:</span>
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">${{ optimizacionActual()?.costoAlmacenamientoAnual | number:'1.0-0' }}</span>
-                          </div>
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Coef. Variación:</span>
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ (optimizacionActual()?.coeficienteVariacion || 0) | number:'1.2-2' }}</span>
-                          </div>
-                          <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Nivel Confianza:</span>
-                            <p-chip 
-                              [label]="optimizacionActual()?.nivelConfianza || 'N/A'" 
-                              [style]="{'background-color': getColorNivelConfianza(optimizacionActual()?.nivelConfianza || ''), 'color': '#fff'}">
-                            </p-chip>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Recomendaciones CON DARK MODE -->
-                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl p-6 border-2 border-purple-200 dark:border-purple-700">
-                      <h4 class="text-md font-bold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-                        <i class="pi pi-lightbulb text-purple-600 dark:text-purple-400"></i>
-                        Recomendaciones
-                      </h4>
-                      <div class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line mb-4">
-                        {{ optimizacionActual()?.recomendacion }}
-                      </div>
-                      
-                      @if (optimizacionActual()?.advertencia && optimizacionActual()?.advertencia !== 'Sin advertencias. Los parámetros están dentro de rangos normales.') {
-                        <div class="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 mt-4">
-                          <div class="flex items-start gap-2">
-                            <i class="pi pi-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-1"></i>
-                            <div>
-                              <h5 class="font-bold text-yellow-800 dark:text-yellow-200 mb-2">Advertencias</h5>
-                              <div class="text-sm text-yellow-700 dark:text-yellow-300 whitespace-pre-line">
-                                {{ optimizacionActual()?.advertencia }}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Botón para recalcular -->
-                    <div class="flex justify-center mt-4">
-                      <button 
-                        pButton 
-                        label="Recalcular con Otros Parámetros" 
-                        icon="pi pi-refresh"
-                        (click)="optimizacionCalculada.set(false)"
-                        class="p-button-outlined p-button-secondary">
-                      </button>
-                    </div>
-                  </div>
-                }
+                  @if (prediccionSeleccionada()!.tieneEstacionalidad) {
+                  <p-chip label="Estacionalidad Detectada" icon="pi pi-calendar"
+                    [style]="{'background-color': '#10b981', 'color': '#fff'}"></p-chip>
+                  }
+                </div>
               </div>
-            </p-tabpanel>
-          </p-tabpanels>
-        </p-tabs>
+              }
 
-      </div>
+              <!-- Advertencias -->
+              @if (prediccionSeleccionada()!.advertencias && prediccionSeleccionada()!.advertencias!.length > 0) {
+              <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-4">
+                  <i class="pi pi-exclamation-triangle text-yellow-600 text-xl"></i>
+                  <h3 class="text-base font-bold text-gray-800 m-0">Advertencias</h3>
+                </div>
+                <ul class="space-y-2 m-0 pl-4">
+                  @for (advertencia of prediccionSeleccionada()!.advertencias; track $index) {
+                  <li class="flex items-start gap-2 text-sm text-gray-700">
+                    <i class="pi pi-exclamation-circle text-yellow-500 mt-1"></i>
+                    <span>{{ advertencia }}</span>
+                  </li>
+                  }
+                </ul>
+              </div>
+              }
+
+              <!-- Recomendaciones del backend -->
+              @if (prediccionSeleccionada()!.recomendaciones && prediccionSeleccionada()!.recomendaciones!.length > 0) {
+              <div class="bg-green-50 border border-green-200 rounded-xl p-5">
+                <div class="flex items-center gap-3 mb-4">
+                  <i class="pi pi-lightbulb text-green-600 text-xl"></i>
+                  <h3 class="text-base font-bold text-gray-800 m-0">Recomendaciones del Sistema</h3>
+                </div>
+                <ul class="space-y-2 m-0 pl-4">
+                  @for (recomendacion of prediccionSeleccionada()!.recomendaciones; track $index) {
+                  <li class="flex items-start gap-2 text-sm text-gray-700">
+                    <i class="pi pi-check-circle text-green-500 mt-1"></i>
+                    <span>{{ recomendacion }}</span>
+                  </li>
+                  }
+                </ul>
+              </div>
+              }
+            </div>
+          </p-tabpanel>
+
+          <!-- Tab 2: Recomendaciones Inteligentes -->
+          <p-tabpanel value="1">
+            <div class="py-4">
+              <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <div class="flex items-center gap-3 mb-2">
+                  <i class="pi pi-sparkles text-blue-600 text-2xl"></i>
+                  <h3 class="text-lg font-bold text-gray-800 m-0">Análisis Inteligente de la Predicción</h3>
+                </div>
+                <p class="text-sm text-gray-600 m-0">
+                  Recomendaciones contextuales basadas en el estado, calidad y patrones detectados en la predicción.
+                </p>
+              </div>
+
+              <!-- Timeline de Recomendaciones -->
+              <p-timeline [value]="recomendacionesInteligentes()" align="left" class="custom-timeline">
+                <ng-template pTemplate="content" let-recomendacion>
+                  <div
+                    class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start gap-4">
+                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
+                        [style.background-color]="recomendacion.color + '20'"
+                        [style.border]="'2px solid ' + recomendacion.color">
+                        <i [class]="'pi ' + recomendacion.icon + ' text-lg'" [style.color]="recomendacion.color"></i>
+                      </div>
+                      <div class="flex-1">
+                        <h4 class="text-base font-bold text-gray-800 mb-2 m-0">{{ recomendacion.titulo }}</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed m-0">{{ recomendacion.descripcion }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </p-timeline>
+
+              <!-- Info adicional -->
+              <div class="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5">
+                <div class="flex items-start gap-3">
+                  <i class="pi pi-info-circle text-blue-500 text-lg mt-1"></i>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-800 mb-1 m-0">💡 Tip:</p>
+                    <p class="text-sm text-gray-600 m-0">
+                      Estas recomendaciones se actualizan automáticamente según el estado y características de tu
+                      predicción.
+                      Úsalas para tomar decisiones informadas sobre inventario y compras.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </p-tabpanel>
+
+        </p-tabpanels>
+      </p-tabs>
+
+    </div>
     }
 
     <ng-template #footer>
-      <button 
-        pButton 
-        label="Cerrar" 
-        icon="pi pi-times" 
-        class="p-button-outlined p-button-secondary"
+      <button pButton label="Cerrar" icon="pi pi-times" class="p-button-outlined p-button-secondary"
         (click)="closeDialogDetalle()">
       </button>
     </ng-template>

@@ -49,8 +49,9 @@
         }
     </div>
     } @else {
-    <p-table [columns]="cols" [value]="categorias()" [scrollable]="true" scrollHeight="400px"
-        [tableStyle]="{ 'min-width': '50rem' }">
+    <div class="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <p-table [columns]="cols" [value]="categorias()" [scrollable]="true" scrollHeight="400px"
+          [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template #header let-columns>
             <tr>
                 @for (col of columns; track col.field) {
@@ -78,7 +79,8 @@
                 }
             </tr>
         </ng-template>
-    </p-table>
+            </p-table>
+        </div>
     }
 </div>
 <p-confirmDialog />
