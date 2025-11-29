@@ -205,7 +205,9 @@
 }
 <div class="card flex justify-center mt-4">
     <p-paginator (onPageChange)="onPageChange($event)" [first]="first()" [rows]="rows()" [totalRecords]="totalRecords()"
-        [rowsPerPageOptions]="rowsPerPageOptions" />
+        [rowsPerPageOptions]="rowsPerPageOptions" 
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}" />
 </div>
 <p-confirmDialog />
 

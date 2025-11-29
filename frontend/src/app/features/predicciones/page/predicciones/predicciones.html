@@ -117,7 +117,9 @@
     </p-table>
 
     <p-paginator [first]="first()" [rows]="rows()" [totalRecords]="totalRecords()"
-      [rowsPerPageOptions]="rowsPerPageOptions" (onPageChange)="onPageChange($event)" styleClass="custom-paginator">
+      [rowsPerPageOptions]="rowsPerPageOptions" (onPageChange)="onPageChange($event)" styleClass="custom-paginator"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}">
     </p-paginator>
   </div>
 
