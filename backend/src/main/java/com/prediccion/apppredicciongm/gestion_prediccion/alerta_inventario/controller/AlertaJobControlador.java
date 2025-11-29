@@ -92,9 +92,51 @@ public class AlertaJobControlador {
             "alerta.job.cron", "Expresión cron para programar ejecución",
             "alerta.job.stock-bajo.enabled", "Habilitar detección de stock bajo",
             "alerta.job.prediccion-vencida.enabled", "Habilitar detección de predicciones vencidas",
-            "alerta.job.estacionalidad.enabled", "Habilitar detección de estacionalidad"
+            "alerta.job.estacionalidad.enabled", "Habilitar detección de estacionalidad",
+            "alerta.job.auto-resolver.enabled", "Habilitar auto-resolución de alertas obsoletas"
         ));
         
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Ejecuta manualmente la auto-resolución de alertas obsoletas.
+     * 
+     * POST /api/alertas-inventario/jobs/auto-resolver
+     * 
+     * Verifica todas las alertas pendientes de tipo STOCK_BAJO, PUNTO_REORDEN
+     * o STOCK_CRITICO y las resuelve automáticamente si el stock actual
+     * es mayor al punto de reorden.
+     * 
+     * @return Resultado con número de alertas resueltas
+     */
+    @PostMapping("/auto-resolver")
+    public ResponseEntity<Map<String, Object>> ejecutarAutoResolucion() {
+        log.info("POST /api/alertas-inventario/jobs/auto-resolver - Ejecución manual solicitada");
+        
+        try {
+            int alertasResueltas = alertaJobService.autoResolverAlertasObsoletas();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("exitoso", true);
+            response.put("alertasResueltas", alertasResueltas);
+            response.put("mensaje", alertasResueltas > 0 
+                ? "Se resolvieron " + alertasResueltas + " alertas obsoletas"
+                : "No se encontraron alertas obsoletas para resolver");
+            response.put("timestamp", System.currentTimeMillis());
+            
+            log.info("Auto-resolución ejecutada: {} alertas resueltas", alertasResueltas);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("Error al ejecutar auto-resolución: {}", e.getMessage(), e);
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("exitoso", false);
+            errorResponse.put("mensaje", "Error al ejecutar auto-resolución: " + e.getMessage());
+            errorResponse.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(500).body(errorResponse);
+        }
     }
 }

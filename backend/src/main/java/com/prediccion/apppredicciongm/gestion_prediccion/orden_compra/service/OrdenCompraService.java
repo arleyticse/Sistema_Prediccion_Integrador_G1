@@ -33,6 +33,9 @@ import com.prediccion.apppredicciongm.gestion_inventario.movimiento.dto.request.
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.request.RecibirOrdenRequest;
 import com.prediccion.apppredicciongm.gestion_prediccion.orden_compra.dto.request.DetalleRecibidoRequest;
 import com.prediccion.apppredicciongm.enums.TipoMovimiento;
+import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.repository.IAlertaInventarioRepositorio;
+import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.enums.EstadoAlerta;
+import com.prediccion.apppredicciongm.models.AlertaInventario;
 
 /**
  * Servicio principal para órdenes de compra automáticas
@@ -48,6 +51,7 @@ public class OrdenCompraService implements IOrdenCompraService {
     private final IProveedorRepositorio proveedorRepositorio;
     private final ConfiguracionEmpresaService configuracionEmpresaService;
     private final IKardexService kardexService;
+    private final IAlertaInventarioRepositorio alertaInventarioRepositorio;
 
     @Override
     public OrdenCompra generarOrdenAutomatica(Integer prediccionId) {
@@ -152,10 +156,25 @@ public class OrdenCompraService implements IOrdenCompraService {
             }
 
             // Registrar movimiento kardex por la cantidad recibida
+            // Usar precio del detalle, o costo del producto como fallback
+            BigDecimal costoUnitario = detalle.getPrecioUnitario();
+            if (costoUnitario == null || costoUnitario.compareTo(BigDecimal.ZERO) == 0) {
+                costoUnitario = detalle.getProducto().getCostoAdquisicion();
+            }
+            if (costoUnitario == null || costoUnitario.compareTo(BigDecimal.ZERO) == 0) {
+                costoUnitario = detalle.getProducto().getCostoPedido();
+            }
+            if (costoUnitario == null) {
+                costoUnitario = BigDecimal.ZERO;
+                log.warn("[ORDEN][RECEPCION] Producto {} sin precio definido, usando 0", 
+                        detalle.getProducto().getProductoId());
+            }
+            
             KardexCreateRequest kardexReq = KardexCreateRequest.builder()
                     .productoId(detalle.getProducto().getProductoId())
                     .tipoMovimiento(TipoMovimiento.ENTRADA_COMPRA)
                     .cantidad(cantidadRecibida)
+                    .costoUnitario(costoUnitario)
                     .proveedorId(orden.getProveedor() != null ? orden.getProveedor().getProveedorId() : null)
                     .numeroDocumento(request.getNumeroDocumentoProveedor())
                     .tipoDocumento("FACTURA")
@@ -168,6 +187,9 @@ public class OrdenCompraService implements IOrdenCompraService {
             // Actualizar cantidad recibida en detalle
             Integer actual = detalle.getCantidadRecibida() == null ? 0 : detalle.getCantidadRecibida();
             detalle.setCantidadRecibida(actual + cantidadRecibida);
+            
+            // Resolver alertas pendientes del producto
+            resolverAlertasPendientesProducto(detalle.getProducto().getProductoId(), orden.getNumeroOrden());
         }
 
         // Determinar estado final de la orden
@@ -180,6 +202,34 @@ public class OrdenCompraService implements IOrdenCompraService {
 
         log.info("[ORDEN][RECEPCION] Orden {} procesada: estado {}", ordenId, orden.getEstadoOrden());
     }
+    
+    /**
+     * Resuelve automáticamente las alertas pendientes de un producto 
+     * cuando se recibe stock.
+     */
+    private void resolverAlertasPendientesProducto(Integer productoId, String numeroOrden) {
+        try {
+            List<AlertaInventario> alertasPendientes = alertaInventarioRepositorio
+                    .findAlertasPendientesByProducto(productoId);
+            
+            if (!alertasPendientes.isEmpty()) {
+                log.info("[ALERTA] Resolviendo {} alertas pendientes para producto {}", 
+                        alertasPendientes.size(), productoId);
+                
+                for (AlertaInventario alerta : alertasPendientes) {
+                    alerta.setEstado(EstadoAlerta.RESUELTA);
+                    alerta.setFechaResolucion(java.time.LocalDateTime.now());
+                    alerta.setAccionTomada("Stock reabastecido mediante orden: " + numeroOrden);
+                    alertaInventarioRepositorio.save(alerta);
+                }
+                
+                log.info("[ALERTA] Alertas resueltas exitosamente para producto {}", productoId);
+            }
+        } catch (Exception e) {
+            log.warn("[ALERTA] Error al resolver alertas para producto {}: {}", productoId, e.getMessage());
+        }
+    }
+    
 
     @Override
     public OrdenCompra generarOrdenDesdePredicion(Integer prediccionId) {
@@ -338,9 +388,11 @@ public class OrdenCompraService implements IOrdenCompraService {
                     }
                     
                     return DetalleProductoOrdenDTO.builder()
+                            .detalleId(detalle.getDetalleId())
                             .nombreProducto(detalle.getProducto().getNombre())
                             .unidadMedida(unidadMedida)
                             .cantidadSolicitada(detalle.getCantidadSolicitada())
+                            .cantidadRecibida(detalle.getCantidadRecibida())
                             .precioUnitario(detalle.getPrecioUnitario())
                             .subtotal(detalle.getSubtotal())
                             .build();

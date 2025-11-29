@@ -21,6 +21,9 @@ import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Popover } from 'primeng/popover';
 import { TabsModule } from 'primeng/tabs';
 import { TimelineModule } from 'primeng/timeline';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { SkeletonModule } from 'primeng/skeleton';
 import { PrediccionesService } from '../../service/predicciones.service';
 import { AuthService } from '../../../../core/services/auth';
 import { AyudaContextualService } from '../../service/ayuda-contextual.service';
@@ -29,6 +32,14 @@ import { GenerarPrediccionRequest, AlgoritmoInfo } from '../../models/GenerarPre
 import { OptimizacionResponse, CalcularOptimizacionRequest } from '../../models/OptimizacionResponse';
 import { ProductoResponse } from '../../../productos/models/ProductoResponse';
 import { ProductoService } from '../../../productos/service/producto-service';
+import { 
+  AlgoritmoPipe, 
+  AlgoritmoSeverityPipe, 
+  EstadoPrediccionPipe, 
+  EstadoPrediccionSeverityPipe,
+  CalidadPrediccionPipe,
+  CalidadPrediccionSeverityPipe 
+} from '../../../../shared/pipes/prediccion.pipe';
 
 interface AlgoritmoCard {
   codigo: string;
@@ -64,7 +75,16 @@ interface AlgoritmoCard {
     ToggleSwitch,
     Popover,
     TabsModule,
-    TimelineModule
+    TimelineModule,
+    IconField,
+    InputIcon,
+    SkeletonModule,
+    AlgoritmoPipe,
+    AlgoritmoSeverityPipe,
+    EstadoPrediccionPipe,
+    EstadoPrediccionSeverityPipe,
+    CalidadPrediccionPipe,
+    CalidadPrediccionSeverityPipe
   ],
   templateUrl: './predicciones.html',
   styleUrl: './predicciones.css',
@@ -115,6 +135,9 @@ export class PrediccionesComponent {
   rows = signal<number>(10);
   totalRecords = signal<number>(0);
   rowsPerPageOptions = [10, 20, 30];
+
+  // Búsqueda
+  searchValue = signal<string>('');
 
   // Paso actual del wizard
   pasoActual = signal<number>(1);
@@ -402,13 +425,17 @@ export class PrediccionesComponent {
     this.cargarProductos();
   }
 
+  // Todas las predicciones (sin filtrar)
+  private todasPredicciones = signal<PrediccionResponse[]>([]);
+
   private cargarPredicciones(): void {
     this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
 
     this.prediccionesService.obtenerPredicciones(page, this.rows()).subscribe({
       next: (response) => {
-        this.predicciones.set(response.content);
+        this.todasPredicciones.set(response.content);
+        this.aplicarFiltros();
         this.totalRecords.set(response.page.totalElements);
         this.loading.set(false);
       },
@@ -421,6 +448,24 @@ export class PrediccionesComponent {
         this.loading.set(false);
       }
     });
+  }
+
+  private aplicarFiltros(): void {
+    const busqueda = this.searchValue().toLowerCase().trim();
+    
+    if (!busqueda) {
+      this.predicciones.set(this.todasPredicciones());
+      return;
+    }
+
+    const filtradas = this.todasPredicciones().filter(p => 
+      p.productoNombre?.toLowerCase().includes(busqueda) ||
+      p.algoritmo?.toLowerCase().includes(busqueda) ||
+      p.estado?.toLowerCase().includes(busqueda) ||
+      p.calidadPrediccion?.toLowerCase().includes(busqueda)
+    );
+    
+    this.predicciones.set(filtradas);
   }
 
   private cargarProductos(): void {
@@ -706,6 +751,17 @@ export class PrediccionesComponent {
     this.first.set(event.first ?? 0);
     this.rows.set(event.rows ?? 10);
     this.cargarPredicciones();
+  }
+
+  onSearchChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchValue.set(target.value);
+    this.aplicarFiltros();
+  }
+
+  limpiarFiltros(): void {
+    this.searchValue.set('');
+    this.aplicarFiltros();
   }
 
   formatDisplayDate(dateString: string): string {

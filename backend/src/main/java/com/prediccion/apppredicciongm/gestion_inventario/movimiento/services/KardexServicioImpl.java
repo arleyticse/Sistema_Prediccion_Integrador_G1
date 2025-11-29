@@ -1,5 +1,6 @@
 package com.prediccion.apppredicciongm.gestion_inventario.movimiento.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,6 +59,18 @@ public class KardexServicioImpl implements IKardexService {
 
         Kardex kardex = kardexMapper.toEntity(request);
         kardex.setProducto(producto);
+        
+        // Asegurar que costoUnitario tenga valor usando fallbacks del producto
+        if (kardex.getCostoUnitario() == null || kardex.getCostoUnitario().compareTo(BigDecimal.ZERO) == 0) {
+            BigDecimal costoFallback = producto.getCostoAdquisicion();
+            if (costoFallback == null || costoFallback.compareTo(BigDecimal.ZERO) == 0) {
+                costoFallback = producto.getCostoPedido();
+            }
+            if (costoFallback != null && costoFallback.compareTo(BigDecimal.ZERO) > 0) {
+                kardex.setCostoUnitario(costoFallback);
+                log.debug("Usando costo fallback del producto {}: {}", producto.getProductoId(), costoFallback);
+            }
+        }
 
         Proveedor proveedor = proveedorRepositorio.findById(request.getProveedorId()).orElseThrow(
                 () -> new IllegalArgumentException(

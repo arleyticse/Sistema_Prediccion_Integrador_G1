@@ -90,6 +90,14 @@ public class AlertaInventarioJobService {
     private Integer diasValidezPrediccion;
 
     /**
+     * Habilita/deshabilita auto-resolución de alertas obsoletas.
+     * Verifica que el stock actual sea suficiente y resuelve alertas automáticamente.
+     * Default: true
+     */
+    @Value("${alerta.job.auto-resolver.enabled:true}")
+    private Boolean autoResolverEnabled;
+
+    /**
      * Job programado: Ejecuta todos los detectores de alertas.
      * 
      * Configuración mediante cron expression en application.properties:
@@ -135,6 +143,13 @@ public class AlertaInventarioJobService {
                 resultadoEstacionalidad = detectarEstacionalidadProxima();
                 log.info("Estacionalidad Próxima - Alertas generadas: {}",
                         resultadoEstacionalidad.getTotalAlertasGeneradas());
+            }
+
+            // Auto-resolver alertas obsoletas (stock ya suficiente)
+            int alertasResueltas = 0;
+            if (autoResolverEnabled) {
+                alertasResueltas = autoResolverAlertasObsoletas();
+                log.info("Alertas obsoletas auto-resueltas: {}", alertasResueltas);
             }
 
             // Resumen de ejecución
@@ -705,5 +720,68 @@ public class AlertaInventarioJobService {
             }
             alerta.setCantidadSugerida(base);
         }
+    }
+
+    /**
+     * Auto-resuelve alertas obsoletas donde el stock actual ya es suficiente.
+     * 
+     * Verifica cada alerta pendiente de tipo STOCK_BAJO, PUNTO_REORDEN o STOCK_CRITICO
+     * y la marca como RESUELTA si el stock actual del inventario es mayor al punto de reorden.
+     * 
+     * @return Número de alertas auto-resueltas
+     */
+    @Transactional
+    public int autoResolverAlertasObsoletas() {
+        log.info("Iniciando auto-resolución de alertas obsoletas...");
+        
+        List<AlertaInventario> alertasPendientes = alertaRepositorio.findAlertasPendientes();
+        int resueltas = 0;
+        
+        for (AlertaInventario alerta : alertasPendientes) {
+            // Solo procesar alertas de inventario (no predicciones vencidas)
+            TipoAlerta tipo = alerta.getTipoAlerta();
+            if (tipo != TipoAlerta.STOCK_BAJO && 
+                tipo != TipoAlerta.PUNTO_REORDEN && 
+                tipo != TipoAlerta.STOCK_CRITICO) {
+                continue;
+            }
+            
+            if (alerta.getProducto() == null) {
+                continue;
+            }
+            
+            Integer productoId = alerta.getProducto().getProductoId();
+            Optional<Inventario> inventarioOpt = inventarioRepositorio.findByProducto(productoId);
+            
+            if (inventarioOpt.isEmpty()) {
+                continue;
+            }
+            
+            Inventario inventario = inventarioOpt.get();
+            int stockActual = inventario.getStockDisponible() != null ? inventario.getStockDisponible() : 0;
+            int puntoReorden = inventario.getPuntoReorden() != null ? inventario.getPuntoReorden() : 0;
+            int stockMinimo = inventario.getStockMinimo() != null ? inventario.getStockMinimo() : 0;
+            
+            // Resolver alerta si el stock actual es mayor al punto de reorden y stock mínimo
+            boolean stockSuficiente = stockActual > puntoReorden && stockActual > stockMinimo;
+            
+            if (stockSuficiente) {
+                alerta.setEstado(EstadoAlerta.RESUELTA);
+                alerta.setFechaResolucion(LocalDateTime.now());
+                alerta.setAccionTomada("Auto-resuelta: stock actual (" + stockActual + 
+                        ") supera punto de reorden (" + puntoReorden + ")");
+                alertaRepositorio.save(alerta);
+                
+                log.debug("Alerta {} auto-resuelta para producto {}: stock {} > ROP {}", 
+                        alerta.getAlertaId(), productoId, stockActual, puntoReorden);
+                resueltas++;
+            }
+        }
+        
+        if (resueltas > 0) {
+            log.info("Se auto-resolvieron {} alertas obsoletas", resueltas);
+        }
+        
+        return resueltas;
     }
 }
