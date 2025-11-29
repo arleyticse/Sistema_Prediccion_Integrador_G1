@@ -178,6 +178,12 @@
             </td>
             } @else if (col.field === 'producto') {
             <td>{{ inventario.nombreProducto }}</td>
+            } @else if (col.field === 'estado') {
+            <td>
+                <p-tag [value]="inventario.estado | estadoInventario" 
+                       [severity]="inventario.estado | estadoInventarioSeverity" 
+                       [rounded]="true" />
+            </td>
             } @else {
             <td>{{ inventario[col.field] }}</td>
             }

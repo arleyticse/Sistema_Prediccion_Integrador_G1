@@ -25,60 +25,60 @@ import { Menu as PrimeMenu } from 'primeng/menu';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex flex-col h-screen bg-slate-50 dark:bg-slate-950">
+    <div class="flex flex-col h-screen bg-slate-50 dark:bg-[#18181b]">
 
       <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar Menu -->
         <aside
           (mouseenter)="isExpanded.set(true)"
           (mouseleave)="isExpanded.set(false)"
-          class="bg-white dark:bg-slate-900 shadow-lg border-r border-slate-200 dark:border-slate-800 overflow-y-auto overflow-x-hidden transition-all duration-300 ease-in-out"
+          class="bg-white dark:bg-[#18181b] shadow-lg border-r border-slate-200 dark:border-[#2a2a2b] overflow-y-auto overflow-x-hidden transition-all duration-300 ease-in-out"
           [class.w-20]="!isExpanded()"
           [class.w-80]="isExpanded()"
         >
         <!-- Logo Section -->
-        <div class="bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 border-b border-slate-200 dark:border-slate-800 p-6 backdrop-blur-sm">
+        <div class="bg-gradient-to-b from-white to-slate-50/50 dark:from-[#18181b] dark:to-[#18181b]/50 border-b border-slate-200 dark:border-[#2a2a2b] p-6 backdrop-blur-sm">
           <div class="flex items-center justify-center">
             <div [class.w-16]="!isExpanded()" [class.w-64]="isExpanded()" class="h-16 transition-all duration-300">
-              <img src="../../../assets/logo/Logo_NN.jpg" alt="Logo" class="w-full h-full object-contain" />
+              <img src="../../../assets/logo/Logo_Transparente.png" alt="Logo" class="w-full h-full object-contain" />
             </div>
           </div>
         </div>
 
         <div class="px-3 py-4">
            <a [routerLink]="['/administracion/dashboard']" 
-             routerLinkActive="!bg-blue-100 !text-primary-100"
+             routerLinkActive="bg-blue-500 !text-primary-100"
              [routerLinkActiveOptions]="{exact: true}"
-             class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-200 group">
+             class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-200 group dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
             <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors">
-              <i class="pi pi-fw pi-home text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg"></i>
+              <i class="pi pi-fw pi-home text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg"></i>
             </div>
-            @if (isExpanded()) { <span class="text-slate-700 dark:text-slate-200 font-medium transition-colors">Dashboard</span> }
+            @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium transition-colors">Dashboard</span> }
           </a>
         </div>
 
         <div class="space-y-2 px-2">
           <div *ngFor="let group of menuGroups()">
             <div
-              class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
+              class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] cursor-pointer dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]"
               (click)="toggleGroup(group.label)">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors">
                   <i [class]="group.icon + ' text-blue-600 dark:text-blue-400 text-lg'"></i>
                 </div>
-                @if (isExpanded()) { <span class="text-slate-800 dark:text-slate-100 font-semibold">{{ group.label }}</span> }
+                @if (isExpanded()) { <span class="text-slate-800 dark:text-[#e4e4e7] font-semibold">{{ group.label }}</span> }
               </div>
             </div>
             <ul *ngIf="activeAccordionIndex().includes(group.label)" class="mt-1 space-y-1 px-2">
               <li *ngFor="let item of group.items">
                 <a [routerLink]="item.routerLink"
-                   routerLinkActive="bg-blue-100 text-primary-100"
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-200 group relative overflow-hidden">
+                   routerLinkActive="bg-blue-300 text-primary-100"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-200 group relative overflow-hidden dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
                   <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md transition-colors relative z-10">
-                    <i [class]="item.icon + ' text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-base'"></i>
+                    <i [class]="item.icon + ' text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-base'"></i>
                   </div>
-                  @if (isExpanded()) { <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors relative z-10">{{ item.label }}</span> }
+                  @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors relative z-10">{{ item.label }}</span> }
                 </a>
               </li>
             </ul>
@@ -86,8 +86,8 @@ import { Menu as PrimeMenu } from 'primeng/menu';
         </div>
       </aside>
 
-      <main class="flex-1 overflow-auto bg-bg-100 dark:bg-bg-dark-100">
-        <div class="bg-white/95 dark:bg-gray-900 shadow-sm border-b border-bg-200 dark:border-bg-dark-300 p-6 sticky top-0 z-20 backdrop-blur-sm">
+      <main class="flex-1 overflow-auto bg-bg-100 dark:bg-[#18181b] dark:text-[#e4e4e7]">
+        <div class="bg-white/95 dark:bg-[#18181b] shadow-sm border-b border-bg-200 dark:border-[#2a2a2b] p-6 sticky top-0 z-20 backdrop-blur-sm">
           <div class="max-w-7xl flex items-center justify-between mx-auto">
             <div>
               <h2 class="text-2xl font-bold bg-gradient-to-r from-[#0077c2] to-[#59a5f5] bg-clip-text text-transparent dark:from-[#59a5f5] dark:to-[#0077c2]">Sistema de Predicción de Demanda</h2>
@@ -103,9 +103,9 @@ import { Menu as PrimeMenu } from 'primeng/menu';
               }
             </div>
             <!-- Usuario y Logout -->
-            <div class="flex items-center gap-4 relative">
+            <div class="flex items-center gap-6 relative">
               @if (usuario()) {
-                <div class="flex items-center gap-3 cursor-pointer" (click)="menu.toggle($event)">
+                <div class="flex flex-row items-center gap-3 cursor-pointer" (click)="menu.toggle($event)" tabindex="0" class="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
                       <p-avatar
                         [label]="initials()"
                         styleClass="!bg-gradient-to-br !from-blue-600 !to-blue-800 !text-white !font-bold !shadow-lg dark:!from-blue-400 dark:!to-blue-600"

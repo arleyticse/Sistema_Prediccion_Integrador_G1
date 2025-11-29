@@ -28,6 +28,7 @@ import { PrediccionResponse, EstadoPrediccion } from '../../models/PrediccionRes
 import { GenerarPrediccionRequest, AlgoritmoInfo } from '../../models/GenerarPrediccionRequest';
 import { OptimizacionResponse, CalcularOptimizacionRequest } from '../../models/OptimizacionResponse';
 import { ProductoResponse } from '../../../productos/models/ProductoResponse';
+import { ProductoService } from '../../../productos/service/producto-service';
 
 interface AlgoritmoCard {
   codigo: string;
@@ -78,6 +79,7 @@ export class PrediccionesComponent {
 
   // Servicios inyectados
   private prediccionesService = inject(PrediccionesService);
+  private productoService = inject(ProductoService);
   private authService = inject(AuthService);
   private messageService = inject(MessageService);
   private confirmationService = inject(ConfirmationService);
@@ -422,9 +424,9 @@ export class PrediccionesComponent {
   }
 
   private cargarProductos(): void {
-    this.prediccionesService.obtenerProductos(0, 100).subscribe({
-      next: (response) => {
-        this.productos.set(response.content);
+    this.productoService.obtenerTodosProductos().subscribe({
+      next: (productos) => {
+        this.productos.set(productos);
       },
       error: () => {
         this.messageService.add({

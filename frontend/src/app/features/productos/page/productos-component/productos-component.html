@@ -185,6 +185,12 @@
             <td>{{ rowData.categoria.nombre }}</td>
             } @else if (col.field === 'unidadMedida') {
             <td>{{ rowData.unidadMedida.nombre }}</td>
+            } @else if (col.field === 'estadoInventario') {
+            <td>
+                <p-tag [value]="rowData.estadoInventario | estadoInventario" 
+                       [severity]="rowData.estadoInventario | estadoInventarioSeverity" 
+                       [rounded]="true" />
+            </td>
             } @else {
             <td>{{ rowData[col.field] }}</td>
             }
@@ -257,7 +263,9 @@
                     <!-- Header del movimiento -->
                     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <div class="flex items-center gap-2">
-                            <p-tag [value]="formatearTipo(mov.tipoMovimiento)" [rounded]="true" />
+                            <p-tag [value]="mov.tipoMovimiento | tipoMovimiento" 
+                                   [severity]="mov.tipoMovimiento | tipoMovimientoSeverity" 
+                                   [rounded]="true" />
                             @if (mov.numeroDocumento) {
                             <span class="text-sm text-surface-500">
                                 {{ mov.numeroDocumento }}

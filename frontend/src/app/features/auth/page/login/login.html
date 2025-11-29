@@ -1,8 +1,8 @@
 <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
     <!-- Background: light + dark radial gradient -->
     <div class="absolute inset-0 pointer-events-none z-0">
-        <div class="absolute inset-0 bg-slate-50 dark:bg-slate-950"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_500px_at_50%_200px,#eaf5ff,transparent)] dark:bg-[radial-gradient(circle_600px_at_50%_220px,#071428,transparent)] opacity-90"></div>
+        <div class="absolute inset-0 bg-slate-50 dark:bg-[#18181b]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_500px_at_50%_200px,#eaf5ff,transparent)] dark:bg-[radial-gradient(circle_700px_at_50%_220px,#222225,transparent)] opacity-90"></div>
     </div>
     <!-- Background Elements (decorative blobs) -->
     <div
@@ -16,7 +16,7 @@
     <div class="w-full max-w-md relative z-20">
         <!-- Glass Card -->
         <div
-            class="bg-[rgba(255,255,255,0.43)] dark:bg-[rgba(2,6,23,0.62)] rounded-[16px] shadow-[0_6px_30px_rgba(0,0,0,0.15)] backdrop-blur-[18px] border border-[rgba(255,255,255,1)] dark:border-[rgba(255,255,255,0.06)] p-8"
+            class="bg-[rgba(255,255,255,0.43)] dark:bg-[#18181b]/70 rounded-[16px] shadow-[0_6px_30px_rgba(0,0,0,0.15)] backdrop-blur-[18px] border border-[rgba(255,255,255,1)] dark:border-[#2a2a2b] p-8"
             style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
 
             <!-- Header -->
@@ -25,21 +25,21 @@
                     <img src="../../../../../assets/logo/Logo_Transparente.png" class="w-full h-full object-contain"
                         alt="Logo Sistema de Predicción">
                 </div>
-                <h1 class="text-3xl font-bold text-[#333333] dark:text-[#ffffff] mb-2">Bienvenido</h1>
-                <p class="text-[#5c5c5c] dark:text-[#cccccc]">Inicia sesión para continuar</p>
+                <h1 class="text-3xl font-bold text-[#333333] dark:text-[#e4e4e7] mb-2">Bienvenido</h1>
+                <p class="text-[#5c5c5c] dark:text-[#e4e4e7]">Inicia sesión para continuar</p>
             </div>
 
             <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-6">
                 <!-- Email -->
                 <div class="space-y-2">
-                    <label class="block text-sm font-medium text-[#333333] dark:text-[#cccccc]">
+                    <label class="block text-sm font-medium text-[#333333] dark:text-[#e4e4e7]">
                         Correo Electrónico
                     </label>
                     <div class="relative">
                         <i
-                            class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#cccccc] z-10"></i>
+                            class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#e4e4e7] z-10"></i>
                         <input pInputText type="email" formControlName="email" placeholder="ejemplo@correo.com"
-                            class="w-full !pl-10 !py-3 bg-white/60 dark:!bg-white/5 border-[#d1d5db] dark:border-slate-700 focus:border-[#0077c2] text-[#111827] dark:text-[#e5e7eb] rounded-lg transition-all"
+                            class="w-full !pl-10 !py-3 bg-white/60 dark:!bg-[#18181b]/40 border-[#d1d5db] dark:border-[#2a2a2b] focus:border-[#0077c2] text-[#111827] dark:!text-[#e4e4e7] rounded-lg transition-all"
                             [class.!border-red-500]="hasFieldError('email')" />
                     </div>
                     @if (hasFieldError('email')) {
@@ -52,15 +52,15 @@
 
                 <!-- Contraseña -->
                 <div class="space-y-2">
-                    <label class="block text-sm font-medium text-[#333333] dark:text-[#cccccc]">
+                    <label class="block text-sm font-medium text-[#333333] dark:text-[#e4e4e7]">
                         Contraseña
                     </label>
                     <div class="relative">
                         <i
-                            class="pi pi-lock absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#cccccc] z-10"></i>
+                            class="pi pi-lock absolute left-3 top-1/2 -translate-y-1/2 text-[#5c5c5c] dark:text-[#e4e4e7] z-10"></i>
                         <p-password formControlName="clave" placeholder="••••••••" [toggleMask]="true"
                             [feedback]="false" styleClass="w-full"
-                            inputStyleClass="w-full !pl-10 !py-3 bg-white/60 dark:!bg-white/5 border-[#d1d5db] dark:border-slate-700 focus:border-[#0077c2] text-[#111827] dark:text-[#e5e7eb] rounded-lg transition-all">
+                            inputStyleClass="w-full !pl-10 !py-3 bg-white/60 dark:!bg-[#18181b]/40 border-[#d1d5db] dark:border-[#2a2a2b] focus:border-[#0077c2] text-[#111827] dark:!text-[#e4e4e7] rounded-lg transition-all">
                         </p-password>
                     </div>
                     @if (hasFieldError('clave')) {

@@ -51,9 +51,8 @@ interface Usuario {
       <p-toolbar class="mb-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded">
         <div class="p-toolbar-group-left">
           <h1 class="text-2xl font-bold">Gestión de Usuarios</h1>
-          <small class="ml-2 opacity-80">RF001 - Registro y administración</small>
         </div>
-        <div class="p-toolbar-group-right">
+        <div class="">
           <p-button
             label="Nuevo Usuario"
             icon="pi pi-plus"

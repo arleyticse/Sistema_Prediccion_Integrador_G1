@@ -240,6 +240,12 @@
             </td>
             } @else if (col.field === 'fechaMovimiento') {
             <td>{{ rowData[col.field] | date:'dd/MM/yyyy HH:mm':'America/Lima':'es-PE' }}</td>
+            } @else if (col.field === 'tipoMovimiento') {
+            <td>
+                <p-tag [value]="rowData.tipoMovimiento | tipoMovimiento" 
+                       [severity]="rowData.tipoMovimiento | tipoMovimientoSeverity" 
+                       [rounded]="true" />
+            </td>
             } @else if (col.field === 'valorTotal') {
             <td>{{ rowData[col.field] | currency:'PEN':'symbol':'1.2-2':'es-PE' }}</td>
             } @else if (col.field === 'saldoCantidad') {

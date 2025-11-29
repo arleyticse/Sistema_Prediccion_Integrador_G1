@@ -30,6 +30,8 @@ import { DatePicker } from 'primeng/datepicker';
 import { SkeletonModule } from 'primeng/skeleton';
 import { environment } from '../../../../environments/environment';
 import { Tooltip } from "primeng/tooltip";
+import { TagModule } from 'primeng/tag';
+import { TipoMovimientoPipe, TipoMovimientoSeverityPipe } from '../../../../shared/pipes/tipo-movimiento.pipe';
 
 interface Column {
   field: keyof KardexResponse | 'acciones';
@@ -66,7 +68,10 @@ interface TipoMovimientoDTO {
     DecimalPipe,
     DatePicker,
     SkeletonModule,
-    Tooltip
+    Tooltip,
+    TagModule,
+    TipoMovimientoPipe,
+    TipoMovimientoSeverityPipe
 ],
   templateUrl: './movimiento-component.html',
   styleUrl: './movimiento-component.css',
@@ -159,9 +164,15 @@ export class MovimientoComponent {
 
   private cargarProductos(): void {
     this.loadingProductos.set(true);
-    this.productoService.obtenerProductos(0, 100).subscribe(response => {
-      this.productos.set(response.content);
-      this.loadingProductos.set(false);
+    this.productoService.obtenerTodosProductos().subscribe({
+      next: (productos) => {
+        this.productos.set(productos);
+        this.loadingProductos.set(false);
+      },
+      error: (error) => {
+        console.error('Error cargando productos:', error);
+        this.loadingProductos.set(false);
+      }
     });
   }
 

@@ -31,6 +31,8 @@ import { TagModule } from 'primeng/tag';
 import { CommonModule } from '@angular/common';
 import { KardexService } from '../../../kardex/services/kardex-service';
 import { KardexResponse, esEntrada, esSalida } from '../../../kardex/models/KardexResponse';
+import { EstadoInventarioPipe, EstadoInventarioSeverityPipe } from '../../../../shared/pipes/estado-inventario.pipe';
+import { TipoMovimientoPipe, TipoMovimientoSeverityPipe } from '../../../../shared/pipes/tipo-movimiento.pipe';
 
 interface Column {
   field: keyof ProductoResponse | 'acciones';
@@ -58,7 +60,11 @@ interface Column {
     Tooltip,
     TimelineModule,
     TagModule,
-    CommonModule
+    CommonModule,
+    EstadoInventarioPipe,
+    EstadoInventarioSeverityPipe,
+    TipoMovimientoPipe,
+    TipoMovimientoSeverityPipe
 ],
   templateUrl: './productos-component.html',
   styleUrl: './productos-component.css',

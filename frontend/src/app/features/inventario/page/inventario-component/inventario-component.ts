@@ -22,6 +22,8 @@ import { Toast } from 'primeng/toast';
 import { Message } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { Tooltip } from "primeng/tooltip";
+import { TagModule } from 'primeng/tag';
+import { EstadoInventarioPipe, EstadoInventarioSeverityPipe } from '../../../../shared/pipes/estado-inventario.pipe';
 
 interface Column {
   field: keyof InventarioResponse | 'acciones' | 'producto';
@@ -46,7 +48,10 @@ interface Column {
     Toast,
     Message,
     SkeletonModule,
-    Tooltip
+    Tooltip,
+    TagModule,
+    EstadoInventarioPipe,
+    EstadoInventarioSeverityPipe
 ],
   templateUrl: './inventario-component.html',
   styleUrl: './inventario-component.css',
