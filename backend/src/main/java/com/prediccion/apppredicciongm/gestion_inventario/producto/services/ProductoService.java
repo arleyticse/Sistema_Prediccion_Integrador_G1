@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -255,6 +256,18 @@ public class ProductoService implements IProductoServicio {
         return productos.map(this::enrichProductoResponse);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductoResponse> listarProductos(Pageable pageable) {
+        log.debug("Listando productos con paginación personalizada - Página: {}, Tamaño: {}, Sort: {}", 
+            pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        
+        Page<Producto> productos = productoRepositorio.findAll(pageable);
+        log.info("Se encontraron {} productos en total", productos.getTotalElements());
+        
+        return productos.map(this::enrichProductoResponse);
+    }
+
     /**
      * Busca productos por categoría con paginación.
      * 
@@ -390,6 +403,29 @@ public class ProductoService implements IProductoServicio {
         
         return productos.stream()
                 .map(this::enrichProductoResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Lista simplificada de productos para dropdowns y selects.
+     * 
+     * Query optimizada que evita N+1 y carga solo campos esenciales.
+     * 
+     * @return Lista de productos con id, nombre y categoría
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.prediccion.apppredicciongm.gestion_inventario.producto.dto.response.ProductoSimpleResponse> listarTodosSimple() {
+        log.debug("Listando productos (versión optimizada para selects)");
+        
+        List<Object[]> resultados = productoRepositorio.findAllSimple();
+        
+        return resultados.stream()
+                .map(row -> com.prediccion.apppredicciongm.gestion_inventario.producto.dto.response.ProductoSimpleResponse.builder()
+                        .productoId((Integer) row[0])
+                        .nombre((String) row[1])
+                        .nombreCategoria((String) row[2])
+                        .build())
                 .collect(Collectors.toList());
     }
 }

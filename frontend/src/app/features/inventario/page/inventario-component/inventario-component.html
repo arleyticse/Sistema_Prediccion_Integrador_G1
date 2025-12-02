@@ -1,6 +1,17 @@
-<div class="mb-4 flex justify-between">
-    <p-button (click)="abrirImportacion()" label="Importar CSV" icon="pi pi-upload" severity="info" [outlined]="true" />
-    <p-button (click)="showDialog()" label="Nuevo Inventario" icon="pi pi-plus" />
+<div class="mb-4 flex justify-between items-center gap-2">
+    <div class="flex gap-2">
+        <p-button (click)="abrirImportacion()" label="Importar CSV" icon="pi pi-upload" severity="info" [outlined]="true" />
+        <p-button (click)="showDialog()" label="Nuevo Inventario" icon="pi pi-plus" />
+    </div>
+    <div class="flex gap-2 items-center">
+        <p-button [outlined]="true" icon="pi pi-filter-slash" label="Limpiar" (click)="limpiarBusqueda()" />
+        <p-iconField iconPosition="left">
+            <p-inputIcon>
+                <i class="pi pi-search"></i>
+            </p-inputIcon>
+            <input pInputText placeholder="Buscar por producto" [ngModel]="searchValue()" (ngModelChange)="onSearchChange($event)" />
+        </p-iconField>
+    </div>
 </div>
 
 <!-- Componente de importación -->
@@ -27,14 +38,14 @@
                         @if (option) {
                         <div class="flex flex-col gap-1">
                             <span class="font-semibold">{{ option.nombre }}</span>
-                            <span class="text-sm text-gray-500">{{ option.categoria.nombre }}</span>
+                            <span class="text-sm text-gray-500">{{ option.nombreCategoria }}</span>
                         </div>
                         }
                     </ng-template>
                     <ng-template let-product #item>
                         <div class="flex flex-col gap-1">
                             <span class="font-semibold">{{ product.nombre }}</span>
-                            <span class="text-sm text-gray-500">{{ product.categoria.nombre }}</span>
+                            <span class="text-sm text-gray-500">{{ product.nombreCategoria }}</span>
                         </div>
                     </ng-template>
                 </p-select>

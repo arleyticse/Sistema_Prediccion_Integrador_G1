@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { PageProductoResponse, ProductoResponse } from '../models/ProductoResponse';
+import { PageProductoResponse, ProductoResponse, ProductoSimpleResponse } from '../models/ProductoResponse';
 import { ProductoRequest } from '../models/ProductoRequest';
 import { Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -62,8 +62,22 @@ export class ProductoService {
     );
   }
 
-  // Obtener todos los productos sin paginación para select
-  obtenerTodosProductos() {
+  /** Versión optimizada para dropdowns - solo id, nombre y categoría */
+  obtenerProductosSimple(): Observable<ProductoSimpleResponse[]> {
+    const cacheKey = 'productos_simple';
+    const cached = this.getFromCache<ProductoSimpleResponse[]>(cacheKey);
+
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.http.get<ProductoSimpleResponse[]>(`${this.URL}/simple`).pipe(
+      tap(response => this.setCache(cacheKey, response))
+    );
+  }
+
+  /** @deprecated Usar obtenerProductosSimple() para mejor rendimiento */
+  obtenerTodosProductos(): Observable<ProductoResponse[]> {
     const cacheKey = 'productos_todos';
     const cached = this.getFromCache<ProductoResponse[]>(cacheKey);
 

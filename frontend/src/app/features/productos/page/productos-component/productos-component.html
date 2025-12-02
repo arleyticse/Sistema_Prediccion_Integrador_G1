@@ -8,12 +8,12 @@
     nombrePlantilla="plantilla_productos.csv" (importacionCompletada)="cargarProductos()" />
 
 <p-dialog [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
-    [style]="{ width: '50rem' }" [contentStyle]="{ 'padding': '1.25rem', 'overflow': 'visible' }">
+    [style]="{ width: '50rem' }" [contentStyle]="{  'overflow': 'visible' }">
     <ng-template #header>
         <h2 class="text-3xl">{{ isEditing() ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
     </ng-template>
-    <form [formGroup]="productoForm" (ngSubmit)="onSubmit()" class="min-h-[27rem]">
-        <div class=" space-y-6">
+    <form [formGroup]="productoForm" (ngSubmit)="onSubmit()" class="min-h-[20rem]">
+        <div class=" space-y-9">
             <!-- Sección 1: Nombre (full width) -->
             <div class="field">
                 <p-floatlabel>
@@ -249,9 +249,9 @@
         </div>
         } @else {
         <!-- Timeline de movimientos -->
-        <p-timeline [value]="movimientos()" align="alternate" styleClass="w-full dark:bg-gray-800 dark:text-white">
+        <p-timeline [value]="movimientos()" align="alternate" Class="w-full dark:bg-surface-900 dark:text-white">
             <ng-template #marker let-mov>
-                <span class="flex items-center justify-center w-10 h-10 rounded-full shadow-md dark:bg-gray-700 dark:text-gray-300"
+                <span class="flex items-center justify-center w-10 h-10 rounded-full shadow-md dark:bg-surface-900 dark:text-gray-300"
                     [ngClass]="{
                         'bg-green-100 text-green-600': esEntrada(mov.tipoMovimiento),
                         'bg-red-100 text-red-600': esSalida(mov.tipoMovimiento),
@@ -261,7 +261,7 @@
                 </span>
             </ng-template>
             <ng-template #content let-mov>
-                <div class="bg-surface-50 rounded-lg p-4 shadow-sm border border-surface-200 mb-4 hover:shadow-md transition-shadow dark:bg-gray-700 dark:border-gray-600">
+                <div class="bg-surface-50 rounded-lg p-4 shadow-sm border border-surface-200 mb-4 hover:shadow-md transition-shadow dark:bg-surface-900 dark:border-gray-600">
                     <!-- Header del movimiento -->
                     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <div class="flex items-center gap-2">

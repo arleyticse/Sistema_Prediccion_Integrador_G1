@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { InventarioCreateRequest } from '../model/InventarioRequest';
-import { PageInventarioResponse } from '../model/InventarioResponse';
+import { InventarioResponse, PageInventarioResponse } from '../model/InventarioResponse';
 import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root'
@@ -23,5 +23,15 @@ export class InventarioService {
   }
   eliminarInventario(inventarioId:number){
     return this.http.delete(`${this.URL}/${inventarioId}`);
+  }
+
+  buscarPorProducto(productoId: number) {
+    return this.http.get<InventarioResponse>(`${this.URL}/producto/${productoId}`);
+  }
+
+  buscarPorNombre(nombre: string, page: number, size: number) {
+    return this.http.get<PageInventarioResponse>(
+      `${this.URL}/buscar?nombre=${encodeURIComponent(nombre)}&pagina=${page}&tamano=${size}`
+    );
   }
 }

@@ -15,7 +15,6 @@ import { TagModule } from 'primeng/tag';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 import { Tooltip } from 'primeng/tooltip';
-import { Slider } from 'primeng/slider';
 import { Chip } from 'primeng/chip';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Popover } from 'primeng/popover';
@@ -28,9 +27,8 @@ import { PrediccionesService } from '../../service/predicciones.service';
 import { AuthService } from '../../../../core/services/auth';
 import { AyudaContextualService } from '../../service/ayuda-contextual.service';
 import { PrediccionResponse, EstadoPrediccion } from '../../models/PrediccionResponse';
-import { GenerarPrediccionRequest, AlgoritmoInfo } from '../../models/GenerarPrediccionRequest';
 import { OptimizacionResponse, CalcularOptimizacionRequest } from '../../models/OptimizacionResponse';
-import { ProductoResponse } from '../../../productos/models/ProductoResponse';
+import { ProductoSimpleResponse } from '../../../productos/models/ProductoResponse';
 import { ProductoService } from '../../../productos/service/producto-service';
 import { 
   AlgoritmoPipe, 
@@ -38,7 +36,8 @@ import {
   EstadoPrediccionPipe, 
   EstadoPrediccionSeverityPipe,
   CalidadPrediccionPipe,
-  CalidadPrediccionSeverityPipe 
+  CalidadPrediccionSeverityPipe,
+  AlgoritmoNormalizadoPipe 
 } from '../../../../shared/pipes/prediccion.pipe';
 
 interface AlgoritmoCard {
@@ -84,7 +83,8 @@ interface AlgoritmoCard {
     EstadoPrediccionPipe,
     EstadoPrediccionSeverityPipe,
     CalidadPrediccionPipe,
-    CalidadPrediccionSeverityPipe
+    CalidadPrediccionSeverityPipe,
+    AlgoritmoNormalizadoPipe
   ],
   templateUrl: './predicciones.html',
   styleUrl: './predicciones.css',
@@ -107,7 +107,7 @@ export class PrediccionesComponent {
 
   // Signals para estado del componente
   predicciones = signal<PrediccionResponse[]>([]);
-  productos = signal<ProductoResponse[]>([]);
+  productos = signal<ProductoSimpleResponse[]>([]);
   algoritmos = signal<AlgoritmoCard[]>([]);
   prediccionSeleccionada = signal<PrediccionResponse | null>(null);
 
@@ -144,7 +144,7 @@ export class PrediccionesComponent {
 
   // Formulario de generación
   generarForm = new FormGroup({
-    producto: new FormControl<ProductoResponse | null>(null, Validators.required),
+    producto: new FormControl<ProductoSimpleResponse | null>(null, Validators.required),
     algoritmo: new FormControl<string>('AUTO', Validators.required),
     horizonteTiempo: new FormControl<number>(30, [Validators.required, Validators.min(1), Validators.max(365)]),
     detectarEstacionalidad: new FormControl<boolean>(true)
@@ -469,7 +469,7 @@ export class PrediccionesComponent {
   }
 
   private cargarProductos(): void {
-    this.productoService.obtenerTodosProductos().subscribe({
+    this.productoService.obtenerProductosSimple().subscribe({
       next: (productos) => {
         this.productos.set(productos);
       },

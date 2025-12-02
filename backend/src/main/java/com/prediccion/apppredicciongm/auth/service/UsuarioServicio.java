@@ -215,6 +215,10 @@ public class UsuarioServicio implements IUsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
 
         usuario.setActivo(activo);
+        // Cuando se activa una sesión, actualizar la última actividad para que el job de inactividad parta desde ahora
+        if (activo) {
+            usuario.actualizarActividad();
+        }
         usuarioRepositorio.save(usuario);
     }
 

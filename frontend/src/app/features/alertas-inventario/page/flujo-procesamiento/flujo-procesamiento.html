@@ -1,23 +1,23 @@
 <p-toast></p-toast>
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-surface-900 dark:to-surface-900 p-4 md:p-6">
 	<!-- Header Section -->
 	<div class="mb-6">
-		<h1 class="text-3xl font-bold text-slate-800 mb-2">Flujo de Procesamiento de Alertas</h1>
-		<p class="text-slate-600">Gestión automatizada de predicciones y órdenes de compra usando SMILE ML</p>
+		<h1 class="text-3xl font-bold text-slate-800 dark:text-surface-0 mb-2">Flujo de Procesamiento de Alertas</h1>
+		<p class="text-slate-600 dark:text-surface-400">Gestión automatizada de predicciones y órdenes de compra</p>
 	</div>
 
 	<!-- Steps Progress -->
-	<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+	<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6 mb-6">
 		<p-steps [model]="pasos" [activeIndex]="pasoActual()" [readonly]="true"></p-steps>
 	</div>
 
 	<!-- Loader -->
 	@if (cargando()) {
 		<div class="flex flex-col items-center justify-center py-16">
-			<i class="pi pi-spin pi-spinner text-5xl text-blue-500 mb-4"></i>
-			<p class="text-lg text-slate-600 font-medium">Procesando predicciones</p>
-			<p class="text-sm text-slate-500 mt-2">Esto puede tardar unos momentos</p>
+			<i class="pi pi-spin pi-spinner text-5xl text-blue-500 dark:text-blue-400 mb-4"></i>
+			<p class="text-lg text-slate-600 dark:text-surface-300 font-medium">Procesando predicciones</p>
+			<p class="text-sm text-slate-500 dark:text-surface-400 mt-2">Esto puede tardar unos momentos</p>
 		</div>
 	}
 
@@ -25,17 +25,17 @@
 	@if (!cargando() && pasoActual() === 0) {
 		<div class="space-y-6">
 			<!-- Control Panel -->
-			<div class="bg-white rounded-xl shadow-sm p-6">
+			<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6">
 				<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 					<div>
-						<h2 class="text-2xl font-bold text-slate-800 mb-1">Selecciona Alertas por Proveedor</h2>
-						<p class="text-sm text-slate-600">Selecciona las alertas que deseas procesar para generar predicciones</p>
+						<h2 class="text-2xl font-bold text-slate-800 dark:text-surface-0 mb-1">Selecciona Alertas por Proveedor</h2>
+						<p class="text-sm text-slate-600 dark:text-surface-400">Selecciona las alertas que deseas procesar para generar predicciones</p>
 					</div>
 					
-					<div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-						<div class="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200">
-							<i class="pi pi-calendar text-slate-600"></i>
-							<label class="text-sm font-medium text-slate-700">Horizonte:</label>
+					<div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+						<div class="flex items-center gap-2 px-4 py-2 rounded-l">
+							<i class="pi pi-calendar text-slate-600 dark:text-surface-300"></i>
+							<label class="text-sm font-medium text-slate-700 dark:text-surface-200">Horizonte:</label>
 							<p-inputNumber 
 								[ngModel]="horizontePrediccion()" 
 								[min]="7" 
@@ -45,7 +45,7 @@
 								[showButtons]="true"
 								[step]="7"
 								suffix=" días"
-								class="w-32">
+								>
 							</p-inputNumber>
 						</div>
 						<button 
@@ -62,31 +62,31 @@
 
 				<!-- Summary Cards -->
 				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-					<div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+					<div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-xs font-medium text-blue-700 uppercase mb-1">Alertas Seleccionadas</p>
-								<p class="text-3xl font-bold text-blue-900">{{ totalSeleccionadas() }}</p>
+								<p class="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase mb-1">Alertas Seleccionadas</p>
+								<p class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ totalSeleccionadas() }}</p>
 							</div>
-							<i class="pi pi-check-circle text-4xl text-blue-500 opacity-50"></i>
+							<i class="pi pi-check-circle text-4xl text-blue-500 dark:text-blue-400 opacity-50"></i>
 						</div>
 					</div>
-					<div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200">
+					<div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-emerald-200 dark:border-emerald-700">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-xs font-medium text-emerald-700 uppercase mb-1">Productos</p>
-								<p class="text-3xl font-bold text-emerald-900">{{ totalProductosSeleccionados() }}</p>
+								<p class="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase mb-1">Productos</p>
+								<p class="text-3xl font-bold text-emerald-900 dark:text-emerald-100">{{ totalProductosSeleccionados() }}</p>
 							</div>
-							<i class="pi pi-box text-4xl text-emerald-500 opacity-50"></i>
+							<i class="pi pi-box text-4xl text-emerald-500 dark:text-emerald-400 opacity-50"></i>
 						</div>
 					</div>
-					<div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+					<div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-xs font-medium text-purple-700 uppercase mb-1">Costo Estimado</p>
-								<p class="text-3xl font-bold text-purple-900">S/ {{ totalEstimado() | number:'1.0-2' }}</p>
+								<p class="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase mb-1">Costo Estimado</p>
+								<p class="text-3xl font-bold text-purple-900 dark:text-purple-100">S/ {{ totalEstimado() | number:'1.0-2' }}</p>
 							</div>
-							<i class="pi pi-dollar text-4xl text-purple-500 opacity-50"></i>
+							<i class="pi pi-dollar text-4xl text-purple-500 dark:text-purple-400 opacity-50"></i>
 						</div>
 					</div>
 				</div>
@@ -94,7 +94,7 @@
 
 			<!-- Proveedores Section -->
 			@for (g of grupos(); track g.proveedorId) {
-				<div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
 					<div class="bg-gradient-to-r from-slate-700 to-slate-600 p-5">
 						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-3">
@@ -126,35 +126,35 @@
 							responsiveLayout="scroll"
 							styleClass="p-datatable-sm p-datatable-striped">
 							<ng-template pTemplate="header">
-								<tr class="bg-slate-50">
+								<tr class="bg-slate-50 dark:bg-surface-700">
 									<th class="w-14 text-center">
-										<i class="pi pi-check text-slate-600"></i>
+										<i class="pi pi-check text-slate-600 dark:text-surface-300"></i>
 									</th>
-									<th class="font-semibold text-slate-700">
+									<th class="font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-barcode mr-2"></i>SKU
 									</th>
-									<th class="font-semibold text-slate-700">
+									<th class="font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-box mr-2"></i>Producto
 									</th>
-									<th class="text-right font-semibold text-slate-700">
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-database mr-2"></i>Stock
 									</th>
-									<th class="text-right font-semibold text-slate-700">
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-flag mr-2"></i>Punto ROP
 									</th>
-									<th class="text-right font-semibold text-slate-700">
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-shopping-cart mr-2"></i>Sugerido
 									</th>
-									<th class="text-right font-semibold text-slate-700">
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-money-bill mr-2"></i>Costo Unit.
 									</th>
-									<th class="text-center font-semibold text-slate-700">
+									<th class="text-center font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-exclamation-triangle mr-2"></i>Criticidad
 									</th>
 								</tr>
 							</ng-template>
 							<ng-template pTemplate="body" let-a>
-								<tr class="hover:bg-slate-50 transition-colors">
+								<tr class="hover:bg-slate-50 dark:hover:bg-surface-700 transition-colors">
 									<td class="text-center">
 										<p-checkbox 
 											[binary]="true" 
@@ -168,21 +168,21 @@
 										</span>
 									</td>
 									<td>
-										<span class="font-medium text-slate-800">{{ a.producto.nombre }}</span>
+										<span class="font-medium text-slate-800 dark:text-surface-100">{{ a.producto.nombre }}</span>
 									</td>
 									<td class="text-right">
-										<span class="font-medium" [class]="(a.stockActual ?? 0) < (a.stockMinimo ?? 0) ? 'text-red-600' : 'text-slate-700'">
+										<span class="font-medium" [class]="(a.stockActual ?? 0) < (a.stockMinimo ?? 0) ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-surface-200'">
 											{{ a.stockActual ?? '-' }}
 										</span>
 									</td>
 									<td class="text-right">
-										<span class="text-slate-600">{{ a.stockMinimo ?? '-' }}</span>
+										<span class="text-slate-600 dark:text-surface-400">{{ a.stockMinimo ?? '-' }}</span>
 									</td>
 									<td class="text-right">
 										<span class="font-bold text-emerald-600 text-lg">{{ a.cantidadSugerida ?? 0 }}</span>
 									</td>
 									<td class="text-right">
-										<span class="text-slate-700">S/ {{ (a.costoAdquisicion ?? 0) | number:'1.2-2' }}</span>
+										<span class="text-slate-700 dark:text-surface-300">S/ {{ (a.costoAdquisicion ?? 0) | number:'1.2-2' }}</span>
 									</td>
 									<td class="text-center">
 										<p-tag 
@@ -195,7 +195,7 @@
 							</ng-template>
 							<ng-template pTemplate="emptymessage">
 								<tr>
-									<td colspan="8" class="text-center py-8 text-slate-500">
+									<td colspan="8" class="text-center py-8 text-slate-500 dark:text-surface-400">
 										<i class="pi pi-inbox text-4xl mb-3 block"></i>
 										<p>No hay alertas disponibles para este proveedor</p>
 									</td>
@@ -207,13 +207,13 @@
 			}
 
 			<!-- Action Footer -->
-			<div class="bg-white rounded-xl shadow-sm p-6">
+			<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6">
 				<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-					<div class="text-slate-600">
+					<div class="text-slate-600 dark:text-surface-400">
 						<p class="text-sm">
-							<span class="font-semibold text-slate-800 text-lg">{{ totalSeleccionadas() }}</span> alertas seleccionadas
+							<span class="font-semibold text-slate-800 dark:text-surface-0 text-lg">{{ totalSeleccionadas() }}</span> alertas seleccionadas
 							<span class="mx-2">•</span>
-							Inversión estimada: <span class="font-bold text-purple-600 text-lg">S/ {{ totalEstimado() | number:'1.0-2' }}</span>
+							Inversión estimada: <span class="font-bold text-purple-600 dark:text-purple-400 text-lg">S/ {{ totalEstimado() | number:'1.0-2' }}</span>
 						</p>
 					</div>
 					<button 
@@ -234,15 +234,15 @@
 	@if (!cargando() && pasoActual() === 1) {
 		<div class="space-y-6">
 			<!-- Header con Action -->
-			<div class="bg-white rounded-xl shadow-sm p-6">
+			<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6">
 				<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 					<div>
-						<h2 class="text-2xl font-bold text-slate-800 mb-1">
-							<i class="pi pi-chart-line text-emerald-500 mr-2"></i>
+						<h2 class="text-2xl font-bold text-slate-800 dark:text-surface-0 mb-1">
+							<i class="pi pi-chart-line text-emerald-500 dark:text-emerald-400 mr-2"></i>
 							Predicciones Generadas con SMILE ML
 						</h2>
-						<p class="text-sm text-slate-600">
-							Algoritmos de Machine Learning: Random Forest, Gradient Boosting, OLS
+						<p class="text-sm text-slate-600 dark:text-surface-400">
+							Algoritmos de Machine Learning
 						</p>
 					</div>
 					<div class="flex gap-3">
@@ -259,7 +259,7 @@
 							type="button" 
 							icon="pi pi-shopping-cart" 
 							label="Generar Órdenes"
-							class="p-button-success p-button-lg px-6 font-semibold" 
+							class=" p-button-lg px-6 font-semibold" 
 							(click)="generarOrdenes()">
 						</button>
 					</div>
@@ -268,9 +268,9 @@
 
 			<!-- Predicciones por Proveedor -->
 			@for (proveedorEntry of prediccionesPorProveedor() | keyvalue; track proveedorEntry.key) {
-				<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm overflow-hidden">
 					<!-- Proveedor Header -->
-					<div class="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6">
+					<div class="bg-gradient-to-r from-blue-600 to-blue-500 p-6">
 						<div class="flex items-start justify-between">
 							<div class="flex-1">
 								<h3 class="text-2xl font-bold text-white mb-2">
@@ -302,81 +302,79 @@
 					<div class="p-6">
 						<!-- Métricas Agregadas -->
 						@if (proveedorEntry.value.metricas) {
-							<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-								<div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-									<div class="flex items-center gap-2 mb-2">
-										<i class="pi pi-chart-bar text-blue-600"></i>
-										<p class="text-xs font-semibold text-blue-700 uppercase">MAPE Promedio</p>
-									</div>
-									<p class="text-2xl font-bold text-blue-900">
-										{{ proveedorEntry.value.metricas.mapePromedio | number:'1.1-1' }}%
-									</p>
+						<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+							<div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+								<div class="flex items-center gap-2 mb-2">
+									<i class="pi pi-chart-bar text-blue-600 dark:text-blue-400"></i>
+									<p class="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase">MAPE Promedio</p>
 								</div>
-								
-								<div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200">
+								<p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+									{{ proveedorEntry.value.metricas.mapePromedio | number:'1.1-1' }}%
+								</p>
+							</div>								<div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-emerald-200 dark:border-emerald-700">
 									<div class="flex items-center gap-2 mb-2">
-										<i class="pi pi-check-circle text-emerald-600"></i>
-										<p class="text-xs font-semibold text-emerald-700 uppercase">Calidad</p>
+										<i class="pi pi-check-circle text-emerald-600 dark:text-emerald-400"></i>
+										<p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase">Calidad</p>
 									</div>
-									<p class="text-2xl font-bold text-emerald-900">
+									<p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
 										{{ proveedorEntry.value.metricas.calidadGeneral }}
 									</p>
 								</div>
 								
-								<div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+								<div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
 									<div class="flex items-center gap-2 mb-2">
-										<i class="pi pi-percentage text-purple-600"></i>
-										<p class="text-xs font-semibold text-purple-700 uppercase">Aceptables</p>
+										<i class="pi pi-percentage text-purple-600 dark:text-purple-400"></i>
+										<p class="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase">Aceptables</p>
 									</div>
-									<p class="text-2xl font-bold text-purple-900">
+									<p class="text-2xl font-bold text-purple-900 dark:text-purple-100">
 										{{ proveedorEntry.value.metricas.porcentajeAceptable | number:'1.0-0' }}%
 									</p>
 								</div>
 								
-								<div class="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200">
+								<div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 p-4 rounded-lg border border-amber-200 dark:border-amber-700">
 									<div class="flex items-center gap-2 mb-2">
-										<i class="pi pi-box text-amber-600"></i>
-										<p class="text-xs font-semibold text-amber-700 uppercase">Productos</p>
+										<i class="pi pi-box text-amber-600 dark:text-amber-400"></i>
+										<p class="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase">Productos</p>
 									</div>
-									<p class="text-2xl font-bold text-amber-900">
+									<p class="text-2xl font-bold text-amber-900 dark:text-amber-100">
 										{{ proveedorEntry.value.metricas.totalProductos }}
 									</p>
 								</div>
 								
-								<div class="bg-gradient-to-br from-rose-50 to-rose-100 p-4 rounded-lg border border-rose-200">
+								<div class="bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/30 dark:to-rose-800/30 p-4 rounded-lg border border-rose-200 dark:border-rose-700">
 									<div class="flex items-center gap-2 mb-2">
-										<i class="pi pi-exclamation-triangle text-rose-600"></i>
-										<p class="text-xs font-semibold text-rose-700 uppercase">MAE Prom.</p>
+										<i class="pi pi-exclamation-triangle text-rose-600 dark:text-rose-400"></i>
+										<p class="text-xs font-semibold text-rose-700 dark:text-rose-300 uppercase">MAE Prom.</p>
 									</div>
-									<p class="text-2xl font-bold text-rose-900">
+									<p class="text-2xl font-bold text-rose-900 dark:text-rose-100">
 										{{ proveedorEntry.value.metricas.maePromedio | number:'1.1-1' }}
 									</p>
 								</div>
 							</div>
 
 							<!-- Distribución de Calidad -->
-							<div class="grid grid-cols-4 gap-3 mb-6 p-4 bg-slate-50 rounded-lg">
+							<div class="grid grid-cols-4 gap-3 mb-6 p-4 bg-slate-50 dark:bg-surface-700 rounded-lg">
 								<div class="text-center">
-									<p class="text-xs text-slate-600 mb-1">Excelentes</p>
-									<p class="text-xl font-bold text-emerald-600">
+									<p class="text-xs text-slate-600 dark:text-surface-400 mb-1">Excelentes</p>
+									<p class="text-xl font-bold text-emerald-600 dark:text-emerald-400">
 										{{ proveedorEntry.value.metricas.prediccionesExcelentes }}
 									</p>
 								</div>
 								<div class="text-center">
-									<p class="text-xs text-slate-600 mb-1">Buenas</p>
-									<p class="text-xl font-bold text-blue-600">
+									<p class="text-xs text-slate-600 dark:text-surface-400 mb-1">Buenas</p>
+									<p class="text-xl font-bold text-blue-600 dark:text-blue-400">
 										{{ proveedorEntry.value.metricas.prediccionesBuenas }}
 									</p>
 								</div>
 								<div class="text-center">
-									<p class="text-xs text-slate-600 mb-1">Regulares</p>
-									<p class="text-xl font-bold text-amber-600">
+									<p class="text-xs text-slate-600 dark:text-surface-400 mb-1">Regulares</p>
+									<p class="text-xl font-bold text-amber-600 dark:text-amber-400">
 										{{ proveedorEntry.value.metricas.prediccionesRegulares }}
 									</p>
 								</div>
 								<div class="text-center">
-									<p class="text-xs text-slate-600 mb-1">Malas</p>
-									<p class="text-xl font-bold text-red-600">
+									<p class="text-xs text-slate-600 dark:text-surface-400 mb-1">Malas</p>
+									<p class="text-xl font-bold text-red-600 dark:text-red-400">
 										{{ proveedorEntry.value.metricas.prediccionesMalas }}
 									</p>
 								</div>
@@ -389,35 +387,35 @@
 							[tableStyle]="{ 'min-width': '60rem' }"
 							styleClass="p-datatable-sm p-datatable-striped">
 							<ng-template pTemplate="header">
-								<tr class="bg-slate-50">
-									<th class="font-semibold text-slate-700">
+								<tr class="bg-slate-50 dark:bg-surface-700">
+									<th class="font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-barcode mr-2"></i>SKU
 									</th>
-									<th class="font-semibold text-slate-700">
+									<th class="font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-box mr-2"></i>Producto
 									</th>
-									<th class="font-semibold text-slate-700">
+									<th class="font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-cog mr-2"></i>Algoritmo
 									</th>
-									<th class="text-center font-semibold text-slate-700">
+									<th class="text-center font-semibold text-slate-700 dark:text-surface-200">
 										<i class="pi pi-star mr-2"></i>Calidad
 									</th>
-									<th class="text-right font-semibold text-slate-700">MAPE</th>
-									<th class="text-right font-semibold text-slate-700">MAE</th>
-									<th class="text-right font-semibold text-slate-700">EOQ</th>
-									<th class="text-right font-semibold text-slate-700">ROP</th>
-									<th class="text-center font-semibold text-slate-700">Acciones</th>
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">MAPE</th>
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">MAE</th>
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">EOQ</th>
+									<th class="text-right font-semibold text-slate-700 dark:text-surface-200">ROP</th>
+									<th class="text-center font-semibold text-slate-700 dark:text-surface-200">Acciones</th>
 								</tr>
 							</ng-template>
 							<ng-template pTemplate="body" let-pred>
-								<tr class="hover:bg-slate-50 transition-colors">
+								<tr class="hover:bg-slate-50 dark:hover:bg-surface-700 transition-colors">
 									<td>
-										<span class="font-mono font-semibold text-blue-600">
+										<span class="font-mono font-semibold text-blue-600 dark:text-blue-400">
 											{{ pred.codigoSKU || pred.codigoProducto || '-' }}
 										</span>
 									</td>
 									<td>
-										<span class="font-medium text-slate-800">{{ pred.nombreProducto }}</span>
+										<span class="font-medium text-slate-800 dark:text-surface-100">{{ pred.nombreProducto }}</span>
 									</td>
 									<td>
 										<p-tag 
@@ -440,7 +438,7 @@
 											{{ pred.mape | number:'1.1-1' }}%
 										</span>
 									</td>
-									<td class="text-right text-slate-700">{{ pred.mae | number:'1.1-1' }}</td>
+									<td class="text-right text-slate-700 dark:text-surface-300">{{ pred.mae | number:'1.1-1' }}</td>
 									<td class="text-right">
 										<span class="font-bold text-blue-600">{{ pred.cantidadOptimaPedido }}</span>
 									</td>
@@ -465,7 +463,7 @@
 			}
 
 			<!-- Action Footer -->
-			<div class="bg-white rounded-xl shadow-sm p-6">
+			<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6">
 				<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
 					<button 
 						pButton 
@@ -480,7 +478,7 @@
 						type="button" 
 						icon="pi pi-shopping-cart" 
 						label="Generar Órdenes de Compra"
-						class="p-button-success p-button-lg px-8 font-semibold" 
+						class=" p-button-lg px-8 font-semibold" 
 						(click)="generarOrdenes()">
 					</button>
 				</div>
@@ -506,47 +504,47 @@
 
 			<!-- Estadísticas del Procesamiento -->
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-				<div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
 					<div class="flex items-center justify-between mb-3">
-						<i class="pi pi-inbox text-3xl text-blue-500"></i>
-						<p class="text-xs font-semibold text-slate-600 uppercase">Total Procesadas</p>
+						<i class="pi pi-inbox text-3xl text-blue-500 dark:text-blue-400"></i>
+						<p class="text-xs font-semibold text-slate-600 dark:text-surface-400 uppercase">Total Procesadas</p>
 					</div>
-					<p class="text-4xl font-bold text-slate-800">{{ procesamientoResultado()!.totalProcesadas }}</p>
-					<p class="text-sm text-slate-600 mt-2">Alertas procesadas</p>
+					<p class="text-4xl font-bold text-slate-800 dark:text-surface-0">{{ procesamientoResultado()!.totalProcesadas }}</p>
+					<p class="text-sm text-slate-600 dark:text-surface-400 mt-2">Alertas procesadas</p>
 				</div>
 
-				<div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-emerald-500">
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6 border-l-4 border-emerald-500">
 					<div class="flex items-center justify-between mb-3">
-						<i class="pi pi-check-circle text-3xl text-emerald-500"></i>
-						<p class="text-xs font-semibold text-slate-600 uppercase">Exitosas</p>
+						<i class="pi pi-check-circle text-3xl text-emerald-500 dark:text-emerald-400"></i>
+						<p class="text-xs font-semibold text-slate-600 dark:text-surface-400 uppercase">Exitosas</p>
 					</div>
-					<p class="text-4xl font-bold text-emerald-600">{{ procesamientoResultado()!.exitosos }}</p>
-					<p class="text-sm text-slate-600 mt-2">Predicciones correctas</p>
+					<p class="text-4xl font-bold text-emerald-600 dark:text-emerald-400">{{ procesamientoResultado()!.exitosos }}</p>
+					<p class="text-sm text-slate-600 dark:text-surface-400 mt-2">Predicciones correctas</p>
 				</div>
 
-				<div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-purple-500">
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6 border-l-4 border-purple-500">
 					<div class="flex items-center justify-between mb-3">
-						<i class="pi pi-shopping-cart text-3xl text-purple-500"></i>
-						<p class="text-xs font-semibold text-slate-600 uppercase">Órdenes</p>
+						<i class="pi pi-shopping-cart text-3xl text-purple-500 dark:text-purple-400"></i>
+						<p class="text-xs font-semibold text-slate-600 dark:text-surface-400 uppercase">Órdenes</p>
 					</div>
-					<p class="text-4xl font-bold text-purple-600">{{ procesamientoResultado()!.ordenesGeneradas.length }}</p>
-					<p class="text-sm text-slate-600 mt-2">Órdenes generadas</p>
+					<p class="text-4xl font-bold text-purple-600 dark:text-purple-400">{{ procesamientoResultado()!.ordenesGeneradas.length }}</p>
+					<p class="text-sm text-slate-600 dark:text-surface-400 mt-2">Órdenes generadas</p>
 				</div>
 
-				<div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-amber-500">
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6 border-l-4 border-amber-500">
 					<div class="flex items-center justify-between mb-3">
-						<i class="pi pi-exclamation-triangle text-3xl text-amber-500"></i>
-						<p class="text-xs font-semibold text-slate-600 uppercase">Fallos</p>
+						<i class="pi pi-exclamation-triangle text-3xl text-amber-500 dark:text-amber-400"></i>
+						<p class="text-xs font-semibold text-slate-600 dark:text-surface-400 uppercase">Fallos</p>
 					</div>
-					<p class="text-4xl font-bold text-amber-600">
+					<p class="text-4xl font-bold text-amber-600 dark:text-amber-400">
 						{{ procesamientoResultado()!.totalProcesadas - procesamientoResultado()!.exitosos }}
 					</p>
-					<p class="text-sm text-slate-600 mt-2">Predicciones fallidas</p>
+					<p class="text-sm text-slate-600 dark:text-surface-400 mt-2">Predicciones fallidas</p>
 				</div>
 			</div>
 
 			<!-- Detalles de Órdenes -->
-			<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+			<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm overflow-hidden">
 				<div class="bg-gradient-to-r from-slate-700 to-slate-600 p-6">
 					<h3 class="text-2xl font-bold text-white">
 						<i class="pi pi-list mr-2"></i>
@@ -578,8 +576,8 @@
 						</div>
 					} @else {
 						<div class="text-center py-12">
-							<i class="pi pi-inbox text-6xl text-slate-300 mb-4 block"></i>
-							<p class="text-slate-500 text-lg">No se generaron órdenes en este procesamiento</p>
+							<i class="pi pi-inbox text-6xl text-slate-300 dark:text-surface-600 mb-4 block"></i>
+							<p class="text-slate-500 dark:text-surface-400 text-lg">No se generaron órdenes en este procesamiento</p>
 						</div>
 					}
 				</div>
@@ -619,12 +617,12 @@
 		<ng-template pTemplate="header">
 			@if (prediccionSeleccionada()) {
 				<div class="flex items-center gap-3">
-					<i class="pi pi-chart-line text-3xl text-blue-600"></i>
+					<i class="pi pi-chart-line text-3xl text-blue-600 dark:text-blue-400"></i>
 					<div>
-						<h3 class="text-2xl font-bold text-slate-800">
+						<h3 class="text-2xl font-bold text-slate-800 dark:text-surface-0">
 							{{ prediccionSeleccionada()!.nombreProducto }}
 						</h3>
-						<p class="text-sm text-slate-600 mt-1">
+						<p class="text-sm text-slate-600 dark:text-surface-400 mt-1">
 							SKU: {{ prediccionSeleccionada()!.codigoSKU || prediccionSeleccionada()!.codigoProducto || 'N/A' }}
 						</p>
 					</div>
@@ -633,11 +631,11 @@
 		</ng-template>
 		
 		@if (prediccionSeleccionada()) {
-			<div class="space-y-6 -m-6 p-6 bg-slate-50">
+			<div class="space-y-6 -m-6 p-6 bg-slate-50 dark:bg-surface-900">
 				<!-- Info Básica -->
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-					<div class="bg-white p-4 rounded-lg shadow-sm">
-						<p class="text-xs text-slate-600 mb-1 flex items-center gap-1">
+					<div class="bg-white dark:bg-surface-800 p-4 rounded-lg shadow-sm">
+						<p class="text-xs text-slate-600 dark:text-surface-400 mb-1 flex items-center gap-1">
 							<i class="pi pi-cog"></i> Algoritmo
 						</p>
 						<p-tag 
@@ -646,62 +644,62 @@
 							[rounded]="true">
 						</p-tag>
 					</div>
-					<div class="bg-white p-4 rounded-lg shadow-sm">
-						<p class="text-xs text-slate-600 mb-1 flex items-center gap-1">
+					<div class="bg-white dark:bg-surface-800 p-4 rounded-lg shadow-sm">
+						<p class="text-xs text-slate-600 dark:text-surface-400 mb-1 flex items-center gap-1">
 							<i class="pi pi-calendar"></i> Horizonte
 						</p>
-						<p class="text-xl font-bold text-slate-800">
+						<p class="text-xl font-bold text-slate-800 dark:text-surface-0">
 							{{ prediccionSeleccionada()!.horizonteUsado }} días
 						</p>
 					</div>
-					<div class="bg-white p-4 rounded-lg shadow-sm">
-						<p class="text-xs text-slate-600 mb-1 flex items-center gap-1">
+					<div class="bg-white dark:bg-surface-800 p-4 rounded-lg shadow-sm">
+						<p class="text-xs text-slate-600 dark:text-surface-400 mb-1 flex items-center gap-1">
 							<i class="pi pi-database"></i> Datos Históricos
 						</p>
-						<p class="text-xl font-bold text-blue-600">
+						<p class="text-xl font-bold text-blue-600 dark:text-blue-400">
 							{{ prediccionSeleccionada()!.valoresHistoricos.length }} registros
 						</p>
 					</div>
-					<div class="bg-white p-4 rounded-lg shadow-sm">
-						<p class="text-xs text-slate-600 mb-1 flex items-center gap-1">
+					<div class="bg-white dark:bg-surface-800 p-4 rounded-lg shadow-sm">
+						<p class="text-xs text-slate-600 dark:text-surface-400 mb-1 flex items-center gap-1">
 							<i class="pi pi-chart-line"></i> Predicciones
 						</p>
-						<p class="text-xl font-bold text-emerald-600">
+						<p class="text-xl font-bold text-emerald-600 dark:text-emerald-400">
 							{{ prediccionSeleccionada()!.valoresPredichos.length }} valores
 						</p>
 					</div>
 				</div>
 
 				<!-- Métricas de Calidad -->
-				<div class="bg-white rounded-xl shadow-sm p-6">
-					<h4 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6">
+					<h4 class="text-lg font-bold text-slate-800 dark:text-surface-0 mb-4 flex items-center gap-2">
 						<i class="pi pi-star-fill text-amber-500"></i>
 						Métricas de Calidad
 					</h4>
 					<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-						<div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-							<p class="text-xs font-semibold text-blue-700 uppercase mb-1">MAPE</p>
-							<p class="text-3xl font-bold text-blue-900">
+						<div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+							<p class="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase mb-1">MAPE</p>
+							<p class="text-3xl font-bold text-blue-900 dark:text-blue-100">
 								{{ prediccionSeleccionada()!.mape | number:'1.1-1' }}%
 							</p>
-							<p class="text-xs text-blue-700 mt-1">Error Porcentual</p>
+							<p class="text-xs text-blue-700 dark:text-blue-400 mt-1">Error Porcentual</p>
 						</div>
-						<div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200">
-							<p class="text-xs font-semibold text-emerald-700 uppercase mb-1">MAE</p>
-							<p class="text-3xl font-bold text-emerald-900">
+						<div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-emerald-200 dark:border-emerald-700">
+							<p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 uppercase mb-1">MAE</p>
+							<p class="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
 								{{ prediccionSeleccionada()!.mae | number:'1.1-1' }}
 							</p>
-							<p class="text-xs text-emerald-700 mt-1">Error Absoluto</p>
+							<p class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">Error Absoluto</p>
 						</div>
-						<div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-							<p class="text-xs font-semibold text-purple-700 uppercase mb-1">RMSE</p>
-							<p class="text-3xl font-bold text-purple-900">
+						<div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+							<p class="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase mb-1">RMSE</p>
+							<p class="text-3xl font-bold text-purple-900 dark:text-purple-100">
 								{{ prediccionSeleccionada()!.rmse | number:'1.1-1' }}
 							</p>
-							<p class="text-xs text-purple-700 mt-1">Error Cuadrático</p>
+							<p class="text-xs text-purple-700 dark:text-purple-400 mt-1">Error Cuadrático</p>
 						</div>
-						<div class="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-lg border border-amber-200">
-							<p class="text-xs font-semibold text-amber-700 uppercase mb-1">Calidad</p>
+						<div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 p-4 rounded-lg border border-amber-200 dark:border-amber-700">
+							<p class="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase mb-1">Calidad</p>
 							<p-tag 
 								[value]="prediccionSeleccionada()!.calidadPrediccion" 
 								[severity]="getSeverityCalidad(prediccionSeleccionada()!.calidadPrediccion)"
@@ -712,31 +710,31 @@
 				</div>
 
 				<!-- Gráfico -->
-				<div class="bg-white rounded-xl shadow-sm p-6">
-					<h4 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-						<i class="pi pi-chart-line text-blue-600"></i>
+				<div class="bg-white dark:bg-surface-800 rounded-xl shadow-sm p-6">
+					<h4 class="text-lg font-bold text-slate-800 dark:text-surface-0 mb-4 flex items-center gap-2">
+						<i class="pi pi-chart-line text-blue-600 dark:text-blue-400"></i>
 						Análisis de Demanda: Histórico vs Predicción
 					</h4>
-					<div style="height: 400px;" class="bg-slate-50 rounded-lg p-4">
+					<div style="height: 400px;" class="bg-slate-50 dark:bg-surface-700 rounded-lg p-4">
 						<p-chart type="line" [data]="chartData()" [options]="chartOptions()"></p-chart>
 					</div>
 				</div>
 
 				<!-- Características de la Serie -->
 				<div class="grid grid-cols-2 gap-4">
-					<div class="bg-white rounded-lg shadow-sm p-5">
+					<div class="bg-white dark:bg-surface-800 rounded-lg shadow-sm p-5">
 						<div class="flex items-center gap-3">
 							<div [class]="prediccionSeleccionada()!.tieneTendencia ? 
-							               'bg-emerald-100 text-emerald-600' : 
-							               'bg-slate-100 text-slate-400'"
+							               'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400' : 
+							               'bg-slate-100 dark:bg-surface-700 text-slate-400 dark:text-surface-500'"
 							     class="w-12 h-12 rounded-full flex items-center justify-center">
 								<i class="pi" [class]="prediccionSeleccionada()!.tieneTendencia ? 
 								                        'pi-check-circle' : 'pi-times-circle'"
 								   class="text-2xl"></i>
 							</div>
 							<div>
-								<p class="font-semibold text-slate-800">Tendencia Detectada</p>
-								<p class="text-sm text-slate-600">
+								<p class="font-semibold text-slate-800 dark:text-surface-0">Tendencia Detectada</p>
+								<p class="text-sm text-slate-600 dark:text-surface-400">
 									{{ prediccionSeleccionada()!.tieneTendencia ? 
 									   'La serie presenta tendencia clara' : 
 									   'Sin tendencia significativa' }}
@@ -744,19 +742,19 @@
 							</div>
 						</div>
 					</div>
-					<div class="bg-white rounded-lg shadow-sm p-5">
+					<div class="bg-white dark:bg-surface-800 rounded-lg shadow-sm p-5">
 						<div class="flex items-center gap-3">
 							<div [class]="prediccionSeleccionada()!.tieneEstacionalidad ? 
-							               'bg-blue-100 text-blue-600' : 
-							               'bg-slate-100 text-slate-400'"
+							               'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 
+							               'bg-slate-100 dark:bg-surface-700 text-slate-400 dark:text-surface-500'"
 							     class="w-12 h-12 rounded-full flex items-center justify-center">
 								<i class="pi" [class]="prediccionSeleccionada()!.tieneEstacionalidad ? 
 								                        'pi-check-circle' : 'pi-times-circle'"
 								   class="text-2xl"></i>
 							</div>
 							<div>
-								<p class="font-semibold text-slate-800">Estacionalidad Detectada</p>
-								<p class="text-sm text-slate-600">
+								<p class="font-semibold text-slate-800 dark:text-surface-0">Estacionalidad Detectada</p>
+								<p class="text-sm text-slate-600 dark:text-surface-400">
 									{{ prediccionSeleccionada()!.tieneEstacionalidad ? 
 									   'Patrones estacionales presentes' : 
 									   'Sin estacionalidad significativa' }}
@@ -767,43 +765,43 @@
 				</div>
 
 				<!-- Optimización EOQ/ROP -->
-				<div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-sm p-6 border border-purple-200">
-					<h4 class="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+				<div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl shadow-sm p-6 border border-purple-200 dark:border-purple-700">
+					<h4 class="text-lg font-bold text-purple-900 dark:text-purple-100 mb-4 flex items-center gap-2">
 						<i class="pi pi-bolt"></i>
 						Optimización de Inventario
 					</h4>
 					<div class="grid grid-cols-2 gap-6">
-						<div class="bg-white rounded-lg p-5 shadow-sm">
+						<div class="bg-white dark:bg-surface-800 rounded-lg p-5 shadow-sm">
 							<div class="flex items-center gap-3 mb-3">
-								<div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center">
+								<div class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 w-10 h-10 rounded-full flex items-center justify-center">
 									<i class="pi pi-box text-lg"></i>
 								</div>
 								<div>
-									<p class="text-xs font-semibold text-slate-600 uppercase">EOQ</p>
-									<p class="text-xs text-slate-500">Cantidad Óptima de Pedido</p>
+									<p class="text-xs font-semibold text-slate-600 dark:text-surface-400 uppercase">EOQ</p>
+									<p class="text-xs text-slate-500 dark:text-surface-500">Cantidad Óptima de Pedido</p>
 								</div>
 							</div>
-							<p class="text-4xl font-bold text-blue-600">
+							<p class="text-4xl font-bold text-blue-600 dark:text-blue-400">
 								{{ prediccionSeleccionada()!.cantidadOptimaPedido }}
 							</p>
-							<p class="text-sm text-slate-600 mt-2">
+							<p class="text-sm text-slate-600 dark:text-surface-400 mt-2">
 								Minimiza costos de pedido e inventario
 							</p>
 						</div>
-						<div class="bg-white rounded-lg p-5 shadow-sm">
+						<div class="bg-white dark:bg-surface-800 rounded-lg p-5 shadow-sm">
 							<div class="flex items-center gap-3 mb-3">
-								<div class="bg-purple-100 text-purple-600 w-10 h-10 rounded-full flex items-center justify-center">
+								<div class="bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 w-10 h-10 rounded-full flex items-center justify-center">
 									<i class="pi pi-flag text-lg"></i>
 								</div>
 								<div>
-									<p class="text-xs font-semibold text-slate-600 uppercase">ROP</p>
-									<p class="text-xs text-slate-500">Punto de Reorden</p>
+									<p class="text-xs font-semibold text-slate-600 dark:text-surface-400 uppercase">ROP</p>
+									<p class="text-xs text-slate-500 dark:text-surface-500">Punto de Reorden</p>
 								</div>
 							</div>
-							<p class="text-4xl font-bold text-purple-600">
+							<p class="text-4xl font-bold text-purple-600 dark:text-purple-400">
 								{{ prediccionSeleccionada()!.puntoReorden }}
 							</p>
-							<p class="text-sm text-slate-600 mt-2">
+							<p class="text-sm text-slate-600 dark:text-surface-400 mt-2">
 								Momento ideal para realizar nuevo pedido
 							</p>
 						</div>
@@ -813,14 +811,14 @@
 				<!-- Advertencias y Recomendaciones -->
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					@if (prediccionSeleccionada()!.advertencias.length > 0) {
-						<div class="bg-amber-50 border border-amber-200 rounded-lg p-5">
-							<h4 class="font-bold text-amber-800 mb-3 flex items-center gap-2">
+						<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-5">
+							<h4 class="font-bold text-amber-800 dark:text-amber-300 mb-3 flex items-center gap-2">
 								<i class="pi pi-exclamation-triangle text-xl"></i>
 								Advertencias
 							</h4>
 							<ul class="space-y-2">
 								@for (adv of prediccionSeleccionada()!.advertencias; track $index) {
-									<li class="flex items-start gap-2 text-sm text-amber-900">
+									<li class="flex items-start gap-2 text-sm text-amber-900 dark:text-amber-200">
 										<i class="pi pi-circle-fill text-xs mt-1"></i>
 										<span>{{ adv }}</span>
 									</li>
@@ -830,14 +828,14 @@
 					}
 
 					@if (prediccionSeleccionada()!.recomendaciones.length > 0) {
-						<div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
-							<h4 class="font-bold text-blue-800 mb-3 flex items-center gap-2">
+						<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-5">
+							<h4 class="font-bold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
 								<i class="pi pi-lightbulb text-xl"></i>
 								Recomendaciones
 							</h4>
 							<ul class="space-y-2">
 								@for (rec of prediccionSeleccionada()!.recomendaciones; track $index) {
-									<li class="flex items-start gap-2 text-sm text-blue-900">
+									<li class="flex items-start gap-2 text-sm text-blue-900 dark:text-blue-200">
 										<i class="pi pi-circle-fill text-xs mt-1"></i>
 										<span>{{ rec }}</span>
 									</li>

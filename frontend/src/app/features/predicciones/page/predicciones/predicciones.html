@@ -1,7 +1,7 @@
 <!-- Barra de acciones superior -->
 <div class="mb-4 flex justify-between">
   <p-button (click)="limpiarFiltros()" label="Limpiar" icon="pi pi-filter-slash" [outlined]="true" />
-  <p-button (click)="showDialogGenerar()" label="Nueva Predicción" icon="pi pi-sparkles" severity="success" />
+  <p-button (click)="showDialogGenerar()" label="Nueva Predicción" icon="pi pi-sparkles"  />
 </div>
 
 <!-- Barra de búsqueda -->
@@ -60,7 +60,7 @@
     <tr>
       <td>{{ prediccion.productoNombre }}</td>
       <td class="text-center">
-        <p-tag [value]="prediccion.algoritmo | algoritmo" 
+        <p-tag [value]="prediccion.algoritmo | algoritmoNormalizado" 
                [severity]="prediccion.algoritmo | algoritmoSeverity" 
                [rounded]="true" />
       </td>
@@ -136,8 +136,8 @@
           <i class="pi pi-sparkles text-white text-xl"></i>
         </div>
         <div>
-          <h2 class="text-2xl font-bold text-gray-800 m-0">Generar Nueva Predicción</h2>
-          <p class="text-sm text-gray-500 m-0">Paso {{ pasoActual() }} de 3</p>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-surface-0 m-0">Generar Nueva Predicción</h2>
+          <p class="text-sm text-gray-500 dark:text-surface-400 m-0">Paso {{ pasoActual() }} de 3</p>
         </div>
       </div>
     </ng-template>
@@ -146,17 +146,17 @@
       <!-- Paso 1: Seleccionar Producto -->
       @if (pasoActual() === 1) {
       <div class="animate-fadeIn">
-        <div class="flex items-start gap-4 mb-6 p-4 bg-blue-50 rounded-lg">
-          <i class="pi pi-box text-blue-600 text-3xl"></i>
+        <div class="flex items-start gap-4 mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+          <i class="pi pi-box text-blue-600 dark:text-blue-400 text-3xl"></i>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Selecciona el Producto</h3>
-            <p class="text-sm text-gray-600 m-0">Elige el producto para el cual deseas predecir la demanda futura</p>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-surface-0 m-0 mb-1">Selecciona el Producto</h3>
+            <p class="text-sm text-gray-600 dark:text-surface-400 m-0">Elige el producto para el cual deseas predecir la demanda futura</p>
           </div>
         </div>
 
         <div class="space-y-6">
           <div>
-            <label for="producto" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label for="producto" class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-surface-200 mb-2">
               Producto <span class="text-red-500">*</span>
               <i class="pi pi-info-circle text-blue-500 text-sm cursor-help"
                 [pTooltip]="ayudaService.obtenerTooltipCampo('producto')" tooltipPosition="top"></i>
@@ -166,21 +166,21 @@
               styleClass="w-full" (onChange)="onProductoSeleccionado($event.value?.productoId)">
               <ng-template #selectedItem let-producto>
                 <div class="flex items-center gap-2">
-                  <i class="pi pi-box text-gray-400"></i>
+                  <i class="pi pi-box text-gray-400 dark:text-surface-500"></i>
                   <span class="font-medium">{{ producto.nombre }}</span>
                 </div>
               </ng-template>
               <ng-template #item let-producto>
                 <div class="flex flex-col py-2">
-                  <span class="font-medium text-gray-800">{{ producto.nombre }}</span>
-                  <span class="text-xs text-gray-500">{{ producto.categoria?.nombre || 'Sin categoría' }}</span>
+                  <span class="font-medium text-gray-800 dark:text-surface-100">{{ producto.nombre }}</span>
+                  <span class="text-xs text-gray-500 dark:text-surface-400">{{ producto.nombreCategoria || 'Sin categoría' }}</span>
                 </div>
               </ng-template>
             </p-select>
           </div>
 
           <div>
-            <label for="horizonteTiempo" class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label for="horizonteTiempo" class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-surface-200 mb-2">
               Horizonte de Predicción (días) <span class="text-red-500">*</span>
               <i class="pi pi-info-circle text-blue-500 text-sm cursor-help"
                 [pTooltip]="ayudaService.obtenerTooltipCampo('horizontePrediccion')" tooltipPosition="top"></i>
@@ -188,7 +188,7 @@
             <p-inputnumber id="horizonteTiempo" formControlName="horizonteTiempo" [min]="1" [max]="365"
               [showButtons]="true" suffix=" días" styleClass="w-full">
             </p-inputnumber>
-            <small class="flex items-center gap-2 mt-2 text-gray-500">
+            <small class="flex items-center gap-2 mt-2 text-gray-500 dark:text-surface-400">
               <i class="pi pi-lightbulb text-amber-500"></i>
               {{ ayudaService.obtenerAyudaCampo('horizontePrediccion')?.recomendacion || 'Selecciona cuántos días en el
               futuro deseas predecir (recomendado: 7-90 días)' }}
@@ -203,15 +203,15 @@
       <div class="animate-fadeIn">
         <!-- Toggle de Modo -->
         <div
-          class="flex items-center justify-between p-5 mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+          class="flex items-center justify-between p-5 mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl border border-blue-100 dark:border-blue-800">
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1 flex items-center gap-2">
-              <i [class]="modoAutomatico() ? 'pi pi-sparkles text-blue-600' : 'pi pi-sliders-h text-gray-600'"></i>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-surface-0 m-0 mb-1 flex items-center gap-2">
+              <i [class]="modoAutomatico() ? 'pi pi-sparkles text-blue-600 dark:text-blue-400' : 'pi pi-sliders-h text-gray-600 dark:text-surface-400'"></i>
               {{ modoAutomatico() ? 'Modo Automático' : 'Modo Manual' }}
-              <i class="pi pi-info-circle text-blue-500 text-sm cursor-help ml-1"
+              <i class="pi pi-info-circle text-blue-500 dark:text-blue-400 text-sm cursor-help ml-1"
                 [pTooltip]="ayudaService.obtenerTooltipCampo('modoAutomatico')" tooltipPosition="top"></i>
             </h3>
-            <p class="text-sm text-gray-600 m-0">
+            <p class="text-sm text-gray-600 dark:text-surface-400 m-0">
               @if (modoAutomatico()) {
               {{ ayudaService.obtenerAyudaCampo('modoAutomatico')?.ayuda?.automatico || 'El sistema analizará
               automáticamente tus datos históricos y recomendará el mejor algoritmo' }}
@@ -228,14 +228,14 @@
 
         <!-- MODO AUTOMÁTICO -->
         @if (modoAutomatico()) {
-        <div class="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-400 rounded-xl shadow-md">
+        <div class="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 border-2 border-purple-400 dark:border-purple-600 rounded-xl shadow-md">
           <div class="flex items-start gap-4">
-            <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <i class="pi pi-sparkles text-purple-600 text-3xl"></i>
+            <div class="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center flex-shrink-0">
+              <i class="pi pi-sparkles text-purple-600 dark:text-purple-400 text-3xl"></i>
             </div>
             <div class="flex-1">
-              <h4 class="text-xl font-bold text-purple-900 m-0 mb-3">Selección Automática de Algoritmo</h4>
-              <p class="text-sm text-purple-800 leading-relaxed m-0 mb-4">
+              <h4 class="text-xl font-bold text-purple-900 dark:text-purple-100 m-0 mb-3">Selección Automática de Algoritmo</h4>
+              <p class="text-sm text-purple-800 dark:text-purple-200 leading-relaxed m-0 mb-4">
                 El sistema analizará tus datos históricos y seleccionará automáticamente el mejor algoritmo de Machine
                 Learning
                 entre <strong>ARIMA</strong>, <strong>Random Forest</strong>, <strong>Gradient Boosting</strong> y
@@ -243,19 +243,19 @@
               </p>
 
               <div class="flex flex-wrap items-center gap-4">
-                <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
-                  <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
-                  <span class="text-sm font-bold text-purple-900">AUTO (Selección Inteligente)</span>
+                <div class="px-4 py-2 bg-white dark:bg-surface-800 rounded-lg shadow-sm border border-purple-200 dark:border-purple-700">
+                  <span class="text-xs text-purple-700 dark:text-purple-300 font-medium block mb-1">Algoritmo</span>
+                  <span class="text-sm font-bold text-purple-900 dark:text-purple-100">AUTO (Selección Inteligente)</span>
                 </div>
 
-                <div class="px-4 py-2 bg-white rounded-lg shadow-sm border border-purple-200">
-                  <span class="text-xs text-purple-700 font-medium block mb-1">Framework</span>
-                  <span class="text-sm font-bold text-purple-900">SMILE ML v3.1.1</span>
+                <div class="px-4 py-2 bg-white dark:bg-surface-800 rounded-lg shadow-sm border border-purple-200 dark:border-purple-700">
+                  <span class="text-xs text-purple-700 dark:text-purple-300 font-medium block mb-1">Framework</span>
+                  <span class="text-sm font-bold text-purple-900 dark:text-purple-100">SMILE ML v3.1.1</span>
                 </div>
               </div>
 
-              <div class="mt-4 p-3 bg-purple-100 rounded-lg">
-                <div class="flex items-center gap-2 text-sm text-purple-800">
+              <div class="mt-4 p-3 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                <div class="flex items-center gap-2 text-sm text-purple-800 dark:text-purple-200">
                   <i class="pi pi-info-circle"></i>
                   <span>El sistema comparará varios modelos y elegirá el de menor error (MAPE) para tu producto.</span>
                 </div>
@@ -267,11 +267,11 @@
 
         <!-- MODO MANUAL -->
         @if (!modoAutomatico()) {
-        <div class="flex items-start gap-4 mb-6 p-4 bg-indigo-50 rounded-lg">
-          <i class="pi pi-chart-line text-indigo-600 text-3xl"></i>
+        <div class="flex items-start gap-4 mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+          <i class="pi pi-chart-line text-indigo-600 dark:text-indigo-400 text-3xl"></i>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Elige el Algoritmo de Predicción</h3>
-            <p class="text-sm text-gray-600 m-0">Selecciona el algoritmo que mejor se adapte a las características de tu
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-surface-0 m-0 mb-1">Elige el Algoritmo de Predicción</h3>
+            <p class="text-sm text-gray-600 dark:text-surface-400 m-0">Selecciona el algoritmo que mejor se adapte a las características de tu
               producto</p>
           </div>
         </div>
@@ -280,9 +280,12 @@
           @for (algoritmo of algoritmos(); track algoritmo.codigo) {
           <div class="relative border-2 rounded-xl p-5 cursor-pointer transition-all duration-300 hover:shadow-lg"
             [class.border-gray-200]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
+            [class.dark:border-surface-600]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
             [class.bg-white]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
+            [class.dark:bg-surface-800]="generarForm.get('algoritmo')?.value !== algoritmo.codigo"
             [class.border-indigo-500]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
             [class.bg-indigo-50]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
+            [class.dark:bg-indigo-900\/30]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
             [class.shadow-md]="generarForm.get('algoritmo')?.value === algoritmo.codigo"
             (click)="seleccionarAlgoritmo(algoritmo.codigo)">
 
@@ -301,13 +304,13 @@
               </div>
 
               <div class="flex-1">
-                <h4 class="text-lg font-bold text-gray-800 m-0 mb-2 flex items-center gap-2">
+                <h4 class="text-lg font-bold text-gray-800 dark:text-surface-0 m-0 mb-2 flex items-center gap-2">
                   {{ algoritmo.nombre }}
-                  <i class="pi pi-question-circle text-indigo-500 text-sm cursor-help"
+                  <i class="pi pi-question-circle text-indigo-500 dark:text-indigo-400 text-sm cursor-help"
                     [pTooltip]="ayudaService.obtenerAyudaAlgoritmo(algoritmo.codigo)?.cuando_usar || ''"
                     tooltipPosition="top"></i>
                 </h4>
-                <p class="text-sm text-gray-600 m-0 mb-3">{{ algoritmo.descripcion }}</p>
+                <p class="text-sm text-gray-600 dark:text-surface-400 m-0 mb-3">{{ algoritmo.descripcion }}</p>
 
                 <div class="flex flex-wrap gap-3 text-xs">
                   <div class="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full">
@@ -342,53 +345,53 @@
       <!-- Paso 3: Confirmar y Configurar Opciones -->
       @if (pasoActual() === 3) {
       <div class="animate-fadeIn">
-        <div class="flex items-start gap-4 mb-6 p-4 bg-purple-50 rounded-lg">
-          <i class="pi pi-check-square text-purple-600 text-3xl"></i>
+        <div class="flex items-start gap-4 mb-6 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+          <i class="pi pi-check-square text-purple-600 dark:text-purple-400 text-3xl"></i>
           <div>
-            <h3 class="text-lg font-semibold text-gray-800 m-0 mb-1">Confirmar Configuración</h3>
-            <p class="text-sm text-gray-600 m-0">Revisa la configuración final antes de generar la predicción</p>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-surface-0 m-0 mb-1">Confirmar Configuración</h3>
+            <p class="text-sm text-gray-600 dark:text-surface-400 m-0">Revisa la configuración final antes de generar la predicción</p>
           </div>
         </div>
 
         <!-- Resumen de Configuración -->
-        <div class="border border-gray-200 rounded-xl p-6 bg-white mb-6">
-          <h4 class="text-base font-bold text-gray-800 m-0 mb-4 flex items-center gap-2">
-            <i class="pi pi-info-circle text-blue-500"></i>
+        <div class="border border-gray-200 dark:border-surface-700 rounded-xl p-6 bg-white dark:bg-surface-800 mb-6">
+          <h4 class="text-base font-bold text-gray-800 dark:text-surface-0 m-0 mb-4 flex items-center gap-2">
+            <i class="pi pi-info-circle text-blue-500 dark:text-blue-400"></i>
             Resumen de Predicción
           </h4>
 
           <div class="grid grid-cols-2 gap-4">
-            <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-              <i class="pi pi-box text-blue-600 text-xl"></i>
+            <div class="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+              <i class="pi pi-box text-blue-600 dark:text-blue-400 text-xl"></i>
               <div class="flex-1">
-                <span class="text-xs text-blue-700 font-medium block mb-1">Producto</span>
-                <span class="text-sm font-bold text-blue-900">{{ generarForm.get('producto')?.value?.nombre }}</span>
+                <span class="text-xs text-blue-700 dark:text-blue-300 font-medium block mb-1">Producto</span>
+                <span class="text-sm font-bold text-blue-900 dark:text-blue-100">{{ generarForm.get('producto')?.value?.nombre }}</span>
               </div>
             </div>
 
-            <div class="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
-              <i class="pi pi-sparkles text-purple-600 text-xl"></i>
+            <div class="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+              <i class="pi pi-sparkles text-purple-600 dark:text-purple-400 text-xl"></i>
               <div class="flex-1">
-                <span class="text-xs text-purple-700 font-medium block mb-1">Algoritmo</span>
-                <span class="text-sm font-bold text-purple-900">{{
+                <span class="text-xs text-purple-700 dark:text-purple-300 font-medium block mb-1">Algoritmo</span>
+                <span class="text-sm font-bold text-purple-900 dark:text-purple-100">{{
                   obtenerNombreAlgoritmo(generarForm.get('algoritmo')?.value || 'AUTO') }}</span>
               </div>
             </div>
 
-            <div class="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
-              <i class="pi pi-calendar text-green-600 text-xl"></i>
+            <div class="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
+              <i class="pi pi-calendar text-green-600 dark:text-green-400 text-xl"></i>
               <div class="flex-1">
-                <span class="text-xs text-green-700 font-medium block mb-1">Horizonte</span>
-                <span class="text-sm font-bold text-green-900">{{ generarForm.get('horizonteTiempo')?.value }}
+                <span class="text-xs text-green-700 dark:text-green-300 font-medium block mb-1">Horizonte</span>
+                <span class="text-sm font-bold text-green-900 dark:text-green-100">{{ generarForm.get('horizonteTiempo')?.value }}
                   días</span>
               </div>
             </div>
 
-            <div class="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
-              <i class="pi pi-chart-line text-amber-600 text-xl"></i>
+            <div class="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
+              <i class="pi pi-chart-line text-amber-600 dark:text-amber-400 text-xl"></i>
               <div class="flex-1">
-                <span class="text-xs text-amber-700 font-medium block mb-1">Detección Estacional</span>
-                <span class="text-sm font-bold text-amber-900">{{ generarForm.get('detectarEstacionalidad')?.value ?
+                <span class="text-xs text-amber-700 dark:text-amber-300 font-medium block mb-1">Detección Estacional</span>
+                <span class="text-sm font-bold text-amber-900 dark:text-amber-100">{{ generarForm.get('detectarEstacionalidad')?.value ?
                   'Activada' : 'Desactivada' }}</span>
               </div>
             </div>
@@ -396,19 +399,19 @@
         </div>
 
         <!-- Opción de Detección de Estacionalidad -->
-        <div class="border border-gray-200 rounded-xl p-6 bg-white">
+        <div class="border border-gray-200 dark:border-surface-700 rounded-xl p-6 bg-white dark:bg-surface-800">
           <div class="flex items-start justify-between gap-4">
             <div class="flex items-start gap-3 flex-1">
-              <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                <i class="pi pi-chart-line text-indigo-600 text-lg"></i>
+              <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-chart-line text-indigo-600 dark:text-indigo-400 text-lg"></i>
               </div>
               <div>
-                <h4 class="text-base font-bold text-gray-800 m-0 mb-1">Detección Automática de Estacionalidad</h4>
-                <p class="text-sm text-gray-600 m-0 mb-2">
+                <h4 class="text-base font-bold text-gray-800 dark:text-surface-0 m-0 mb-1">Detección Automática de Estacionalidad</h4>
+                <p class="text-sm text-gray-600 dark:text-surface-400 m-0 mb-2">
                   El sistema analizará tus datos históricos para identificar patrones estacionales (semanales,
                   mensuales, anuales)
                 </p>
-                <div class="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-surface-400 bg-gray-50 dark:bg-surface-700 px-3 py-2 rounded-lg">
                   <i class="pi pi-lightbulb text-amber-500"></i>
                   <span>Recomendado para productos con variaciones cíclicas (helados, chocolates, panetón)</span>
                 </div>
@@ -420,12 +423,12 @@
         </div>
 
         <!-- Nota sobre SMILE ML -->
-        <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+        <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
           <div class="flex items-start gap-3">
-            <i class="pi pi-info-circle text-blue-600 text-xl flex-shrink-0"></i>
+            <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-xl flex-shrink-0"></i>
             <div>
-              <h5 class="text-sm font-bold text-blue-900 m-0 mb-1">🤖 Predicción Inteligente con SMILE ML</h5>
-              <p class="text-xs text-blue-800 m-0">
+              <h5 class="text-sm font-bold text-blue-900 dark:text-blue-100 m-0 mb-1">🤖 Predicción Inteligente con SMILE ML</h5>
+              <p class="text-xs text-blue-800 dark:text-blue-200 m-0">
                 Los algoritmos SMILE ML se auto-configuran internamente sin necesidad de ajustar parámetros manuales.
                 El sistema optimizará automáticamente los hiperparámetros para maximizar la precisión de la predicción.
               </p>
@@ -470,17 +473,17 @@
       @switch (pasoActual()) {
       @case (1) {
       <div class="space-y-3">
-        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
+        <h4 class="text-lg font-bold text-gray-800 dark:text-surface-0 flex items-center gap-2 m-0">
           <i class="pi pi-lightbulb text-yellow-500"></i>
           Configuración Inicial
         </h4>
-        <p class="text-sm text-gray-600 m-0">
+        <p class="text-sm text-gray-600 dark:text-surface-400 m-0">
           {{ ayudaService.obtenerTooltipPaso(1) }}
         </p>
 
-        <div class="border-t pt-3">
-          <h5 class="text-sm font-semibold text-gray-700 mb-2">💡 Consejos útiles:</h5>
-          <ul class="text-xs text-gray-600 space-y-1 m-0 pl-4">
+        <div class="border-t dark:border-surface-700 pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 dark:text-surface-200 mb-2">💡 Consejos útiles:</h5>
+          <ul class="text-xs text-gray-600 dark:text-surface-400 space-y-1 m-0 pl-4">
             <li>El producto debe tener al menos <strong>7 registros de venta</strong></li>
             <li>Un horizonte de <strong>7-30 días</strong> es ideal para planificación semanal/mensual</li>
             <li>Para análisis a largo plazo, usa <strong>60-90 días</strong></li>
@@ -491,17 +494,17 @@
 
       @case (2) {
       <div class="space-y-3">
-        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
+        <h4 class="text-lg font-bold text-gray-800 dark:text-surface-0 flex items-center gap-2 m-0">
           <i class="pi pi-sparkles text-blue-500"></i>
           Selección de Algoritmo
         </h4>
-        <p class="text-sm text-gray-600 m-0">
+        <p class="text-sm text-gray-600 dark:text-surface-400 m-0">
           {{ ayudaService.obtenerTooltipPaso(2) }}
         </p>
 
-        <div class="border-t pt-3">
-          <h5 class="text-sm font-semibold text-gray-700 mb-2">🤖 Modo Automático vs Manual:</h5>
-          <div class="space-y-2 text-xs text-gray-600">
+        <div class="border-t dark:border-surface-700 pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 dark:text-surface-200 mb-2">🤖 Modo Automático vs Manual:</h5>
+          <div class="space-y-2 text-xs text-gray-600 dark:text-surface-400">
             <div class="flex gap-2">
               <i class="pi pi-check-circle text-green-500 mt-0.5"></i>
               <div>
@@ -517,20 +520,20 @@
           </div>
         </div>
 
-        <div class="border-t pt-3">
-          <h5 class="text-sm font-semibold text-gray-700 mb-2">📊 Guía rápida de algoritmos:</h5>
+        <div class="border-t dark:border-surface-700 pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 dark:text-surface-200 mb-2">📊 Guía rápida de algoritmos:</h5>
           <div class="space-y-2 text-xs">
-            <div class="p-2 bg-blue-50 rounded-lg">
-              <strong class="text-blue-700">SMA:</strong>
-              <span class="text-gray-600"> Ventas estables sin tendencias</span>
+            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+              <strong class="text-blue-700 dark:text-blue-300">SMA:</strong>
+              <span class="text-gray-600 dark:text-surface-400"> Ventas estables sin tendencias</span>
             </div>
-            <div class="p-2 bg-green-50 rounded-lg">
-              <strong class="text-green-700">SES:</strong>
-              <span class="text-gray-600"> Tendencia creciente/decreciente</span>
+            <div class="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
+              <strong class="text-green-700 dark:text-green-300">SES:</strong>
+              <span class="text-gray-600 dark:text-surface-400"> Tendencia creciente/decreciente</span>
             </div>
-            <div class="p-2 bg-orange-50 rounded-lg">
-              <strong class="text-orange-700">Holt-Winters:</strong>
-              <span class="text-gray-600"> Patrones semanales/mensuales</span>
+            <div class="p-2 bg-orange-50 dark:bg-orange-900/30 rounded-lg">
+              <strong class="text-orange-700 dark:text-orange-300">Holt-Winters:</strong>
+              <span class="text-gray-600 dark:text-surface-400"> Patrones semanales/mensuales</span>
             </div>
           </div>
         </div>
@@ -539,19 +542,19 @@
 
       @case (3) {
       <div class="space-y-3">
-        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2 m-0">
+        <h4 class="text-lg font-bold text-gray-800 dark:text-surface-0 flex items-center gap-2 m-0">
           <i class="pi pi-sliders-h text-purple-500"></i>
           Ajuste de Parámetros
         </h4>
-        <p class="text-sm text-gray-600 m-0">
+        <p class="text-sm text-gray-600 dark:text-surface-400 m-0">
           {{ ayudaService.obtenerTooltipPaso(3) }}
         </p>
 
         @switch (generarForm.get('algoritmo')?.value) {
         @case ('simpleMovingAverageAlgorithm') {
-        <div class="border-t pt-3">
-          <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetro Ventana:</h5>
-          <div class="text-xs text-gray-600 space-y-2">
+        <div class="border-t dark:border-surface-700 pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 dark:text-surface-200 mb-2">🔧 Parámetro Ventana:</h5>
+          <div class="text-xs text-gray-600 dark:text-surface-400 space-y-2">
             <p class="m-0">
               {{ ayudaService.obtenerAyudaParametro('simpleMovingAverageAlgorithm', 'ventana')?.ayuda }}
             </p>
@@ -564,9 +567,9 @@
         }
 
         @case ('simpleExponentialSmoothingAlgorithm') {
-        <div class="border-t pt-3">
-          <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetro Alpha (α):</h5>
-          <div class="text-xs text-gray-600 space-y-2">
+        <div class="border-t dark:border-surface-700 pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 dark:text-surface-200 mb-2">🔧 Parámetro Alpha (α):</h5>
+          <div class="text-xs text-gray-600 dark:text-surface-400 space-y-2">
             <p class="m-0">
               {{ ayudaService.obtenerAyudaParametro('simpleExponentialSmoothingAlgorithm', 'alpha')?.ayuda }}
             </p>
@@ -579,9 +582,9 @@
         }
 
         @case ('holtWintersAlgorithm') {
-        <div class="border-t pt-3">
-          <h5 class="text-sm font-semibold text-gray-700 mb-2">🔧 Parámetros Triple Exponencial:</h5>
-          <div class="text-xs text-gray-600 space-y-2">
+        <div class="border-t dark:border-surface-700 pt-3">
+          <h5 class="text-sm font-semibold text-gray-700 dark:text-surface-200 mb-2">🔧 Parámetros Triple Exponencial:</h5>
+          <div class="text-xs text-gray-600 dark:text-surface-400 space-y-2">
             <div class="flex items-start gap-2">
               <strong class="text-orange-600 min-w-[50px]">Alpha:</strong>
               <span>{{ ayudaService.obtenerAyudaParametro('holtWintersAlgorithm', 'alpha')?.ayuda }}</span>
@@ -619,10 +622,10 @@
           <i class="pi pi-chart-bar text-white text-xl"></i>
         </div>
         <div>
-          <h2 class="text-2xl font-bold text-gray-800 m-0">Detalles de la Predicción</h2>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-surface-0 m-0">Detalles de la Predicción</h2>
           @if (prediccionSeleccionada()) {
-          <p class="text-sm text-gray-500 m-0">{{ prediccionSeleccionada()!.productoNombre }} - {{
-            prediccionSeleccionada()!.algoritmo }}</p>
+          <p class="text-sm text-gray-500 dark:text-surface-400 m-0">{{ prediccionSeleccionada()!.productoNombre }} - {{
+            prediccionSeleccionada()!.algoritmo | algoritmoNormalizado }}</p>
           }
         </div>
       </div>
@@ -752,23 +755,23 @@
 
               <!-- Gráfico de Predicción -->
               @if (chartData()) {
-              <div class="bg-white border border-gray-200 rounded-xl p-6">
+              <div class="bg-white border border-gray-200 dark:bg-surface-900 rounded-xl p-6 dark:border-0 dark:text-white">
                 <div class="flex items-center gap-3 mb-4">
                   <i class="pi pi-chart-line text-blue-600 text-xl"></i>
-                  <h3 class="text-lg font-bold text-gray-800 m-0">Visualización de la Predicción</h3>
+                  <h3 class="text-lg font-bold text-gray-800 dark:text-white m-0">Visualización de la Predicción</h3>
                 </div>
                 <div class="h-[400px]">
-                  <p-chart type="line" [data]="chartData()!" [options]="chartOptions"></p-chart>
+                  <p-chart type="line" [data]="chartData()!" [options]="chartOptions" class="dark:bg-surface-900 "></p-chart>
                 </div>
               </div>
               }
 
               <!-- Indicadores de Patrones -->
               @if (prediccionSeleccionada()!.tieneTendencia || prediccionSeleccionada()!.tieneEstacionalidad) {
-              <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
+              <div class="bg-blue-50 border dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 rounded-xl p-5">
                 <div class="flex items-center gap-3 mb-4">
-                  <i class="pi pi-info-circle text-blue-600 text-xl"></i>
-                  <h3 class="text-base font-bold text-gray-800 m-0">Patrones Detectados</h3>
+                  <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-xl"></i>
+                  <h3 class="text-base font-bold text-gray-800 dark:text-surface-0 m-0">Patrones Detectados</h3>
                 </div>
                 <div class="flex flex-wrap gap-2">
                   @if (prediccionSeleccionada()!.tieneTendencia) {
@@ -785,14 +788,14 @@
 
               <!-- Advertencias -->
               @if (prediccionSeleccionada()!.advertencias && prediccionSeleccionada()!.advertencias!.length > 0) {
-              <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+              <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl p-5">
                 <div class="flex items-center gap-3 mb-4">
-                  <i class="pi pi-exclamation-triangle text-yellow-600 text-xl"></i>
-                  <h3 class="text-base font-bold text-gray-800 m-0">Advertencias</h3>
+                  <i class="pi pi-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                  <h3 class="text-base font-bold text-gray-800 dark:text-surface-0 m-0">Advertencias</h3>
                 </div>
                 <ul class="space-y-2 m-0 pl-4">
                   @for (advertencia of prediccionSeleccionada()!.advertencias; track $index) {
-                  <li class="flex items-start gap-2 text-sm text-gray-700">
+                  <li class="flex items-start gap-2 text-sm text-gray-700 dark:text-surface-300">
                     <i class="pi pi-exclamation-circle text-yellow-500 mt-1"></i>
                     <span>{{ advertencia }}</span>
                   </li>
@@ -802,14 +805,14 @@
               }
               <!-- Recomendaciones del backend -->
               @if (prediccionSeleccionada()!.recomendaciones && prediccionSeleccionada()!.recomendaciones!.length > 0) {
-              <div class="bg-green-50 border border-green-200 rounded-xl p-5">
+              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-5">
                 <div class="flex items-center gap-3 mb-4">
-                  <i class="pi pi-lightbulb text-green-600 text-xl"></i>
-                  <h3 class="text-base font-bold text-gray-800 m-0">Recomendaciones del Sistema</h3>
+                  <i class="pi pi-lightbulb text-green-600 dark:text-green-400 text-xl"></i>
+                  <h3 class="text-base font-bold text-gray-800 dark:text-surface-0 m-0">Recomendaciones del Sistema</h3>
                 </div>
                 <ul class="space-y-2 m-0 pl-4">
                   @for (recomendacion of prediccionSeleccionada()!.recomendaciones; track $index) {
-                  <li class="flex items-start gap-2 text-sm text-gray-700">
+                  <li class="flex items-start gap-2 text-sm text-gray-700 dark:text-surface-300">
                     <i class="pi pi-check-circle text-green-500 mt-1"></i>
                     <span>{{ recomendacion }}</span>
                   </li>
@@ -823,12 +826,12 @@
           <!-- Tab 2: Recomendaciones Inteligentes -->
           <p-tabpanel value="1">
             <div class="py-4">
-              <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6 mb-6">
+              <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border border-blue-200 dark:border-blue-700 rounded-xl p-6 mb-6">
                 <div class="flex items-center gap-3 mb-2">
-                  <i class="pi pi-sparkles text-blue-600 text-2xl"></i>
-                  <h3 class="text-lg font-bold text-gray-800 m-0">Análisis Inteligente de la Predicción</h3>
+                  <i class="pi pi-sparkles text-blue-600 dark:text-blue-400 text-2xl"></i>
+                  <h3 class="text-lg font-bold text-gray-800 dark:text-surface-0 m-0">Análisis Inteligente de la Predicción</h3>
                 </div>
-                <p class="text-sm text-gray-600 m-0">
+                <p class="text-sm text-gray-600 dark:text-surface-400 m-0">
                   Recomendaciones contextuales basadas en el estado, calidad y patrones detectados en la predicción.
                 </p>
               </div>
@@ -837,7 +840,7 @@
               <p-timeline [value]="recomendacionesInteligentes()" align="left" class="custom-timeline">
                 <ng-template pTemplate="content" let-recomendacion>
                   <div
-                    class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    class="bg-white dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
                     <div class="flex items-start gap-4">
                       <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
                         [style.background-color]="recomendacion.color + '20'"
@@ -845,8 +848,8 @@
                         <i [class]="'pi ' + recomendacion.icon + ' text-lg'" [style.color]="recomendacion.color"></i>
                       </div>
                       <div class="flex-1">
-                        <h4 class="text-base font-bold text-gray-800 mb-2 m-0">{{ recomendacion.titulo }}</h4>
-                        <p class="text-sm text-gray-600 leading-relaxed m-0">{{ recomendacion.descripcion }}</p>
+                        <h4 class="text-base font-bold text-gray-800 dark:text-surface-0 mb-2 m-0">{{ recomendacion.titulo }}</h4>
+                        <p class="text-sm text-gray-600 dark:text-surface-400 leading-relaxed m-0">{{ recomendacion.descripcion }}</p>
                       </div>
                     </div>
                   </div>
@@ -854,12 +857,12 @@
               </p-timeline>
 
               <!-- Info adicional -->
-              <div class="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5">
+              <div class="mt-6 bg-gray-50 dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-xl p-5">
                 <div class="flex items-start gap-3">
-                  <i class="pi pi-info-circle text-blue-500 text-lg mt-1"></i>
+                  <i class="pi pi-info-circle text-blue-500 dark:text-blue-400 text-lg mt-1"></i>
                   <div>
-                    <p class="text-sm font-semibold text-gray-800 mb-1 m-0">💡 Tip:</p>
-                    <p class="text-sm text-gray-600 m-0">
+                    <p class="text-sm font-semibold text-gray-800 dark:text-surface-0 mb-1 m-0">💡 Tip:</p>
+                    <p class="text-sm text-gray-600 dark:text-surface-400 m-0">
                       Estas recomendaciones se actualizan automáticamente según el estado y características de tu
                       predicción.
                       Úsalas para tomar decisiones informadas sobre inventario y compras.

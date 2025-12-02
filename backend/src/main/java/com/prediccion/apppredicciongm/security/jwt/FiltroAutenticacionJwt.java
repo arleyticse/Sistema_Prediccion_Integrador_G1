@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.prediccion.apppredicciongm.security.service.UsuarioDetalleServicio;
+import com.prediccion.apppredicciongm.auth.service.AccountLockService;
 
 import java.io.IOException;
 
@@ -39,6 +40,7 @@ public class FiltroAutenticacionJwt extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final UsuarioDetalleServicio usuarioDetalleServicio;
+    private final AccountLockService accountLockService;
 
     /**
      * Procesa el filtro de autenticación JWT.
@@ -78,6 +80,10 @@ public class FiltroAutenticacionJwt extends OncePerRequestFilter {
 
                     tokenAutenticacion.setDetails(new WebAuthenticationDetailsSource().buildDetails(solicitud));
                     SecurityContextHolder.getContext().setAuthentication(tokenAutenticacion);
+
+                    // Actualizar última actividad del usuario para manejo de expiración por inactividad
+                    // Nota: Evitamos tocar endpoints de auth (excepto cerrar sesión) vía shouldNotFilter
+                    accountLockService.actualizarActividad(nombreUsuario);
 
                     log.info("Usuario autenticado mediante JWT: {} con autoridades: {}",
                             nombreUsuario, detallesUsuario.getAuthorities());

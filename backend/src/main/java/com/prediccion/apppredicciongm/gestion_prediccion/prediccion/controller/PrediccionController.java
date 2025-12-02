@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +39,16 @@ public class PrediccionController {
     @GetMapping
     @Operation(summary = "Obtener predicciones (paginado)")
     public ResponseEntity<Page<PrediccionResponse>> obtenerPredicciones(Pageable pageable) {
-        Page<Prediccion> page = prediccionRepositorio.findAll(pageable);
+        // Se retorna la lista paginada ordenada por fecha de ejecución descendente
+        Pageable pageableWithSort = org.springframework.data.domain.PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            Sort.Direction.DESC,
+            "fechaEjecucion"
+        );
+        Page<Prediccion> page = prediccionRepositorio.findAll(pageableWithSort);
         List<PrediccionResponse> content = prediccionMapper.prediccionListToResponseList(page.getContent());
-        Page<PrediccionResponse> response = new PageImpl<>(content, pageable, page.getTotalElements());
+        Page<PrediccionResponse> response = new PageImpl<>(content, pageableWithSort, page.getTotalElements());
         return ResponseEntity.ok(response);
     }
 

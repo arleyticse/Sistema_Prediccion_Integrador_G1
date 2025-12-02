@@ -7,7 +7,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class AlgoritmoPipe implements PipeTransform {
   transform(value: string | null | undefined): string {
     if (!value) return 'N/A';
-    
+
     const mapeo: Record<string, string> = {
       'simpleMovingAverageAlgorithm': 'Media Móvil',
       'simpleExponentialSmoothingAlgorithm': 'Suavizado Exp.',
@@ -17,7 +17,7 @@ export class AlgoritmoPipe implements PipeTransform {
       'SES': 'Suavizado Exp.',
       'HW': 'Holt-Winters'
     };
-    
+
     return mapeo[value] || value;
   }
 }
@@ -29,7 +29,7 @@ export class AlgoritmoPipe implements PipeTransform {
 export class AlgoritmoSeverityPipe implements PipeTransform {
   transform(value: string | null | undefined): "success" | "secondary" | "info" | "warn" | "danger" | "contrast" | undefined {
     if (!value) return 'secondary';
-    
+
     const mapeo: Record<string, "success" | "secondary" | "info" | "warn" | "danger" | "contrast"> = {
       'simpleMovingAverageAlgorithm': 'info',
       'simpleExponentialSmoothingAlgorithm': 'success',
@@ -39,7 +39,7 @@ export class AlgoritmoSeverityPipe implements PipeTransform {
       'SES': 'success',
       'HW': 'warn'
     };
-    
+
     return mapeo[value] || 'secondary';
   }
 }
@@ -51,15 +51,14 @@ export class AlgoritmoSeverityPipe implements PipeTransform {
 export class EstadoPrediccionPipe implements PipeTransform {
   transform(value: string | null | undefined): string {
     if (!value) return 'N/A';
-    
+
     const mapeo: Record<string, string> = {
       'ACTIVA': 'Activa',
       'OBSOLETA': 'Obsoleta',
       'FALLIDA': 'Fallida',
       'EN_PROCESO': 'En Proceso',
-      'COMPLETADA': 'Completada'
+      'COMPLETADA': 'Completada',
     };
-    
     return mapeo[value] || value;
   }
 }
@@ -71,7 +70,7 @@ export class EstadoPrediccionPipe implements PipeTransform {
 export class EstadoPrediccionSeverityPipe implements PipeTransform {
   transform(value: string | null | undefined): "success" | "secondary" | "info" | "warn" | "danger" | "contrast" | undefined {
     if (!value) return 'secondary';
-    
+
     const mapeo: Record<string, "success" | "secondary" | "info" | "warn" | "danger" | "contrast"> = {
       'ACTIVA': 'success',
       'OBSOLETA': 'warn',
@@ -79,7 +78,7 @@ export class EstadoPrediccionSeverityPipe implements PipeTransform {
       'EN_PROCESO': 'info',
       'COMPLETADA': 'success'
     };
-    
+
     return mapeo[value] || 'secondary';
   }
 }
@@ -91,15 +90,16 @@ export class EstadoPrediccionSeverityPipe implements PipeTransform {
 export class CalidadPrediccionPipe implements PipeTransform {
   transform(value: string | null | undefined): string {
     if (!value) return 'N/A';
-    
+
     const mapeo: Record<string, string> = {
       'EXCELENTE': 'Excelente',
       'BUENA': 'Buena',
       'ACEPTABLE': 'Aceptable',
       'BAJA': 'Baja',
-      'MUY_BAJA': 'Muy Baja'
+      'MUY_BAJA': 'Muy Baja',
+      'REGULAR': 'Regular'
     };
-    
+
     return mapeo[value] || value;
   }
 }
@@ -111,7 +111,7 @@ export class CalidadPrediccionPipe implements PipeTransform {
 export class CalidadPrediccionSeverityPipe implements PipeTransform {
   transform(value: string | null | undefined): "success" | "secondary" | "info" | "warn" | "danger" | "contrast" | undefined {
     if (!value) return 'secondary';
-    
+
     const mapeo: Record<string, "success" | "secondary" | "info" | "warn" | "danger" | "contrast"> = {
       'EXCELENTE': 'success',
       'BUENA': 'info',
@@ -119,7 +119,24 @@ export class CalidadPrediccionSeverityPipe implements PipeTransform {
       'BAJA': 'danger',
       'MUY_BAJA': 'danger'
     };
-    
+
     return mapeo[value] || 'secondary';
   }
 }
+
+@Pipe({
+  name: 'algoritmoNormalizado',
+  standalone: true
+})
+export class AlgoritmoNormalizadoPipe implements PipeTransform {
+  transform(value: string | null | undefined): string {
+    if (!value) return 'N/A';
+
+    // Transforma Snake_Case a Normal Case: LINEAR_REGRESSION -> Linear Regression
+    return value
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+}
+

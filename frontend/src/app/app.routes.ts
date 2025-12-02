@@ -4,7 +4,7 @@ import { authGuard } from './core/guards/auth';
 import { gerenteGuard, roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/administracion/alertas-inventario', pathMatch: 'full' },
+    { path: '', redirectTo: '/administracion/dashboard', pathMatch: 'full' },
     {
         path: 'login',
         loadComponent: () =>

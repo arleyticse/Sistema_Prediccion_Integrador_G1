@@ -17,6 +17,12 @@ export interface ProductoResponse {
   costoPedido: number;
 }
 
+/** DTO ligero para dropdowns y selects */
+export interface ProductoSimpleResponse {
+  productoId: number;
+  nombre: string;
+  nombreCategoria: string;
+}
 
 export interface PageProductoResponse {
   content: ProductoResponse[];

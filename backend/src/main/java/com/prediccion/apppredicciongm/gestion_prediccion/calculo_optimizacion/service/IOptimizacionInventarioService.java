@@ -19,6 +19,7 @@ public interface IOptimizacionInventarioService {
     /**
      * Calcula EOQ y ROP directamente desde una predicción ML.
      * Este es el método principal que integra predicción con optimización.
+     * Guarda el resultado en BD.
      * 
      * @param prediccion Resultado de predicción ML
      * @param productoId ID del producto
@@ -27,6 +28,20 @@ public interface IOptimizacionInventarioService {
     CalculoOptimizacionResponse calcularEOQROPDesdePrediccion(
             SmartPrediccionResponse prediccion,
             Long productoId);
+    
+    /**
+     * Calcula EOQ y ROP desde una predicción ML con opción de no guardar.
+     * Versión optimizada para procesamiento batch donde no se requiere persistir.
+     * 
+     * @param prediccion Resultado de predicción ML
+     * @param productoId ID del producto
+     * @param persistir Si true, guarda en BD; si false, solo retorna el cálculo
+     * @return Cálculo de optimización (persistido o no según parámetro)
+     */
+    CalculoOptimizacionResponse calcularEOQROPDesdePrediccion(
+            SmartPrediccionResponse prediccion,
+            Long productoId,
+            boolean persistir);
     
     /**
      * Obtiene el último cálculo de optimización para un producto

@@ -308,6 +308,23 @@ public class AccountLockService {
         }
     }
 
+        /**
+         * Verifica si el usuario tiene una sesión activa reciente (no expirada por inactividad).
+         * Se considera activa si el flag `activo` es true y la `ultimaActividad` es posterior
+         * al umbral de inactividad configurado. Si `ultimaActividad` es null pero `activo` es true,
+         * se asume activa para evitar logins concurrentes.
+         *
+         * @param email Email del usuario
+         * @return true si la sesión sigue activa, false si no
+         */
+        public boolean tieneSesionActiva(String email) {
+        LocalDateTime umbralInactividad = LocalDateTime.now().minusMinutes(sesionTimeoutMinutos);
+        return usuarioRepository.findByEmail(email)
+            .map(u -> Boolean.TRUE.equals(u.getActivo()) &&
+                (u.getUltimaActividad() == null || !u.getUltimaActividad().isBefore(umbralInactividad)))
+            .orElse(false);
+        }
+
     /**
      * Genera un código OTP de 6 dígitos.
      */

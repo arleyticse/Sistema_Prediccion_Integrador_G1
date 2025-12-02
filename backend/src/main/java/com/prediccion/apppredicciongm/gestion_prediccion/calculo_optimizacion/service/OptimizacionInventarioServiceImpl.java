@@ -9,7 +9,6 @@ import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.dto.response
 import com.prediccion.apppredicciongm.gestion_inventario.movimiento.repository.IKardexRepositorio;
 import com.prediccion.apppredicciongm.gestion_inventario.producto.repository.IProductoRepositorio;
 import com.prediccion.apppredicciongm.models.CalculoObtimizacion;
-import com.prediccion.apppredicciongm.models.Inventario.Kardex;
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
 
 import lombok.RequiredArgsConstructor;
@@ -60,6 +59,7 @@ public class OptimizacionInventarioServiceImpl implements IOptimizacionInventari
      * Calcula EOQ y ROP desde una predicción ML.
      * 
      * Este es el método principal que integra predicción ML con optimización.
+     * Por defecto persiste el resultado en BD.
      * 
      * @param prediccion Resultado de predicción ML con demanda estimada
      * @param productoId ID del producto
@@ -70,8 +70,25 @@ public class OptimizacionInventarioServiceImpl implements IOptimizacionInventari
     public CalculoOptimizacionResponse calcularEOQROPDesdePrediccion(
             SmartPrediccionResponse prediccion,
             Long productoId) {
+        return calcularEOQROPDesdePrediccion(prediccion, productoId, true);
+    }
+    
+    /**
+     * Calcula EOQ y ROP desde una predicción ML con opción de no guardar.
+     * 
+     * @param prediccion Resultado de predicción ML con demanda estimada
+     * @param productoId ID del producto
+     * @param persistir Si true, guarda en BD; si false, solo retorna el cálculo sin persistir
+     * @return Cálculo de optimización con EOQ y ROP
+     */
+    @Override
+    @Transactional
+    public CalculoOptimizacionResponse calcularEOQROPDesdePrediccion(
+            SmartPrediccionResponse prediccion,
+            Long productoId,
+            boolean persistir) {
         
-        log.info("[OPTIMIZACION] Calculando EOQ/ROP para producto {} desde predicción", productoId);
+        log.info("[OPTIMIZACION] Calculando EOQ/ROP para producto {} (persistir: {})", productoId, persistir);
         
         // 1. Obtener producto
         Producto producto = productoRepository.findById(Math.toIntExact(productoId))
@@ -118,9 +135,9 @@ public class OptimizacionInventarioServiceImpl implements IOptimizacionInventari
                 demandaAnualEstimada, EOQ, costoPedido, costoMantenimientoAnual
         );
         
-        // 9. Crear y guardar cálculo
+        // 9. Crear cálculo
         CalculoObtimizacion calculo = CalculoObtimizacion.builder()
-                .producto(producto) // Usar relación ManyToOne
+                .producto(producto)
                 .demandaAnualEstimada((int) Math.ceil(demandaAnualEstimada))
                 .eoqCantidadOptima(EOQ)
                 .ropPuntoReorden(ROP)
@@ -139,9 +156,13 @@ public class OptimizacionInventarioServiceImpl implements IOptimizacionInventari
                 .observaciones(generarObservaciones(EOQ, ROP, stockSeguridad, NIVEL_SERVICIO_95))
                 .build();
         
-        calculo = calculoRepository.save(calculo);
-        
-        log.info("[OPTIMIZACION] Optimización calculada: EOQ={}, ROP={}, SS={}", EOQ, ROP, stockSeguridad);
+        // 10. Guardar solo si se requiere persistencia
+        if (persistir) {
+            calculo = calculoRepository.save(calculo);
+            log.info("[OPTIMIZACION] Optimización calculada y guardada: EOQ={}, ROP={}, SS={}", EOQ, ROP, stockSeguridad);
+        } else {
+            log.debug("[OPTIMIZACION] Optimización calculada (sin persistir): EOQ={}, ROP={}, SS={}", EOQ, ROP, stockSeguridad);
+        }
         
         return calculoMapper.toResponse(calculo);
     }
@@ -256,39 +277,52 @@ public class OptimizacionInventarioServiceImpl implements IOptimizacionInventari
     /**
      * Calcula la desviación estándar de la demanda histórica.
      * 
-     * Analiza el kardex para determinar la variabilidad.
+     * Optimización: Usa query SQL con STDDEV() para calcular directamente
+     * en la base de datos, evitando cargar todos los registros en memoria.
      */
     private double calcularDesviacionDemanda(Long productoId) {
-        List<Kardex> movimientos = kardexRepository.findAll().stream()
-                .filter(k -> k.getProducto().getProductoId().equals(Math.toIntExact(productoId)))
-                .filter(k -> k.getCantidad() != null && k.getCantidad() < 0) // Solo salidas
-                .limit(180) // Últimos 6 meses
-                .toList();
+        LocalDateTime fechaInicio = LocalDateTime.now().minusDays(180);
         
-        if (movimientos.isEmpty()) {
-                log.warn("[OPTIMIZACION] Advertencia: Sin historial de demanda para producto {}, usando desviación por defecto", 
-                    productoId);
-            return 5.0; // Valor por defecto
+        try {
+            List<Object[]> resultados = kardexRepository.findEstadisticasDemandaByProducto(
+                    Math.toIntExact(productoId), fechaInicio);
+            
+            if (resultados == null || resultados.isEmpty()) {
+                log.warn("[OPTIMIZACION] Sin historial de demanda para producto {}, usando desviación por defecto", 
+                        productoId);
+                return 5.0;
+            }
+            
+            // La query retorna una lista con una única fila: [count, avg, stddev]
+            Object[] fila = resultados.get(0);
+            
+            if (fila == null || fila.length < 3) {
+                log.warn("[OPTIMIZACION] Resultado incompleto para producto {}, usando desviación por defecto", 
+                        productoId);
+                return 5.0;
+            }
+            
+            Number count = fila[0] != null ? (Number) fila[0] : 0;
+            Number desviacion = fila[2] != null ? (Number) fila[2] : null;
+            
+            if (count.longValue() == 0) {
+                log.warn("[OPTIMIZACION] Sin historial de demanda para producto {}, usando desviación por defecto", 
+                        productoId);
+                return 5.0;
+            }
+            
+            double desviacionFinal = desviacion != null ? desviacion.doubleValue() : 5.0;
+            
+            log.debug("[OPTIMIZACION] Desviación demanda calculada en BD: {} (n={})", 
+                    desviacionFinal, count);
+            
+            return Math.max(desviacionFinal, 1.0);
+            
+        } catch (Exception e) {
+            log.warn("[OPTIMIZACION] Error calculando desviación para producto {}: {}. Usando valor por defecto.", 
+                    productoId, e.getMessage());
+            return 5.0;
         }
-        
-        // Calcular media
-        double media = movimientos.stream()
-                .mapToDouble(k -> Math.abs(k.getCantidad()))
-                .average()
-                .orElse(0.0);
-        
-        // Calcular desviación estándar
-        double varianza = movimientos.stream()
-                .mapToDouble(k -> Math.pow(Math.abs(k.getCantidad()) - media, 2))
-                .average()
-                .orElse(0.0);
-        
-        double desviacion = Math.sqrt(varianza);
-        
-        log.debug("📈 Desviación demanda: {:.2f} (media: {:.2f}, n={})", 
-                desviacion, media, movimientos.size());
-        
-        return Math.max(desviacion, 1.0); // Mínimo 1.0
     }
     
     /**

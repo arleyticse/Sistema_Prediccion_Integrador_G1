@@ -139,4 +139,27 @@ public interface IKardexRepositorio extends JpaRepository<Kardex, Long> {
         ORDER BY k.id_producto, DATE(k.fecha_movimiento)
         """, nativeQuery = true)
     List<Object[]> findDemandaAgrupadaPorProductoYFecha(@Param("fechaInicio") LocalDateTime fechaInicio);
+    
+    /**
+     * Query optimizada para calcular estadísticas de demanda (media y desviación).
+     * Calcula directamente en la base de datos evitando cargar todos los registros.
+     * 
+     * @param productoId ID del producto
+     * @param fechaInicio Fecha desde la cual calcular
+     * @return Lista con una fila: [count, avg, stddev] de las cantidades de salida
+     */
+    @Query(value = """
+        SELECT 
+            COUNT(*) as cantidad_registros,
+            COALESCE(AVG(ABS(k.cantidad)), 0) as promedio,
+            COALESCE(STDDEV(ABS(k.cantidad)), 5.0) as desviacion
+        FROM kardex k
+        WHERE k.id_producto = :productoId
+            AND k.cantidad < 0
+            AND k.fecha_movimiento >= :fechaInicio
+        """, nativeQuery = true)
+    List<Object[]> findEstadisticasDemandaByProducto(
+        @Param("productoId") Integer productoId,
+        @Param("fechaInicio") LocalDateTime fechaInicio
+    );
 }

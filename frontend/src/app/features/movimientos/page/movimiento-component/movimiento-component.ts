@@ -9,7 +9,7 @@ import { Dialog } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProductoResponse } from '../../../productos/models/ProductoResponse';
+import { ProductoSimpleResponse } from '../../../productos/models/ProductoResponse';
 import { Proveedor } from '../../../proveedores/model/Proveedor';
 import { Select } from 'primeng/select';
 import { TableModule } from 'primeng/table';
@@ -85,7 +85,7 @@ export class MovimientoComponent {
 
   movimientos = signal<KardexResponse[]>([]);
   visible = signal<boolean>(false);
-  productos = signal<ProductoResponse[]>([]);
+  productos = signal<ProductoSimpleResponse[]>([]);
   proveedores = signal<Proveedor[]>([]);
   tiposMovimiento = signal<TipoMovimientoDTO[]>([]);
   searchValue = signal<string>('');
@@ -164,7 +164,7 @@ export class MovimientoComponent {
 
   private cargarProductos(): void {
     this.loadingProductos.set(true);
-    this.productoService.obtenerTodosProductos().subscribe({
+    this.productoService.obtenerProductosSimple().subscribe({
       next: (productos) => {
         this.productos.set(productos);
         this.loadingProductos.set(false);

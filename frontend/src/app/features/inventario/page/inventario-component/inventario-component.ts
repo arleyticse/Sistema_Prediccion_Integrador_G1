@@ -4,7 +4,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { PaginatorState } from 'primeng/paginator';
 import { InventarioService } from '../../service/inventario-service';
 import { ProductoService } from '../../../productos/service/producto-service';
-import { ProductoResponse } from '../../../productos/models/ProductoResponse';
+import { ProductoSimpleResponse } from '../../../productos/models/ProductoResponse';
 import { InventarioResponse, PageInventarioResponse } from '../../model/InventarioResponse';
 import { InventarioCreateRequest } from '../../model/InventarioRequest';
 import { ButtonModule } from 'primeng/button';
@@ -22,6 +22,8 @@ import { Toast } from 'primeng/toast';
 import { Message } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { Tooltip } from "primeng/tooltip";
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { EstadoInventarioPipe, EstadoInventarioSeverityPipe } from '../../../../shared/pipes/estado-inventario.pipe';
 
@@ -49,6 +51,8 @@ interface Column {
     Message,
     SkeletonModule,
     Tooltip,
+    IconField,
+    InputIcon,
     TagModule,
     EstadoInventarioPipe,
     EstadoInventarioSeverityPipe
@@ -62,7 +66,8 @@ export class InventarioComponent {
   @ViewChild('importacionCsv') importacionCsv!: ImportacionCsvComponent;
   
   inventarios = signal<InventarioResponse[]>([]);
-  productos = signal<ProductoResponse[]>([]);
+  productos = signal<ProductoSimpleResponse[]>([]);
+  searchValue = signal<string>('');
   visible = signal<boolean>(false);
   isEditing = signal<boolean>(false);
   inventarioIdSeleccionado = signal<number | null>(null);
@@ -76,7 +81,7 @@ export class InventarioComponent {
   readonly rowsPerPageOptions = [10, 20, 30];
 
   inventarioForm = new FormGroup({
-    producto: new FormControl<ProductoResponse | null>(null, Validators.required),
+    producto: new FormControl<ProductoSimpleResponse | null>(null, Validators.required),
     stockDisponible: new FormControl<number>(0, [Validators.required, Validators.min(0)]),
     stockReservado: new FormControl<number>(0, [Validators.min(0), Validators.required]),
     stockEnTransito: new FormControl<number>(0, [Validators.min(0), Validators.required]),
@@ -114,20 +119,42 @@ export class InventarioComponent {
   cargarInventarios(): void {
     this.loading.set(true);
     const page = Math.floor(this.first() / this.rows());
-    this.inventarioService.obtenerInventarios(page, this.rows()).subscribe(response => {
-      this.inventarios.set(response.content);
-      this.totalRecords.set(response.page.totalElements);
-      this.loading.set(false);
-    });
+    const search = this.searchValue();
+    if (search && search.trim().length > 0) {
+      this.inventarioService.buscarPorNombre(search, page, this.rows()).subscribe(response => {
+        this.inventarios.set(response.content);
+        this.totalRecords.set((response as any).totalElements ?? (response as any).page?.totalElements ?? 0);
+        this.loading.set(false);
+      });
+    } else {
+      this.inventarioService.obtenerInventarios(page, this.rows()).subscribe(response => {
+        this.inventarios.set(response.content);
+        this.totalRecords.set(response.page.totalElements);
+        this.loading.set(false);
+      });
+    }
   }
 
   abrirImportacion(): void {
     this.importacionCsv.showDialog();
   }
 
+  limpiarBusqueda(): void {
+    this.searchValue.set('');
+    this.first.set(0);
+    this.cargarInventarios();
+  }
+
+  onSearchChange(value: string): void {
+    this.searchValue.set(value);
+    // Resetear paginación al buscar, similar a productos
+    this.first.set(0);
+    this.cargarInventarios();
+  }
+
   private cargarProductos(): void {
     this.loadingProductos.set(true);
-    this.productoService.obtenerTodosProductos().subscribe({
+    this.productoService.obtenerProductosSimple().subscribe({
       next: (productos) => {
         this.productos.set(productos);
         this.loadingProductos.set(false);

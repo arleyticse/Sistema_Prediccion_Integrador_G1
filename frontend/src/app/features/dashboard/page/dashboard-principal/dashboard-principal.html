@@ -169,13 +169,13 @@
         </div>
       </ng-template>
 
-      <div class="p-4">
-        <div *ngFor="let o of borradores().slice(0,5)" class="flex items-center justify-between border-b py-2">
+      <div class="p-4 bg-surface-0 dark:bg-surface-900">
+        <div *ngFor="let o of borradores().slice(0,5)" class="flex items-center justify-between border-b border-surface-200 dark:border-surface-700 py-2">
           <div>
-            <div class="font-semibold">{{ o.numeroOrden }}</div>
-            <div class="text-sm text-gray-600">{{ o.proveedorNombre }}</div>
+            <div class="font-semibold text-surface-900 dark:text-surface-0">{{ o.numeroOrden }}</div>
+            <div class="text-sm text-surface-600 dark:text-surface-400">{{ o.proveedorNombre }}</div>
           </div>
-          <div class="flex gap-2 bg-white">
+          <div class="flex gap-2">
             <p-button label="Ver" class="p-button-sm p-button-text" (onClick)="navegarAOrdenes()"></p-button>
             <p-button icon="pi pi-check" label="Aprobar" class="p-button-sm" (onClick)="aprobarOrden(o.ordenCompraId)"></p-button>
           </div>
@@ -283,14 +283,14 @@
 </div>
 
 <!-- Modal: listar borradores (aparece al iniciar sesión si es GERENTE) -->
-<p-dialog header="Órdenes en BORRADOR" [visible]="borradoresModalVisible()" (visibleChange)="borradoresModalVisible.set($event)" [modal]="true" [style]="{ width: '40rem' }">
-  <div *ngIf="borradores().length > 0; else noBorradores">
+<p-dialog header="Órdenes en BORRADOR" [visible]="borradoresModalVisible()" (visibleChange)="borradoresModalVisible.set($event)" [modal]="true" [style]="{ width: '40rem' }" styleClass="dark:bg-surface-900">
+  <div *ngIf="borradores().length > 0; else noBorradores" class="bg-surface-0 dark:bg-surface-900">
     <div class="p-grid">
       <div class="p-col-12" *ngFor="let o of borradores()">
-        <div class="flex justify-between items-center p-2 border-b">
+        <div class="flex justify-between items-center p-2 border-b border-surface-200 dark:border-surface-700">
           <div>
-            <div class="font-semibold">{{ o.numeroOrden }} <small class="text-sm">- {{ o.proveedorNombre }}</small></div>
-            <div class="text-sm text-gray-600">Fecha: {{ formatDate(o.fechaOrden) }}</div>
+            <div class="font-semibold text-surface-900 dark:text-surface-0">{{ o.numeroOrden }} <small class="text-sm text-surface-600 dark:text-surface-400">- {{ o.proveedorNombre }}</small></div>
+            <div class="text-sm text-surface-600 dark:text-surface-400">Fecha: {{ formatDate(o.fechaOrden) }}</div>
           </div>
           <div class="flex gap-2">
             <p-button label="Ver" class="p-button-sm p-button-text" (onClick)="navegarAOrdenes()"></p-button>
@@ -304,6 +304,6 @@
     </div>
   </div>
   <ng-template #noBorradores>
-    <div class="text-center p-3">No hay órdenes pendientes para aprobar</div>
+    <div class="text-center p-3 text-surface-600 dark:text-surface-400 bg-surface-0 dark:bg-surface-900">No hay órdenes pendientes para aprobar</div>
   </ng-template>
 </p-dialog>

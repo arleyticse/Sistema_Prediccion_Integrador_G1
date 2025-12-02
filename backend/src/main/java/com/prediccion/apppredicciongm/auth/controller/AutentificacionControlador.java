@@ -90,6 +90,15 @@ public class AutentificacionControlador {
         try {
             log.info("Intento de autenticación para usuario: {}", email);
 
+            // Evitar logins concurrentes: si ya tiene sesión activa reciente, rechazar
+            if (accountLockService.tieneSesionActiva(email)) {
+                log.warn("[SESION] Login rechazado: sesión activa existente para {}", email);
+                Map<String, Object> response = new HashMap<>();
+                response.put("error", "SESION_ACTIVA");
+                response.put("message", "Ya tienes una sesión activa en otro dispositivo o navegador. Cierra la sesión anterior o espera a que expire por inactividad.");
+                return ResponseEntity.status(409).body(response);
+            }
+
             // Verificar si la cuenta está bloqueada
             if (accountLockService.estaCuentaBloqueada(email)) {
                 log.warn("[SEGURIDAD] Intento de login en cuenta bloqueada: {}", email);

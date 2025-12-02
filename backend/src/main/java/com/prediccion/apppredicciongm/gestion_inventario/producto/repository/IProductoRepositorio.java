@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import com.prediccion.apppredicciongm.models.Inventario.Producto;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -74,4 +73,13 @@ public interface IProductoRepositorio extends JpaRepository<Producto, Integer> {
      * @return true si existe un producto con ese nombre, false en caso contrario
      */
     boolean existsByNombreIgnoreCase(String nombre);
+    
+    /**
+     * Query optimizada para obtener productos con solo campos esenciales.
+     * Evita cargar relaciones innecesarias para dropdowns y selects.
+     * 
+     * @return Lista de arrays con [productoId, nombre, nombreCategoria]
+     */
+    @Query("SELECT p.productoId, p.nombre, c.nombre FROM Producto p LEFT JOIN p.categoria c ORDER BY p.nombre ASC")
+    java.util.List<Object[]> findAllSimple();
 }

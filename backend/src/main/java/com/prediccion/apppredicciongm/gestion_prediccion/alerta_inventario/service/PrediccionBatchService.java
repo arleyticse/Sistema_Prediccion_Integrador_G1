@@ -4,6 +4,8 @@ import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.r
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.ProcesamientoBatchResponse;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.errors.ErrorProcesamientoLoteException;
 import com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.repository.IAlertaInventarioRepositorio;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.dto.response.CalculoOptimizacionResponse;
+import com.prediccion.apppredicciongm.gestion_prediccion.calculo_optimizacion.service.IOptimizacionInventarioService;
 import com.prediccion.apppredicciongm.gestion_prediccion.estacionalidad.service.AnalisisEstacionalidadService;
 import com.prediccion.apppredicciongm.gestion_prediccion.normalizacion.repository.IRegistroDemandaRepositorio;
 import com.prediccion.apppredicciongm.gestion_prediccion.prediccion.service.ISmartPredictorService;
@@ -50,6 +52,7 @@ public class PrediccionBatchService implements IPrediccionBatchService {
     private final AnalisisEstacionalidadService estacionalidadService;
     private final HorizontePrediccionService horizonteService;
     private final IRegistroDemandaRepositorio registroDemandaRepositorio;
+    private final IOptimizacionInventarioService optimizacionInventarioService;
     
     private static final int THREAD_POOL_SIZE = 5;
 
@@ -564,6 +567,24 @@ public class PrediccionBatchService implements IPrediccionBatchService {
             tieneEstacionalidad = smartResponse.getEstacionalidad().getTieneEstacionalidad();
         }
         
+        // Calcular EOQ y ROP usando el servicio de optimización (sin persistir para preview)
+        Integer eoq = null;
+        Integer rop = null;
+        try {
+            CalculoOptimizacionResponse optimizacion = optimizacionInventarioService
+                .calcularEOQROPDesdePrediccion(smartResponse, producto.getProductoId().longValue(), false);
+            
+            if (optimizacion != null) {
+                eoq = optimizacion.getEoqCantidadOptima();
+                rop = optimizacion.getRopPuntoReorden();
+                log.debug("[OPTIMIZACION] EOQ={}, ROP={} calculados para producto {}", 
+                    eoq, rop, producto.getNombre());
+            }
+        } catch (Exception e) {
+            log.warn("[OPTIMIZACION] No se pudo calcular EOQ/ROP para producto {}: {}", 
+                producto.getNombre(), e.getMessage());
+        }
+        
         return com.prediccion.apppredicciongm.gestion_prediccion.alerta_inventario.dto.response.PrediccionProductoDTO.builder()
             .productoId(producto.getProductoId())
             .nombreProducto(producto.getNombre())
@@ -580,6 +601,8 @@ public class PrediccionBatchService implements IPrediccionBatchService {
             .horizonteUsado(smartResponse.getHorizonteTiempo())
             .algoritmoUsado(smartResponse.getAlgoritmoUtilizado())
             .tieneEstacionalidad(tieneEstacionalidad)
+            .cantidadOptimaPedido(eoq)
+            .puntoReorden(rop)
             .advertencias(new ArrayList<>())
             .recomendaciones(smartResponse.getRecomendaciones() != null ? smartResponse.getRecomendaciones() : new ArrayList<>())
             .build();

@@ -7,7 +7,6 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth';
 import { RolePermissionsService } from '../../shared/services/role-permissions.service';
 import { Avatar } from "primeng/avatar";
-// Accordion removed: using Tailwind-based collapsible groups instead
 import { Menu as PrimeMenu } from 'primeng/menu';
 
 @Component({
@@ -32,14 +31,14 @@ import { Menu as PrimeMenu } from 'primeng/menu';
         <aside
           (mouseenter)="isExpanded.set(true)"
           (mouseleave)="isExpanded.set(false)"
-          class="bg-white dark:bg-[#18181b] shadow-lg border-r border-slate-200 dark:border-[#2a2a2b] overflow-y-auto overflow-x-hidden transition-all duration-300 ease-in-out"
+          class="bg-white dark:bg-[#18181b] shadow-lg border-r border-slate-200 dark:border-[#2a2a2b] overflow-y-auto overflow-x-hidden transition-all duration-500 ease-in-out"
           [class.w-20]="!isExpanded()"
           [class.w-80]="isExpanded()"
         >
         <!-- Logo Section -->
         <div class="bg-gradient-to-b from-white to-slate-50/50 dark:from-[#18181b] dark:to-[#18181b]/50 border-b border-slate-200 dark:border-[#2a2a2b] p-6 backdrop-blur-sm">
           <div class="flex items-center justify-center">
-            <div [class.w-16]="!isExpanded()" [class.w-64]="isExpanded()" class="h-16 transition-all duration-300">
+            <div [class.w-16]="!isExpanded()" [class.w-64]="isExpanded()" class="h-16 transition-all duration-500 ease-in-out">
               <img src="../../../assets/logo/Logo_Transparente.png" alt="Logo" class="w-full h-full object-contain" />
             </div>
           </div>
@@ -49,36 +48,41 @@ import { Menu as PrimeMenu } from 'primeng/menu';
            <a [routerLink]="['/administracion/dashboard']" 
              routerLinkActive="bg-blue-500 !text-primary-100"
              [routerLinkActiveOptions]="{exact: true}"
-             class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-200 group dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
-            <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors">
-              <i class="pi pi-fw pi-home text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg"></i>
+             class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-300 ease-in-out group dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
+            <div class="w-10 h-10 flex items-center justify-center rounded-md transition-all duration-300 ease-in-out">
+              <i class="pi pi-fw pi-home text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg transition-colors duration-300 ease-in-out"></i>
             </div>
-            @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium transition-colors">Dashboard</span> }
+            @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium transition-opacity duration-500 ease-in-out">Dashboard</span> }
           </a>
         </div>
 
         <div class="space-y-2 px-2">
-          <div *ngFor="let group of menuGroups()">
+          <div *ngFor="let group of menuGroups()"
+               (mouseenter)="onGroupMouseEnter(group.label)"
+               (mouseleave)="onGroupMouseLeave(group.label)">
             <div
-              class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] cursor-pointer dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]"
+              class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] cursor-pointer dark:text-[#e4e4e7] transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]"
               (click)="toggleGroup(group.label)">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors">
-                  <i [class]="group.icon + ' text-blue-600 dark:text-blue-400 text-lg'"></i>
+                <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-300 ease-in-out">
+                  <i [class]="group.icon + ' text-blue-600 dark:text-blue-400 text-lg transition-colors duration-300 ease-in-out'"></i>
                 </div>
-                @if (isExpanded()) { <span class="text-slate-800 dark:text-[#e4e4e7] font-semibold">{{ group.label }}</span> }
+                @if (isExpanded()) { 
+                  <span class="text-slate-800 dark:text-[#e4e4e7] font-semibold transition-opacity duration-500 ease-in-out">{{ group.label }}</span> 
+                }
               </div>
             </div>
-            <ul *ngIf="activeAccordionIndex().includes(group.label)" class="mt-1 space-y-1 px-2">
+            <ul *ngIf="activeAccordionIndex().includes(group.label)" 
+                class="mt-1 space-y-1 px-2 animate-in fade-in slide-in-from-top-2 duration-300 ease-out">
               <li *ngFor="let item of group.items">
                 <a [routerLink]="item.routerLink"
                    routerLinkActive="bg-blue-300 text-primary-100"
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-200 group relative overflow-hidden dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
-                  <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md transition-colors relative z-10">
-                    <i [class]="item.icon + ' text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-base'"></i>
+                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-300 ease-in-out group relative overflow-hidden dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
+                  <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"></div>
+                  <div class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md transition-colors duration-300 ease-in-out relative z-10">
+                    <i [class]="item.icon + ' text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-base transition-colors duration-300 ease-in-out'"></i>
                   </div>
-                  @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors relative z-10">{{ item.label }}</span> }
+                  @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 ease-in-out relative z-10">{{ item.label }}</span> }
                 </a>
               </li>
             </ul>
@@ -105,16 +109,16 @@ import { Menu as PrimeMenu } from 'primeng/menu';
             <!-- Usuario y Logout -->
             <div class="flex items-center gap-6 relative">
               @if (usuario()) {
-                <div class="flex flex-row items-center gap-3 cursor-pointer" (click)="menu.toggle($event)" tabindex="0" class="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
+                <div class="flex gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]" (click)="menu.toggle($event)" tabindex="0">
                       <p-avatar
                         [label]="initials()"
-                        styleClass="!bg-gradient-to-br !from-blue-600 !to-blue-800 !text-white !font-bold !shadow-lg dark:!from-blue-400 dark:!to-blue-600"
+                        Class="!bg-gradient-to-br !from-blue-600 !to-blue-800 !text-white !font-bold !shadow-lg dark:!from-blue-400 dark:!to-blue-600"
                         size="large"
                         shape="circle"
                       ></p-avatar>
-                      <div class="hidden sm:block">
+                      <div class="hidden sm:flex sm:flex-col items-center">
                         <p class="text-sm font-semibold text-text-100 dark:text-text-dark-100">{{ usuario()?.nombreCompleto }}</p>
-                        <p class="text-xs text-text-200 dark:text-text-dark-200">{{ usuario()?.rol }}</p>
+                        <span class="text-xs text-text-200 dark:text-text-dark-200 px-2 py-0.5 rounded-full border border-slate-200 dark:border-[#2a2a2b]">{{ usuario()?.rol }}</span>
                       </div>
                     </div>
                     <p-menu #menu [model]="profileMenu()" [popup]="true" appendTo="body"></p-menu>
@@ -141,6 +145,7 @@ export class ManagementLayouts {
   permissions = this.roleService.currentPermissions;
 
   logoutMenuVisible = signal(false);
+  hoverTimeouts = new Map<string, any>();
 
   constructor() {
     effect(() => {
@@ -398,7 +403,6 @@ export class ManagementLayouts {
     });
     const predItems = [
       ...(perms.canAccessPredictions ? [{ label: 'Predicciones', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/administracion/predicciones'] }] : []),
-      { label: 'Alertas Inventario', icon: 'pi pi-fw pi-bell', routerLink: ['/administracion/alertas-inventario'] },
       ...(perms.canAccessReports ? [{ label: 'Reportes', icon: 'pi pi-fw pi-file-pdf', routerLink: ['/administracion/reportes'] }] : [])
     ];
     groups.push({
@@ -445,5 +449,46 @@ export class ManagementLayouts {
     } else {
       this.activeAccordionIndex.set([...current, label]);
     }
+  }
+
+  // Abrir grupo al hacer hover con transición suave
+  onGroupMouseEnter(label: string) {
+    // Limpiar timeout existente si hay uno
+    if (this.hoverTimeouts.has(label)) {
+      clearTimeout(this.hoverTimeouts.get(label));
+      this.hoverTimeouts.delete(label);
+    }
+
+    // Abrir el grupo con un pequeño delay si está expandido el sidebar
+    if (this.isExpanded()) {
+      const timeout = setTimeout(() => {
+        const current = this.activeAccordionIndex();
+        if (!current.includes(label)) {
+          this.activeAccordionIndex.set([...current, label]);
+        }
+        this.hoverTimeouts.delete(label);
+      }, 150); // Delay reducido a 150ms coordinado con CSS transition
+
+      this.hoverTimeouts.set(label, timeout);
+    }
+  }
+
+  // Cerrar grupo al quitar hover con transición suave
+  onGroupMouseLeave(label: string) {
+    // Limpiar timeout de apertura si existe
+    if (this.hoverTimeouts.has(label)) {
+      clearTimeout(this.hoverTimeouts.get(label));
+    }
+
+    // Delay optimizado para cierre suave coordinado con CSS
+    const timeout = setTimeout(() => {
+      const current = this.activeAccordionIndex();
+      if (current.includes(label)) {
+        this.activeAccordionIndex.set(current.filter(x => x !== label));
+      }
+      this.hoverTimeouts.delete(label);
+    }, 400); // Delay de 400ms coordinado con transition duration-300
+
+    this.hoverTimeouts.set(label, timeout);
   }
 }

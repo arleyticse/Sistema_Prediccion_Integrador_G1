@@ -15,6 +15,7 @@ public interface KardexMapper {
     @Mapping(target = "kardexId", ignore = true)
     @Mapping(target = "saldoCantidad", ignore = true)
     @Mapping(target = "fechaRegistro", ignore = true)
+    @Mapping(target = "fechaMovimiento", ignore = true)
     @Mapping(target = "usuario", ignore = true)
     @Mapping(target = "anulado", ignore = true)
     Kardex toEntity(KardexCreateRequest request);

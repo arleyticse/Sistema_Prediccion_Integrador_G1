@@ -16,6 +16,7 @@ public interface ProductoMapper {
     @Mapping(target = "unidadMedida", ignore = true)
     @Mapping(target = "proveedorPrincipal", ignore = true)
     @Mapping(target = "fechaRegistro", ignore = true)
+    @Mapping(target = "fechaActualizacion", ignore = true)
     @Mapping(target = "costoMantenimientoAnual", ignore = true)
     Producto toEntity(ProductoCreateRequest request);
     
@@ -41,6 +42,7 @@ public interface ProductoMapper {
     @Mapping(target = "unidadMedida", ignore = true)
     @Mapping(target = "proveedorPrincipal", ignore = true)
     @Mapping(target = "fechaRegistro", ignore = true)
+    @Mapping(target = "fechaActualizacion", ignore = true)
     @Mapping(target = "costoMantenimientoAnual", ignore = true)
     void updateEntityFromDto(ProductoCreateRequest request, @MappingTarget Producto producto);
 }

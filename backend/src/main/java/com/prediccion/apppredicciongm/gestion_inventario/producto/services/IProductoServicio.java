@@ -3,6 +3,7 @@ package com.prediccion.apppredicciongm.gestion_inventario.producto.services;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.prediccion.apppredicciongm.gestion_inventario.producto.dto.request.ProductoCreateRequest;
 import com.prediccion.apppredicciongm.gestion_inventario.producto.dto.response.ProductoEliminadoResponse;
@@ -52,6 +53,14 @@ public interface IProductoServicio {
      * @return Página con productos
      */
     Page<ProductoResponse> listarProductos(int pagina, int tamanioPagina);
+
+    /**
+     * Obtiene una página de todos los productos con ordenamiento personalizado.
+     * 
+     * @param pageable Configuración de paginación y ordenamiento
+     * @return Página con productos
+     */
+    Page<ProductoResponse> listarProductos(Pageable pageable);
     
     /**
      * Obtiene un producto por su ID.
@@ -101,4 +110,12 @@ public interface IProductoServicio {
      * @return Lista de todos los productos
      */
     List<ProductoResponse> listarTodos();
+    
+    /**
+     * Obtiene lista simplificada de productos para dropdowns y selects.
+     * Optimizado para rendimiento con campos mínimos.
+     * 
+     * @return Lista de productos con solo id, nombre y categoría
+     */
+    List<com.prediccion.apppredicciongm.gestion_inventario.producto.dto.response.ProductoSimpleResponse> listarTodosSimple();
 }

@@ -145,7 +145,7 @@ export class OrdenPdfService {
           columns: [
             ...(logoDataUrl ? [{
               image: logoDataUrl,
-              width: 100,
+              width: 120,
               height: 80,
               alignment: 'right' as const
             }] : []),
@@ -270,13 +270,6 @@ export class OrdenPdfService {
                   columns: [
                     { text: 'Subtotal:', alignment: 'right', width: '50%' },
                     { text: `S/ ${datos.subtotal.toFixed(2)}`, alignment: 'right', width: '50%' }
-                  ],
-                  margin: [0, 2]
-                },
-                {
-                  columns: [
-                    { text: 'Impuestos:', alignment: 'right', width: '50%' },
-                    { text: `S/ ${datos.impuestos.toFixed(2)}`, alignment: 'right', width: '50%' }
                   ],
                   margin: [0, 2]
                 },

@@ -5,6 +5,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -131,15 +133,28 @@ public class ProductoControlador {
                         return ResponseEntity.ok(productos);
                 }
 
-                Page<ProductoResponse> productos = productoServicio.listarProductos(page, size);
+                // Se retorna la lista paginada ordenada por fecha de actualización descendente
+                Page<ProductoResponse> productos = productoServicio.listarProductos(
+                    PageRequest.of(page, size, Sort.Direction.ASC,"fechaActualizacion"));
                 return ResponseEntity.ok(productos);
     }
 
     @GetMapping("/todos")
+    @Operation(summary = "Listar todos los productos completos", 
+               description = "Obtiene todos los productos con información completa de inventario. Usar /simple para dropdowns.")
     public ResponseEntity<List<ProductoResponse>> listarTodosProductos() {
         List<ProductoResponse> productos = productoServicio.listarTodos();
         return ResponseEntity.ok(productos);
     }
+    
+    @GetMapping("/simple")
+    @Operation(summary = "Listar productos para selects", 
+               description = "Versión optimizada con solo id, nombre y categoría. Ideal para dropdowns y autocompletados.")
+    public ResponseEntity<List<com.prediccion.apppredicciongm.gestion_inventario.producto.dto.response.ProductoSimpleResponse>> listarProductosSimple() {
+        var productos = productoServicio.listarTodosSimple();
+        return ResponseEntity.ok(productos);
+    }
+    
     // ==================== BÚSQUEDAS Y FILTROS ====================
 
     @GetMapping("/categoria/{categoriaId}")

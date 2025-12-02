@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
         @Index(name = "idx_producto_nombre", columnList = "nombre"),
         @Index(name = "idx_producto_categoria", columnList = "id_categoria"),
         @Index(name = "idx_producto_unidad_medida", columnList = "id_um"),
-        @Index(name = "idx_producto_fecha_registro", columnList = "fecha_registro")
+        @Index(name = "idx_producto_fecha_registro", columnList = "fecha_registro"),
+        @Index(name = "idx_producto_fecha_actualizacion", columnList = "fecha_actualizacion")
     }
 )
 @AllArgsConstructor
@@ -50,6 +51,9 @@ public class Producto implements Serializable {
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion;
+
     @ManyToOne
     @JoinColumn(name = "id_categoria", referencedColumnName = "id_categoria")
     private Categoria categoria;
@@ -65,5 +69,12 @@ public class Producto implements Serializable {
     @PrePersist
     protected void onCreate() {
         this.fechaRegistro = LocalDateTime.now();
+        this.fechaActualizacion = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        // Actualiza la fecha de actualización cada vez que se modifica el producto
+        this.fechaActualizacion = LocalDateTime.now();
     }
 }

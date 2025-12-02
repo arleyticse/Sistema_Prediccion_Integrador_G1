@@ -113,7 +113,10 @@ public class KardexServicioImpl implements IKardexService {
     @Override
     @Transactional(readOnly = true)
     public Page<KardexResponse> listarMovimientos(int pagina, int tamanioPagina) {
-        Page<Kardex> movimientos = kardexRepositorio.findAll(PageRequest.of(pagina, tamanioPagina));
+        // Se retorna la lista paginada ordenada por fecha de movimiento descendente
+        // para que los registros más recientes aparezcan primero.
+        Page<Kardex> movimientos = kardexRepositorio
+                .findAllByOrderByFechaMovimientoDesc(PageRequest.of(pagina, tamanioPagina));
         return movimientos.map(kardexMapper::toResponse);
     }
 

@@ -75,7 +75,7 @@ export default class LoginComponent {
 
     // Obtener returnUrl del query params
     this.route.queryParams.subscribe(params => {
-      this.returnUrl = params['returnUrl'] || '/administracion';
+      this.returnUrl = params['returnUrl'] || '/administracion/dashboard';
     });
   }
 
