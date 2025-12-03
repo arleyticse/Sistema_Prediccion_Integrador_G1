@@ -47,6 +47,7 @@ public interface IPasswordResetTokenRepository extends JpaRepository<PasswordRes
     /**
      * Elimina todos los tokens de un email
      */
+    @Modifying
     void deleteByEmail(String email);
 
     /**
@@ -55,4 +56,14 @@ public interface IPasswordResetTokenRepository extends JpaRepository<PasswordRes
     @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM PasswordResetToken t " +
            "WHERE t.email = :email AND t.used = false AND t.expiryDate > :now")
     boolean existsValidToken(@Param("email") String email, @Param("now") LocalDateTime now);
+
+    /**
+     * Elimina todos los tokens expirados o usados del sistema.
+     * Usado por el job de limpieza programada.
+     * 
+     * @return Cantidad de tokens eliminados
+     */
+    @Modifying
+    @Query("DELETE FROM PasswordResetToken t WHERE t.used = true OR t.expiryDate < :now")
+    int deleteAllExpiredTokens(@Param("now") LocalDateTime now);
 }

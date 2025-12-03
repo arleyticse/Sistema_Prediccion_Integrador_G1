@@ -50,12 +50,11 @@ public class SeguridadConfig {
                                                                 "/api/auth/refresh-token")
                                                 .permitAll()
                                                 .requestMatchers("/api/auth/cerrar-sesion").authenticated()
-                                                .requestMatchers("/api/**").permitAll()
                                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                                                 "/swagger-ui.html")
                                                 .permitAll()
                                                 .requestMatchers("/css/**", "/js/**", "/img/**", "/").permitAll()
-                                                .anyRequest().permitAll())
+                                                .anyRequest().authenticated())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authenticationProvider(authenticationProvider())

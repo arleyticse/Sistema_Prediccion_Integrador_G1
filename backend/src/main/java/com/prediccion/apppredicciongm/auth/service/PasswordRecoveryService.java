@@ -55,21 +55,20 @@ public class PasswordRecoveryService {
                     .orElseThrow(() -> new IllegalArgumentException("No existe un usuario con ese email"));
 
             // Verificar si ya existe un código válido reciente (prevenir spam)
-            if (tokenRepository.existsValidToken(email, LocalDateTime.now())) {
-                PasswordResetToken existingToken = tokenRepository
-                        .findFirstByEmailOrderByCreatedAtDesc(email)
-                        .orElse(null);
-                
-                if (existingToken != null && 
-                    existingToken.getCreatedAt().plusMinutes(1).isAfter(LocalDateTime.now())) {
+            var existingToken = tokenRepository.findFirstByEmailOrderByCreatedAtDesc(email);
+            
+            if (existingToken.isPresent()) {
+                PasswordResetToken token = existingToken.get();
+                // Verificar rate limit: 1 minuto entre solicitudes
+                if (token.getCreatedAt().plusMinutes(1).isAfter(LocalDateTime.now())) {
                     response.put("success", false);
                     response.put("message", "Ya se envió un código recientemente. Espera 1 minuto antes de solicitar otro.");
                     return response;
                 }
             }
 
-            // Eliminar tokens antiguos del email
-            tokenRepository.deleteExpiredOrUsedTokens(email, LocalDateTime.now());
+            // Eliminar TODOS los tokens anteriores del email (evita constraint violation)
+            tokenRepository.deleteByEmail(email);
 
             // Generar nuevo código OTP
             String code = generateOtpCode();

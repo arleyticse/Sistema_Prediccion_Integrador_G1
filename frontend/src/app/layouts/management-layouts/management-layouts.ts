@@ -23,22 +23,92 @@ import { Menu as PrimeMenu } from 'primeng/menu';
     PrimeMenu
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    /* Animación suave para submenús */
+    .submenu-container {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .submenu-container.open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    
+    .submenu-content {
+      overflow: hidden;
+    }
+    
+    /* Efecto de entrada escalonada para items */
+    .submenu-item {
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: opacity 200ms ease-out, transform 200ms ease-out;
+    }
+    
+    .submenu-container.open .submenu-item {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    /* Delay escalonado para cada item */
+    .submenu-container.open .submenu-item:nth-child(1) { transition-delay: 50ms; }
+    .submenu-container.open .submenu-item:nth-child(2) { transition-delay: 100ms; }
+    .submenu-container.open .submenu-item:nth-child(3) { transition-delay: 150ms; }
+    .submenu-container.open .submenu-item:nth-child(4) { transition-delay: 200ms; }
+    .submenu-container.open .submenu-item:nth-child(5) { transition-delay: 250ms; }
+    
+    /* Icono de chevron rotación */
+    .chevron-icon {
+      transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .chevron-icon.rotated {
+      transform: rotate(180deg);
+    }
+    
+    /* Efecto hover mejorado en grupo */
+    .menu-group-header {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .menu-group-header::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background: linear-gradient(180deg, #3b82f6, #60a5fa);
+      transform: scaleY(0);
+      transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .menu-group-header.active::before {
+      transform: scaleY(1);
+    }
+  `],
   template: `
     <div class="flex flex-col h-screen bg-slate-50 dark:bg-[#18181b]">
 
       <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar Menu -->
         <aside
-          (mouseenter)="isExpanded.set(true)"
-          (mouseleave)="isExpanded.set(false)"
-          class="bg-white dark:bg-[#18181b] shadow-lg border-r border-slate-200 dark:border-[#2a2a2b] overflow-y-auto overflow-x-hidden transition-all duration-500 ease-in-out"
+          (mouseenter)="onSidebarEnter()"
+          (mouseleave)="onSidebarLeave()"
+          class="bg-white dark:bg-[#18181b] shadow-lg border-r border-slate-200 dark:border-[#2a2a2b] overflow-y-auto overflow-x-hidden transition-all duration-300 ease-out"
           [class.w-20]="!isExpanded()"
           [class.w-80]="isExpanded()"
         >
         <!-- Logo Section -->
         <div class="bg-gradient-to-b from-white to-slate-50/50 dark:from-[#18181b] dark:to-[#18181b]/50 border-b border-slate-200 dark:border-[#2a2a2b] p-6 backdrop-blur-sm">
           <div class="flex items-center justify-center">
-            <div [class.w-16]="!isExpanded()" [class.w-64]="isExpanded()" class="h-16 transition-all duration-500 ease-in-out">
+            <div [class.w-16]="!isExpanded()" [class.w-64]="isExpanded()" class="h-16 transition-all duration-300 ease-out">
               <img src="../../../assets/logo/Logo_Transparente.png" alt="Logo" class="w-full h-full object-contain" />
             </div>
           </div>
@@ -48,44 +118,68 @@ import { Menu as PrimeMenu } from 'primeng/menu';
            <a [routerLink]="['/administracion/dashboard']" 
              routerLinkActive="bg-blue-500 !text-primary-100"
              [routerLinkActiveOptions]="{exact: true}"
-             class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-300 ease-in-out group dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
-            <div class="w-10 h-10 flex items-center justify-center rounded-md transition-all duration-300 ease-in-out">
-              <i class="pi pi-fw pi-home text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg transition-colors duration-300 ease-in-out"></i>
+             class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-200 ease-out group dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
+            <div class="w-10 h-10 flex items-center justify-center rounded-md transition-all duration-200 ease-out">
+              <i class="pi pi-fw pi-home text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg transition-colors duration-200 ease-out"></i>
             </div>
-            @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium transition-opacity duration-500 ease-in-out">Dashboard</span> }
+            <span 
+              class="text-slate-700 dark:text-[#e4e4e7] font-medium whitespace-nowrap transition-all duration-200 ease-out"
+              [class.opacity-100]="isExpanded()"
+              [class.opacity-0]="!isExpanded()"
+              [class.w-0]="!isExpanded()"
+              [class.overflow-hidden]="!isExpanded()">
+              Dashboard
+            </span>
           </a>
         </div>
 
-        <div class="space-y-2 px-2">
-          <div *ngFor="let group of menuGroups()"
+        <div class="space-y-1 px-2">
+          <div *ngFor="let group of menuGroups(); trackBy: trackByLabel"
                (mouseenter)="onGroupMouseEnter(group.label)"
-               (mouseleave)="onGroupMouseLeave(group.label)">
+               (mouseleave)="onGroupMouseLeave(group.label)"
+               class="menu-group">
+            <!-- Header del grupo -->
             <div
-              class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] cursor-pointer dark:text-[#e4e4e7] transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]"
+              class="menu-group-header flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] cursor-pointer dark:text-[#e4e4e7] transition-all duration-200 ease-out"
+              [class.active]="activeAccordionIndex().includes(group.label)"
               (click)="toggleGroup(group.label)">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-300 ease-in-out">
-                  <i [class]="group.icon + ' text-blue-600 dark:text-blue-400 text-lg transition-colors duration-300 ease-in-out'"></i>
+                <div class="w-10 h-10 flex items-center justify-center rounded-md transition-colors duration-200 ease-out">
+                  <i [class]="group.icon + ' text-blue-600 dark:text-blue-400 text-lg transition-colors duration-200 ease-out'"></i>
                 </div>
-                @if (isExpanded()) { 
-                  <span class="text-slate-800 dark:text-[#e4e4e7] font-semibold transition-opacity duration-500 ease-in-out">{{ group.label }}</span> 
-                }
+                <span 
+                  class="text-slate-800 dark:text-[#e4e4e7] font-semibold whitespace-nowrap transition-all duration-200 ease-out"
+                  [class.opacity-100]="isExpanded()"
+                  [class.opacity-0]="!isExpanded()"
+                  [class.w-0]="!isExpanded()"
+                  [class.overflow-hidden]="!isExpanded()">
+                  {{ group.label }}
+                </span>
               </div>
+              <!-- Chevron indicador -->
+              <i *ngIf="isExpanded()" 
+                 class="pi pi-chevron-down text-slate-400 text-xs chevron-icon"
+                 [class.rotated]="activeAccordionIndex().includes(group.label)"></i>
             </div>
-            <ul *ngIf="activeAccordionIndex().includes(group.label)" 
-                class="mt-1 space-y-1 px-2 animate-in fade-in slide-in-from-top-2 duration-300 ease-out">
-              <li *ngFor="let item of group.items">
-                <a [routerLink]="item.routerLink"
-                   routerLinkActive="bg-blue-300 text-primary-100"
-                   class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-300 ease-in-out group relative overflow-hidden dark:text-[#e4e4e7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:ring-offset-[#18181b]">
-                  <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"></div>
-                  <div class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md transition-colors duration-300 ease-in-out relative z-10">
-                    <i [class]="item.icon + ' text-slate-600 dark:text-[#e4e4e7] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-base transition-colors duration-300 ease-in-out'"></i>
-                  </div>
-                  @if (isExpanded()) { <span class="text-slate-700 dark:text-[#e4e4e7] font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 ease-in-out relative z-10">{{ item.label }}</span> }
-                </a>
-              </li>
-            </ul>
+            
+            <!-- Contenedor del submenú con animación CSS -->
+            <div class="submenu-container" [class.open]="activeAccordionIndex().includes(group.label) && isExpanded()">
+              <ul class="submenu-content mt-1 space-y-1 px-2">
+                <li *ngFor="let item of group.items" class="submenu-item">
+                  <a [routerLink]="item.routerLink"
+                     routerLinkActive="!bg-blue-100 dark:!bg-blue-900/30 !text-blue-700 dark:!text-blue-300"
+                     class="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#222225] transition-all duration-200 ease-out group relative overflow-hidden dark:text-[#e4e4e7]">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-blue-600/5 dark:from-blue-400/0 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-out"></div>
+                    <div class="w-10 h-10 flex items-center justify-center shrink-0 rounded-md transition-colors duration-200 ease-out relative z-10">
+                      <i [class]="item.icon + ' text-slate-500 dark:text-[#a1a1aa] group-hover:text-blue-600 dark:group-hover:text-blue-400 text-base transition-colors duration-200 ease-out'"></i>
+                    </div>
+                    <span class="text-slate-600 dark:text-[#a1a1aa] font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 ease-out relative z-10 whitespace-nowrap">
+                      {{ item.label }}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </aside>
@@ -272,22 +366,6 @@ export class ManagementLayouts {
         separator: true
       },
       {
-        label: 'Ayuda y Documentación',
-        icon: 'pi pi-fw pi-question-circle',
-        items: [
-          {
-            label: 'Guía de Uso',
-            icon: 'pi pi-fw pi-book',
-            disabled: true
-          },
-          {
-            label: 'Soporte Técnico',
-            icon: 'pi pi-fw pi-phone',
-            disabled: true
-          }
-        ]
-      },
-      {
         label: 'Cerrar Sesión',
         icon: 'pi pi-fw pi-sign-out',
         command: () => this.onLogout()
@@ -339,30 +417,6 @@ export class ManagementLayouts {
         }
       );
     }
-
-    // Ayuda - para todos los roles pero con limitaciones
-    baseMenu.push(
-      {
-        separator: true
-      },
-      {
-        label: 'Ayuda y Documentación',
-        icon: 'pi pi-fw pi-question-circle',
-        items: [
-          {
-            label: 'Guía de Uso',
-            icon: 'pi pi-fw pi-book',
-            disabled: true
-          },
-          {
-            label: 'Soporte Técnico',
-            icon: 'pi pi-fw pi-phone',
-            disabled: true
-          }
-        ]
-      }
-    );
-
     return baseMenu;
   });
 
@@ -420,14 +474,6 @@ export class ManagementLayouts {
         ]
       });
     }
-    groups.push({
-      label: 'Ayuda y Documentación',
-      icon: 'pi pi-fw pi-question-circle',
-      items: [
-        { label: 'Guía de Uso', icon: 'pi pi-fw pi-book', routerLink: ['/administracion/ayuda'] },
-        { label: 'Soporte Técnico', icon: 'pi pi-fw pi-phone', routerLink: ['/administracion/soporte'] }
-      ]
-    });
     return groups;
   });
   onLogout() {
@@ -438,7 +484,10 @@ export class ManagementLayouts {
     this.logoutMenuVisible.set(!this.logoutMenuVisible());
   }
 
-  // Toggle a group label in the activeAccordionIndex signal
+  trackByLabel(index: number, group: any): string {
+    return group.label;
+  }
+
   toggleGroup(label: string) {
     const current = this.activeAccordionIndex();
     const idx = current.indexOf(label);
@@ -451,6 +500,24 @@ export class ManagementLayouts {
     }
   }
 
+  private sidebarTimeout: any = null;
+
+  onSidebarEnter() {
+    if (this.sidebarTimeout) {
+      clearTimeout(this.sidebarTimeout);
+      this.sidebarTimeout = null;
+    }
+    this.isExpanded.set(true);
+  }
+
+  onSidebarLeave() {
+    // Delay al cerrar para dar tiempo al usuario
+    this.sidebarTimeout = setTimeout(() => {
+      this.isExpanded.set(false);
+      this.sidebarTimeout = null;
+    }, 150);
+  }
+
   // Abrir grupo al hacer hover con transición suave
   onGroupMouseEnter(label: string) {
     // Limpiar timeout existente si hay uno
@@ -459,15 +526,16 @@ export class ManagementLayouts {
       this.hoverTimeouts.delete(label);
     }
 
-    // Abrir el grupo con un pequeño delay si está expandido el sidebar
+    // Solo abrir si el sidebar está expandido
     if (this.isExpanded()) {
+      // Pequeño delay para evitar aperturas accidentales
       const timeout = setTimeout(() => {
         const current = this.activeAccordionIndex();
         if (!current.includes(label)) {
           this.activeAccordionIndex.set([...current, label]);
         }
         this.hoverTimeouts.delete(label);
-      }, 150); // Delay reducido a 150ms coordinado con CSS transition
+      }, 100);
 
       this.hoverTimeouts.set(label, timeout);
     }
@@ -480,14 +548,14 @@ export class ManagementLayouts {
       clearTimeout(this.hoverTimeouts.get(label));
     }
 
-    // Delay optimizado para cierre suave coordinado con CSS
+    // Delay más largo para cerrar - permite navegar entre items
     const timeout = setTimeout(() => {
       const current = this.activeAccordionIndex();
       if (current.includes(label)) {
         this.activeAccordionIndex.set(current.filter(x => x !== label));
       }
       this.hoverTimeouts.delete(label);
-    }, 400); // Delay de 400ms coordinado con transition duration-300
+    }, 300);
 
     this.hoverTimeouts.set(label, timeout);
   }

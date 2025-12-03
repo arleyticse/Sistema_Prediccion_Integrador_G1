@@ -78,7 +78,6 @@ interface AlgoritmoCard {
     IconField,
     InputIcon,
     SkeletonModule,
-    AlgoritmoPipe,
     AlgoritmoSeverityPipe,
     EstadoPrediccionPipe,
     EstadoPrediccionSeverityPipe,

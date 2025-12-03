@@ -30,7 +30,8 @@ public class PasswordResetToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    // Sin constraint UNIQUE - permite múltiples tokens por email (se limpian al crear uno nuevo)
+    @Column(nullable = false)
     private String email;
 
     @Column(nullable = false, length = 6)
