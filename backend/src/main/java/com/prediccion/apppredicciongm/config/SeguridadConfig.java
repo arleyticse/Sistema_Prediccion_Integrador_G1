@@ -47,7 +47,7 @@ public class SeguridadConfig {
                                                 // DESARROLLO: Todos los endpoints públicos temporalmente para pruebas
                                                 // con curl
                                                 .requestMatchers("/api/auth/iniciar-sesion", "/api/auth/registro",
-                                                                "/api/auth/refresh-token","/api/auth/forgot-password")
+                                                                "/api/auth/refresh-token","/api/auth/forgot-password","/api/catalogos")
                                                 .permitAll()
                                                 .requestMatchers("/api/auth/cerrar-sesion").authenticated()
                                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
