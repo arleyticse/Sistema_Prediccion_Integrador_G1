@@ -9,20 +9,20 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  
+
   private apiUrl = `${environment.apiUrl}/auth`;
-  
+
   private tokenSignal = signal<string | null>(this.getTokenFromStorage());
   private usuarioSignal = signal<UsuarioInfo | null>(this.getUsuarioFromStorage());
-  
+
   public token = this.tokenSignal.asReadonly();
   public usuario = this.usuarioSignal.asReadonly();
-  
+
   get isAutenticado(): boolean {
     const isAuth = !!this.tokenSignal();
     return isAuth;
   }
-  
+
   get nombreUsuario(): string {
     return this.usuarioSignal()?.nombreCompleto || 'Usuario';
   }
@@ -32,26 +32,26 @@ export class AuthService {
     effect(() => {
       const token = this.tokenSignal();
       const usuario = this.usuarioSignal();
-      
+
       if (token && usuario) {
         localStorage.setItem('authToken', token);
         if (usuario.refreshToken) {
           localStorage.setItem('refreshToken', usuario.refreshToken);
         }
         localStorage.setItem('usuario', JSON.stringify(usuario));
-        console.log('✅ Token guardado en localStorage');
+        console.log(' Token guardado en localStorage');
       } else {
         localStorage.removeItem('authToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('usuario');
-        console.log('🗑️ Token eliminado de localStorage');
+        console.log(' Token eliminado de localStorage');
       }
     });
 
     // Verificar token al iniciar
     const storedToken = this.getTokenFromStorage();
     if (storedToken) {
-      console.log('🔑 Token recuperado del localStorage al iniciar');
+      console.log(' Token recuperado del localStorage al iniciar');
     }
   }
 
@@ -67,7 +67,7 @@ export class AuthService {
    * Establecer token y usuario después de login exitoso
    */
   setAuthData(response: AuthResponse) {
-    console.log('📝 Estableciendo datos de autenticación');
+    console.log('Estableciendo datos de autenticación');
     this.tokenSignal.set(response.token);
     this.usuarioSignal.set({
       token: response.token,
@@ -81,9 +81,9 @@ export class AuthService {
   /**
    * Logout: limpiar token y usuario y notificar al backend
    */
-  logout() {
-    console.log('👋 Cerrando sesión');
-    
+  logout(): boolean {
+    console.log('Cerrando sesión');
+
     this.http.post(`${this.apiUrl}/cerrar-sesion`, {}).subscribe({
       next: () => console.log('Sesión cerrada en backend'),
       error: (err) => console.warn('Error al cerrar sesión en backend', err),
@@ -91,17 +91,21 @@ export class AuthService {
         this.tokenSignal.set(null);
         this.usuarioSignal.set(null);
         this.router.navigate(['/login']);
+        return true;
       }
     });
-    
+
     // Fallback por si la petición tarda mucho o falla
     setTimeout(() => {
       if (this.tokenSignal()) {
         this.tokenSignal.set(null);
         this.usuarioSignal.set(null);
         this.router.navigate(['/login']);
+        return true;
       }
+      return false;
     }, 1000);
+    return false;
   }
 
   /**
@@ -165,21 +169,21 @@ export class AuthService {
    * Solicitar código OTP para desbloquear cuenta bloqueada
    */
   solicitarDesbloqueo(email: string) {
-    return this.http.post<{success: boolean; message: string}>(`${this.apiUrl}/solicitar-desbloqueo`, { email });
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/solicitar-desbloqueo`, { email });
   }
 
   /**
    * Desbloquear cuenta usando código OTP
    */
   desbloquearCuenta(email: string, code: string) {
-    return this.http.post<{success: boolean; message: string}>(`${this.apiUrl}/desbloquear-cuenta`, { email, code });
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/desbloquear-cuenta`, { email, code });
   }
 
   /**
    * Verificar estado de bloqueo de una cuenta
    */
   verificarEstadoCuenta(email: string) {
-    return this.http.get<{bloqueada: boolean; intentosRestantes: number; maxIntentos: number}>(
+    return this.http.get<{ bloqueada: boolean; intentosRestantes: number; maxIntentos: number }>(
       `${this.apiUrl}/estado-cuenta?email=${encodeURIComponent(email)}`
     );
   }

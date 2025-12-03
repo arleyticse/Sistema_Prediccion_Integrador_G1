@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuModule } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth';
 import { RolePermissionsService } from '../../shared/services/role-permissions.service';
 import { Avatar } from "primeng/avatar";
 import { Menu as PrimeMenu } from 'primeng/menu';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-management-layouts',
@@ -20,7 +21,8 @@ import { Menu as PrimeMenu } from 'primeng/menu';
     ButtonModule,
     CommonModule,
     Avatar,
-    PrimeMenu
+    PrimeMenu,
+    ToastModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
@@ -94,6 +96,7 @@ import { Menu as PrimeMenu } from 'primeng/menu';
     }
   `],
   template: `
+    <p-toast position="top-right" />
     <div class="flex flex-col h-screen bg-slate-50 dark:bg-[#18181b]">
 
       <div class="flex flex-1 overflow-hidden">
@@ -226,11 +229,13 @@ import { Menu as PrimeMenu } from 'primeng/menu';
       </main>
     </div>
     </div>
-  `
+  `,
+  providers: [MessageService]
 })
 export class ManagementLayouts {
   private authService = inject(AuthService);
   public roleService = inject(RolePermissionsService);
+  private messageService = inject(MessageService);
   isExpanded = signal(false);
 
   activeAccordionIndex = signal<string[]>([]);
@@ -477,7 +482,15 @@ export class ManagementLayouts {
     return groups;
   });
   onLogout() {
-    this.authService.logout();
+    this.messageService.add({ 
+      severity: 'success', 
+      summary: 'Sesión Cerrada', 
+      detail: 'Has cerrado sesión correctamente.',
+      life: 2000
+    });
+    setTimeout(() => {
+      this.authService.logout();
+    }, 500);
   }
 
   toggleLogoutMenu() {
